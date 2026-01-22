@@ -1,0 +1,294 @@
+const form = document.getElementById("ideaForm");
+const messageArea = document.getElementById("messageArea");
+const submitButton = form.querySelector("button");
+
+const adminToggle = document.getElementById("adminToggle");
+const ownerSection = document.querySelector(".owner-only");
+
+const ideasList = document.getElementById("ideasList");
+const STORAGE_KEY = "Unipadel_ideas";
+
+const ADMIN_KEY = "unipadelgold";
+const params = new URLSearchParams(window.location.search);
+const isAdminUser = params.get("admin") === ADMIN_KEY;
+
+// --- Admin visibility (default: hidden) ---
+if (adminToggle && ownerSection) {
+  if (isAdminUser) {
+    adminToggle.style.display = "inline-block";
+    adminToggle.textContent = "Exit Admin Mode";
+    adminToggle.classList.add("admin-active");
+    ownerSection.style.display = "block";
+  } else {
+    adminToggle.style.display = "none";
+    ownerSection.style.display = "none";
+  }
+
+  adminToggle.addEventListener("click", function () {
+    const currentlyVisible = ownerSection.style.display === "block";
+
+    if (currentlyVisible) {
+      ownerSection.style.display = "none";
+      adminToggle.textContent = "Admin Mode";
+      adminToggle.classList.remove("admin-active");
+    } else {
+      ownerSection.style.display = "block";
+      adminToggle.textContent = "Exit Admin Mode";
+      adminToggle.classList.add("admin-active");
+    }
+  });
+}
+
+// --- Local history helpers ---
+function loadIdeas() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  try {
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveIdeas(ideas) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ideas));
+}
+
+function renderIdeas() {
+  if (!ideasList) return;
+
+  const ideas = loadIdeas();
+  ideasList.innerHTML = "";
+
+  for (const idea of ideas) {
+    const li = document.createElement("li");
+    li.innerHTML = `<strong>${idea.title}</strong><br/>${idea.description}`;
+    li.style.marginBottom = "12px";
+    ideasList.appendChild(li);
+  }
+}
+
+// Render saved ideas on load
+renderIdeas();
+
+// --- Form submit ---
+form.addEventListener("submit", async function (event) {
+  event.preventDefault();
+
+  const title = document.getElementById("ideaTitle").value.trim();
+  const description = document.getElementById("ideaDescription").value.trim();
+
+  if (!title || !description) {
+    messageArea.textContent = "Please fill out both fields.";
+    return;
+  }
+
+  messageArea.textContent = "Serving...";
+  submitButton.disabled = true;
+  submitButton.textContent = "Sending...";
+
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, description }),
+    });
+
+    if (!response.ok) throw new Error("HTTP " + response.status);
+
+    const data = await response.json();
+    console.log("API response:", data);
+
+    messageArea.textContent =
+      "Thanks for returning the point, Now lets win the Set.";
+
+    // Save to local history + re-render list
+    const ideas = loadIdeas();
+    ideas.unshift({ title, description, createdAt: Date.now() });
+    saveIdeas(ideas);
+    renderIdeas();
+
+    form.reset();
+  } catch (err) {
+    console.error(err);
+    messageArea.textContent = "Fault, Second serve.";
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "Serve idea";
+  }
+});
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+<title>UniPadel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="container">
+ <img src="Images/UniPadel-logo.png" alt="Upadel Logo" class="logo" />
+  <h1>UniPadel</h1>
+  <p>Submit ideas for the future Unipadel site.</p>
+
+  <form id="ideaForm">
+    <!-- <label for="ideaTitle">Whats your idea </label><br /> -->
+    <input type="text" id="ideaTitle" name="ideaTitle" required /><br /><br />
+
+    <label for="ideaDescription">Tell us more</label><br />
+    <textarea
+      id="ideaDescription"
+      name="ideaDescription"
+      rows="5"
+      required
+    ></textarea><br /><br />
+
+    <button type="submit">Serve idea</button>
+  </form>
+
+  <p id="messageArea"></p>
+  <button id="adminToggle" style="margin-top: 10px;">
+  Admin Mode
+</button>
+
+<hr />
+
+<div class="owner-only">
+  <h2>Submitted Ideas</h2>
+  <ul id="ideasList"></ul>
+</div>
+
+  <script src="app.js"></script>
+  <div>
+</body>
+</html>
+
+/* ===== Page ===== */
+body {
+  font-family: "Poppins", system-ui, sans-serif;
+  background-color: #ffffff; /* calm page background */
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== Card / Container (silver metallic) ===== */
+
+.container {
+  max-width: 600px;
+  margin: 60px auto;
+  padding: 30px;
+  border-radius: 10px;
+
+  /* Darker, shinier silver */
+  background:
+    linear-gradient(
+      135deg,
+      #9ca3af,
+      #e5e7eb 25%,
+      #bfc3c9 50%,
+      #f9fafb 70%,
+      #9ca3af
+    );
+
+  box-shadow:
+    0 10px 25px rgba(17, 24, 39, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  border-top: 4px solid #d4af37;
+  isolation: isolate;
+}
+
+
+/* ===== Logo ===== */
+.logo {
+  display: block;
+  max-width: 350px;
+  margin: 0 auto 40px;
+}
+
+/* ===== Title (gold metallic text only) ===== */
+h1 {
+  font-size: 2.4rem;
+  margin: 0 0 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+
+  /* fallback if gradient clipping fails */
+  color: #d4af37;
+
+  /* metallic gold */
+  background: linear-gradient(180deg, #fff3b0, #d4af37, #9a7b1f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* stops any big background “bar” effect */
+  display: inline-block;
+}
+
+/* ===== Text ===== */
+p {
+  color: #1f2937; /* dark charcoal */
+}
+
+
+label {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+
+/* ===== Inputs ===== */
+input,
+textarea {
+  width: 95%;
+  padding: 10px;
+  margin-top: 6px;
+  border: 3px solid #d4af37;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* ===== Buttons ===== */
+button {
+  background-color: #1f2937; /* navy */
+  color: #f9fafb; /* readable */
+  border: none;
+  padding: 12px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #111827; /* darker navy */
+}
+
+/* Admin mode text color change */
+.admin-active {
+  color: #f9fafb; /* gold */
+}
+
+/* ===== Message ===== */
+#messageArea {
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+/* ===== Admin-only history ===== */
+.owner-only {
+  display: none;
+  color: #1f2937;
+}
+
+.owner-only li {
+  color: #1f2937;
+  margin-bottom: 12px;
+}
+
+.owner-only li strong {
+  color: #1f2937;
+}
