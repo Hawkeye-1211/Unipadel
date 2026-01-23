@@ -61,6 +61,39 @@ function renderIdeas() {
 
   for (const idea of ideas) {
     const li = document.createElement("li");
+
+    li.innerHTML = `
+      <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
+        <div>
+          <strong>${idea.title}</strong><br/>
+          ${idea.description}
+        </div>
+
+        <button type="button" data-id="${idea.createdAt}" style="padding:8px 12px; font-size:14px;">
+          Remove
+        </button>
+      </div>
+    `;
+
+    const removeBtn = li.querySelector("button[data-id]");
+    removeBtn.addEventListener("click", function () {
+      const idToRemove = Number(removeBtn.dataset.id);
+      const updated = loadIdeas().filter((x) => x.createdAt !== idToRemove);
+      saveIdeas(updated);
+      renderIdeas();
+    });
+
+    li.style.marginBottom = "12px";
+    ideasList.appendChild(li);
+  }
+}
+  if (!ideasList) return;
+
+  const ideas = loadIdeas();
+  ideasList.innerHTML = "";
+
+  for (const idea of ideas) {
+    const li = document.createElement("li");
     li.innerHTML = `<strong>${idea.title}</strong><br/>${idea.description}`;
     li.style.marginBottom = "12px";
     ideasList.appendChild(li);
@@ -124,4 +157,5 @@ form.addEventListener("submit", async function (event) {
   }
 
 });
+
 
