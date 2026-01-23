@@ -77,11 +77,17 @@ function renderIdeas() {
 
     const removeBtn = li.querySelector("button[data-id]");
     removeBtn.addEventListener("click", function () {
-      const idToRemove = Number(removeBtn.dataset.id);
-      const updated = loadIdeas().filter((x) => x.createdAt !== idToRemove);
-      saveIdeas(updated);
-      renderIdeas();
-    });
+  const confirmed = window.confirm(
+    "Are you sure you want to remove this idea?"
+  );
+
+  if (!confirmed) return;
+
+  const idToRemove = Number(removeBtn.dataset.id);
+  const updated = loadIdeas().filter((x) => x.createdAt !== idToRemove);
+  saveIdeas(updated);
+  renderIdeas();
+});
 
     li.style.marginBottom = "12px";
     ideasList.appendChild(li);
@@ -142,3 +148,4 @@ form.addEventListener("submit", async function (event) {
     submitButton.textContent = "Serve idea";
   }
 });
+
