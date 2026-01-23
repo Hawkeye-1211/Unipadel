@@ -106,7 +106,7 @@ form.addEventListener("submit", async function (event) {
     console.log("API response:", data);
 
     messageArea.textContent =
-      "Thanks for returning the point, Now lets win the Set.";
+      "Gtreat return!! Now lets win the Set.";
 
     // Save to local history + re-render list
     const ideas = loadIdeas();
@@ -124,3 +124,4 @@ form.addEventListener("submit", async function (event) {
   }
 
 });
+
