@@ -147,4 +147,17 @@ button:hover {
   opacity: 1;
 }
 
+/* Keep navbar height normal while showing logo image */
+.navbar .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar .nav-logo {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
 
