@@ -36,6 +36,11 @@
 
     <section id="ideasSection">
       <form id="ideaForm">
+        <!-- Spam protection: honeypot (humans won't fill this; bots often do) -->
+<div style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
+  <label for="website">Website</label>
+  <input type="text" id="website" name="_gotcha" tabindex="-1" autocomplete="off" />
+</div>
         <label for="userName">Your name</label><br />
         <input type="text" id="userName" name="userName" required /><br /><br />
 
@@ -64,3 +69,4 @@
   <script src="/app.js"></script>
 </body>
 </html>
+
