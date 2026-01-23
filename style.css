@@ -161,3 +161,18 @@ button:hover {
 }
 
 
+/* Force navbar logo to always be visible (both Ideas + Admin URLs) */
+.navbar .nav-logo {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: 40px;          /* adjust if you want bigger/smaller */
+  width: auto;
+}
+
+.navbar .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
