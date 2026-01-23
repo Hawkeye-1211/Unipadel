@@ -1,13 +1,22 @@
 // UniPadel app.js
 // - /ideas.html                      => public ideas form only
-// - /ideas.html?admin=unipadelgold    => admin list only (remove with confirmation)
+// - /ideas.html?admin=unipadelgold    => admin list only
+// Admin "session" persists for this browser session (sessionStorage)
 
 document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
   const STORAGE_KEY = "Unipadel_ideas";
+  const ADMIN_SESSION_KEY = "Unipadel_admin_session";
 
   const params = new URLSearchParams(window.location.search);
-  const isAdminMode = params.get("admin") === ADMIN_KEY;
+  const urlAdminKey = params.get("admin");
+
+  // Start/continue admin session if correct key is present in URL
+  if (urlAdminKey === ADMIN_KEY) {
+    sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
+  }
+
+  const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
 
   const form = document.getElementById("ideaForm");
   const messageArea = document.getElementById("messageArea");
@@ -15,8 +24,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const ownerSection = document.querySelector(".owner-only");
   const ideasList = document.getElementById("ideasList");
 
-  // Hide the old toggle everywhere (we don't need it)
+  // Navbar links that we will show only in admin session
+  const adminNavLink = document.getElementById("adminNavLink");
+  const exitAdminLink = document.getElementById("exitAdminLink");
+
+  // Hide old toggle everywhere (we don't need it)
   if (adminToggle) adminToggle.style.display = "none";
+
+  // Show/hide admin nav links based on admin session
+  if (adminNavLink) adminNavLink.style.display = isAdminMode ? "inline-block" : "none";
+  if (exitAdminLink) exitAdminLink.style.display = isAdminMode ? "inline-block" : "none";
+
+  if (exitAdminLink) {
+    exitAdminLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      sessionStorage.removeItem(ADMIN_SESSION_KEY);
+      window.location.href = "/ideas.html";
+    });
+  }
 
   function loadIdeas() {
     const raw = localStorage.getItem(STORAGE_KEY);
