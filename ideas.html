@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>UniPadel</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -24,6 +23,10 @@
     <div class="nav-links">
       <a href="/">About</a>
       <a href="/ideas.html">Ideas</a>
+
+      <!-- Hidden by default; app.js shows these only in admin session -->
+      <a href="/ideas.html?admin=unipadelgold" id="adminNavLink" style="display:none;">Admin</a>
+      <a href="/ideas.html" id="exitAdminLink" style="display:none;">Exit Admin</a>
     </div>
   </nav>
 
@@ -66,4 +69,3 @@
   <script src="/app.js"></script>
 </body>
 </html>
-
