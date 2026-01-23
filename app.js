@@ -1,7 +1,6 @@
 // UniPadel app.js
-// - /ideas.html                      => public ideas form only
-// - /ideas.html?admin=unipadelgold    => admin list only
-// Admin "session" persists for this browser session (sessionStorage)
+// Admin session persists for this browser session (sessionStorage).
+// Enter admin once via: /ideas.html?admin=unipadelgold
 
 document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
@@ -18,13 +17,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
 
+  // Elements (may not exist on every page)
   const form = document.getElementById("ideaForm");
   const messageArea = document.getElementById("messageArea");
   const adminToggle = document.getElementById("adminToggle");
   const ownerSection = document.querySelector(".owner-only");
   const ideasList = document.getElementById("ideasList");
 
-  // Navbar links that we will show only in admin session
+  // Navbar links we show only in admin session (must exist in HTML)
   const adminNavLink = document.getElementById("adminNavLink");
   const exitAdminLink = document.getElementById("exitAdminLink");
 
@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (ownerSection) ownerSection.style.display = "block";
     renderIdeas();
   } else {
-    // Public: show form, hide list
+    // Public: hide list, show form if present
     if (ownerSection) ownerSection.style.display = "none";
     if (form) form.style.display = "block";
     if (messageArea) messageArea.style.display = "block";
@@ -134,10 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const response = await fetch("https://formspree.io/f/mykekkgg", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify({
             name: userName,
             email: userEmail,
@@ -147,11 +144,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         if (!response.ok) throw new Error("HTTP " + response.status);
-
         await response.json().catch(() => {});
         if (messageArea) messageArea.textContent = "Great return!! Now lets win the set.";
 
-        // Save locally for admin view
         const ideas = loadIdeas();
         ideas.unshift({ title, description, createdAt: Date.now() });
         saveIdeas(ideas);
