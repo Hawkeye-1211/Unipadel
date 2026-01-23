@@ -87,11 +87,18 @@ form.addEventListener("submit", async function (event) {
   submitButton.textContent = "Sending...";
 
   try {
-    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, description }),
-    });
+    const response = await fetch("https://formspree.io/f/mykekkgg", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+  },
+  body: JSON.stringify({
+    ideaTitle: title,
+    ideaDescription: description,
+  }),
+});
+
 
     if (!response.ok) throw new Error("HTTP " + response.status);
 
@@ -115,4 +122,5 @@ form.addEventListener("submit", async function (event) {
     submitButton.disabled = false;
     submitButton.textContent = "Serve idea";
   }
+
 });
