@@ -212,5 +212,16 @@ button:hover {
     font-size: 14px;
   }
 }
+/* --- Mobile fix: keep container inside screen --- */
+@media (max-width: 640px) {
+  .container {
+    width: calc(100% - 24px);
+    max-width: none;
+    margin: 20px auto;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+}
+
 
 
