@@ -118,10 +118,16 @@ form.addEventListener("submit", async function (event) {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({
-        ideaTitle: title,
-        ideaDescription: description,
-      }),
+      const userName = document.getElementById("userName").value.trim();
+const userEmail = document.getElementById("userEmail").value.trim();
+
+body: JSON.stringify({
+  name: userName,
+  email: userEmail,
+  ideaTitle: title,
+  ideaDescription: description,
+}),
+
     });
 
     if (!response.ok) throw new Error("HTTP " + response.status);
@@ -146,5 +152,6 @@ form.addEventListener("submit", async function (event) {
     submitButton.textContent = "Serve idea";
   }
 });
+
 
 
