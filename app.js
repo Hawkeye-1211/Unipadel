@@ -1,7 +1,7 @@
 // UniPadel app.js
 // Modes:
-// - /ideas.html                      => public ideas form
-// - /ideas.html?admin=unipadelgold    => admin request (still requires device unlock)
+// - /ideas.html                         => public ideas form
+// - /ideas.html?admin=unipadelgold      => admin request (requires device unlock)
 
 document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
@@ -18,6 +18,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const adminToggle = document.getElementById("adminToggle");
   const ownerSection = document.querySelector(".owner-only");
   const ideasList = document.getElementById("ideasList");
+
+  // Hide admin toggle everywhere (we don't use it)
+  if (adminToggle) {
+    adminToggle.style.setProperty("display", "none", "important");
+    adminToggle.style.setProperty("visibility", "hidden", "important");
+    adminToggle.style.setProperty("pointer-events", "none", "important");
+  }
 
   // Helpers
   function loadIdeas() {
@@ -71,38 +78,62 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Hide admin toggle everywhere (we don't use it)
-  if (adminToggle) {
-    adminToggle.style.setProperty("display", "none", "important");
-    adminToggle.style.setProperty("visibility", "hidden", "important");
-    adminToggle.style.setProperty("pointer-events", "none", "important");
-  }
-
-  // --- Admin unlock check ---
   function isDeviceUnlocked() {
     return localStorage.getItem(ADMIN_UNLOCK_KEY) === "true";
   }
 
-  function unlockDevice() {
-    localStorage.setItem(ADMIN_UNLOCK_KEY, "true");
+  function showUnlockScreen() {
+    // Hide everything else to make it obvious something is happening
+    if (form) form.style.display = "none";
+    if (messageArea) messageArea.style.display = "none";
+    if (ownerSection) ownerSection.style.display = "none";
+
+    const container = document.querySelector(".container") || document.body;
+
+    const panel = document.createElement("div");
+    panel.style.marginTop = "16px";
+    panel.style.padding = "16px";
+    panel.style.borderRadius = "10px";
+    panel.style.background = "rgba(15, 23, 42, 0.08)";
+    panel.style.border = "2px solid rgba(15, 23, 42, 0.15)";
+
+    panel.innerHTML = `
+      <h2 style="margin:0 0 8px;">Admin access</h2>
+      <p style="margin:0 0 12px;">
+        Unlock admin mode on this device?
+      </p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button type="button" id="unlockAdminBtn">Unlock Admin</button>
+        <button type="button" id="cancelAdminBtn">Cancel</button>
+      </div>
+      <p style="margin:12px 0 0; font-size:14px; opacity:0.8;">
+        (This is a speed-bump, not true security on a static site.)
+      </p>
+    `;
+
+    container.appendChild(panel);
+
+    panel.querySelector("#unlockAdminBtn").addEventListener("click", () => {
+      localStorage.setItem(ADMIN_UNLOCK_KEY, "true");
+      // Reload same URL so admin mode turns on immediately
+      window.location.reload();
+    });
+
+    panel.querySelector("#cancelAdminBtn").addEventListener("click", () => {
+      // Go back to public ideas page (no admin param)
+      window.location.href = "/ideas.html";
+    });
   }
 
-  // If user hit admin URL but device isn't unlocked, prompt once.
-  // (Still not "real security", but prevents casual guessing from granting access.)
+  // --- Decide mode ---
   let isAdminMode = false;
 
   if (isAdminUrl) {
     if (isDeviceUnlocked()) {
       isAdminMode = true;
     } else {
-      const ok = window.confirm("Admin access: Unlock this device?");
-      if (ok) {
-        unlockDevice();
-        isAdminMode = true;
-      } else {
-        // If they cancel, drop to public mode (no admin list)
-        isAdminMode = false;
-      }
+      showUnlockScreen();
+      return; // stop here so nothing else runs
     }
   }
 
@@ -171,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
           await response.json().catch(() => {});
           if (messageArea) messageArea.textContent = "Great return!! Now lets win the set.";
 
-          // Save to local history (for your admin view)
+          // Save to local history (for admin view)
           const ideas = loadIdeas();
           ideas.unshift({ title, description, createdAt: Date.now() });
           saveIdeas(ideas);
