@@ -87,18 +87,6 @@ function renderIdeas() {
     ideasList.appendChild(li);
   }
 }
-  if (!ideasList) return;
-
-  const ideas = loadIdeas();
-  ideasList.innerHTML = "";
-
-  for (const idea of ideas) {
-    const li = document.createElement("li");
-    li.innerHTML = `<strong>${idea.title}</strong><br/>${idea.description}`;
-    li.style.marginBottom = "12px";
-    ideasList.appendChild(li);
-  }
-}
 
 // Render saved ideas on load
 renderIdeas();
@@ -121,25 +109,23 @@ form.addEventListener("submit", async function (event) {
 
   try {
     const response = await fetch("https://formspree.io/f/mykekkgg", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Accept": "application/json"
-  },
-  body: JSON.stringify({
-    ideaTitle: title,
-    ideaDescription: description,
-  }),
-});
-
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        ideaTitle: title,
+        ideaDescription: description,
+      }),
+    });
 
     if (!response.ok) throw new Error("HTTP " + response.status);
 
-    const data = await response.json();
-    console.log("API response:", data);
+    // Formspree may return JSON, but we don't need it
+    await response.json().catch(() => {});
 
-    messageArea.textContent =
-      "Gtreat return!! Now lets win the Set.";
+    messageArea.textContent = "Great return!! Now lets win the Set.";
 
     // Save to local history + re-render list
     const ideas = loadIdeas();
@@ -155,7 +141,4 @@ form.addEventListener("submit", async function (event) {
     submitButton.disabled = false;
     submitButton.textContent = "Serve idea";
   }
-
 });
-
-
