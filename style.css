@@ -237,6 +237,21 @@ button:hover {
   }
 }
 
+/* --- Mobile spacing fix: add real side gutters --- */
+@media (max-width: 640px) {
+  .container {
+    width: 100%;
+    max-width: none;
+    margin: 16px auto;     /* top/bottom spacing */
+    padding: 18px;         /* inner padding */
+    box-sizing: border-box;
+
+    /* This is the key: outer side gutters */
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+}
+
 
 
 
