@@ -77,15 +77,14 @@ function renderIdeas() {
 
     const removeBtn = li.querySelector("button[data-id]");
     removeBtn.addEventListener("click", function () {
-  const confirmed = window.confirm("Are you sure you want to remove this idea?");
-  if (!confirmed) return;
+      const confirmed = window.confirm("Are you sure you want to remove this idea?");
+      if (!confirmed) return;
 
-  const idToRemove = Number(removeBtn.dataset.id);
-  const updated = loadIdeas().filter((x) => x.createdAt !== idToRemove);
-  saveIdeas(updated);
-  renderIdeas();
-});
-
+      const idToRemove = Number(removeBtn.dataset.id);
+      const updated = loadIdeas().filter((x) => x.createdAt !== idToRemove);
+      saveIdeas(updated);
+      renderIdeas();
+    });
 
     li.style.marginBottom = "12px";
     ideasList.appendChild(li);
@@ -99,11 +98,13 @@ renderIdeas();
 form.addEventListener("submit", async function (event) {
   event.preventDefault();
 
+  const userName = document.getElementById("userName").value.trim();
+  const userEmail = document.getElementById("userEmail").value.trim();
   const title = document.getElementById("ideaTitle").value.trim();
   const description = document.getElementById("ideaDescription").value.trim();
 
-  if (!title || !description) {
-    messageArea.textContent = "Please fill out both fields.";
+  if (!userName || !userEmail || !title || !description) {
+    messageArea.textContent = "Please fill out all fields.";
     return;
   }
 
@@ -118,23 +119,17 @@ form.addEventListener("submit", async function (event) {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      const userName = document.getElementById("userName").value.trim();
-const userEmail = document.getElementById("userEmail").value.trim();
-
-body: JSON.stringify({
-  name: userName,
-  email: userEmail,
-  ideaTitle: title,
-  ideaDescription: description,
-}),
-
+      body: JSON.stringify({
+        name: userName,
+        email: userEmail,
+        ideaTitle: title,
+        ideaDescription: description,
+      }),
     });
 
     if (!response.ok) throw new Error("HTTP " + response.status);
 
-    // Formspree may return JSON, but we don't need it
     await response.json().catch(() => {});
-
     messageArea.textContent = "Great return!! Now lets win the Set.";
 
     // Save to local history + re-render list
@@ -152,6 +147,3 @@ body: JSON.stringify({
     submitButton.textContent = "Serve idea";
   }
 });
-
-
-
