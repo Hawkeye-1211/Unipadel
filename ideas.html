@@ -19,6 +19,8 @@
     <a href="/" class="logo">UniPadel</a>
     <div class="nav-links">
       <a href="/">About</a>
+      <a href="/ideas.html">Ideas</a>
+      <a href="/ideas.html?admin=unipadelgold">Admin</a>
     </div>
   </nav>
 
@@ -28,36 +30,45 @@
     <h1>UniPadel</h1>
     <p>Submit ideas for the future UniPadel site.</p>
 
-    <form id="ideaForm">
-      <label for="userName">Your name</label><br />
-      <input type="text" id="userName" name="userName" required /><br /><br />
+    <!-- IDEAS (public) section -->
+    <section id="ideasSection">
+      <form id="ideaForm">
+        <label for="userName">Your name</label><br />
+        <input type="text" id="userName" name="userName" required /><br /><br />
 
-      <label for="userEmail">Your email</label><br />
-      <input type="email" id="userEmail" name="userEmail" required /><br /><br />
+        <label for="userEmail">Your email</label><br />
+        <input type="email" id="userEmail" name="userEmail" required /><br /><br />
 
-      <label for="ideaTitle">What's your idea</label><br />
-      <input type="text" id="ideaTitle" name="ideaTitle" required /><br /><br />
+        <label for="ideaTitle">What's your idea</label><br />
+        <input type="text" id="ideaTitle" name="ideaTitle" required /><br /><br />
 
-      <label for="ideaDescription">Tell us more</label><br />
-      <textarea
-        id="ideaDescription"
-        name="ideaDescription"
-        rows="5"
-        required
-      ></textarea><br /><br />
+        <label for="ideaDescription">Tell us more</label><br />
+        <textarea
+          id="ideaDescription"
+          name="ideaDescription"
+          rows="5"
+          required
+        ></textarea><br /><br />
 
-      <button type="submit">Serve idea</button>
-    </form>
+        <button type="submit">Serve idea</button>
+      </form>
 
-    <p id="messageArea"></p>
-    <button id="adminToggle" type="button">Admin Mode</button>
+      <p id="messageArea"></p>
+    </section>
 
-    <hr />
+    <!-- ADMIN section -->
+    <section id="adminSection">
+      <!-- Keep this button in the HTML so existing app.js logic can still use it,
+           but we will auto-trigger it + hide it in admin mode. -->
+      <button id="adminToggle" type="button">Admin Mode</button>
 
-    <div class="owner-only">
-      <h2>Submitted Ideas</h2>
-      <ul id="ideasList"></ul>
-    </div>
+      <hr />
+
+      <div class="owner-only">
+        <h2>Submitted Ideas</h2>
+        <ul id="ideasList"></ul>
+      </div>
+    </section>
   </div>
 
   <script src="/app.js"></script>
