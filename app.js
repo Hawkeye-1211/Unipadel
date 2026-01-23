@@ -130,7 +130,7 @@ form.addEventListener("submit", async function (event) {
     if (!response.ok) throw new Error("HTTP " + response.status);
 
     await response.json().catch(() => {});
-    messageArea.textContent = "Great return!! Now lets win the Set.";
+    messageArea.textContent = "Great return!! Now lets win the set.";
 
     // Save to local history + re-render list
     const ideas = loadIdeas();
@@ -147,3 +147,4 @@ form.addEventListener("submit", async function (event) {
     submitButton.textContent = "Serve idea";
   }
 });
+
