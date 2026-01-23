@@ -167,11 +167,11 @@ button:hover {
 
   /* Container: full-width card with nicer spacing */
   .container {
-    width: calc(100% - 24px);
-    margin: 18px auto;
-    padding: 18px;
-    border-radius: 12px;
-  }
+  width: calc(100% - 20px);
+  margin: 14px auto;
+  padding: 10px;
+}
+
 
   /* Headings: smaller so they fit */
   h1 {
@@ -212,4 +212,5 @@ button:hover {
     font-size: 14px;
   }
 }
+
 
