@@ -2,66 +2,64 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-<title>UniPadel</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <title>UniPadel</title>
 
-<link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="/style.css" />
 </head>
 
-<body>
-<nav class="navbar">
-  <a href="/" class="logo">UniPadel</a>
-  <div class="nav-links">
-    <a href="/about.html">About</a>
-  </div>
-</nav>
+<body data-page="ideas">
+  <nav class="navbar">
+    <a href="/" class="logo">UniPadel</a>
+    <div class="nav-links">
+      <a href="/">About</a>
+    </div>
+  </nav>
+
   <div class="container">
- <img src="Images/UniPadel-logo.png" alt="Upadel Logo" class="logo" />
-  <h1>UniPadel</h1>
-  <p>Submit ideas for the future Unipadel site.</p>
+    <img src="Images/UniPadel-logo.png" alt="UniPadel Logo" class="logo" />
 
-  <form id="ideaForm">
-    <label for="userName">Your name</label><br />
-<input type="text" id="userName" name="userName" required /><br /><br />
+    <h1>UniPadel</h1>
+    <p>Submit ideas for the future UniPadel site.</p>
 
-<label for="userEmail">Your email</label><br />
-<input type="email" id="userEmail" name="userEmail" required /><br /><br />
+    <form id="ideaForm">
+      <label for="userName">Your name</label><br />
+      <input type="text" id="userName" name="userName" required /><br /><br />
 
-    <label for="ideaTitle">What's your idea</label><br />
-    <input type="text" id="ideaTitle" name="ideaTitle" required /><br /><br />
+      <label for="userEmail">Your email</label><br />
+      <input type="email" id="userEmail" name="userEmail" required /><br /><br />
 
-    <label for="ideaDescription">Tell us more</label><br />
-    <textarea
-      id="ideaDescription"
-      name="ideaDescription"
-      rows="5"
-      required
-    ></textarea><br /><br />
+      <label for="ideaTitle">What's your idea</label><br />
+      <input type="text" id="ideaTitle" name="ideaTitle" required /><br /><br />
 
-    <button type="submit">Serve idea</button>
-  </form>
+      <label for="ideaDescription">Tell us more</label><br />
+      <textarea
+        id="ideaDescription"
+        name="ideaDescription"
+        rows="5"
+        required
+      ></textarea><br /><br />
 
-  <p id="messageArea"></p>
-  <button id="adminToggle" type="button">Admin Mode</button>
-    
-</button>
+      <button type="submit">Serve idea</button>
+    </form>
 
-<hr />
+    <p id="messageArea"></p>
+    <button id="adminToggle" type="button">Admin Mode</button>
 
-<div class="owner-only">
-  <h2>Submitted Ideas</h2>
-  <ul id="ideasList"></ul>
-</div>
+    <hr />
 
-  <script src="app.js"></script>
-  <div>
+    <div class="owner-only">
+      <h2>Submitted Ideas</h2>
+      <ul id="ideasList"></ul>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
 </body>
 </html>
-
-
-
-
-
-
