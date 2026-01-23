@@ -1,3 +1,24 @@
+// --- Force admin UX when coming from the Admin tab URL ---
+(() => {
+  const isAdminFromUrl =
+    new URLSearchParams(window.location.search).get("admin") === "unipadelgold";
+
+  if (!isAdminFromUrl) return;
+
+  // Make it easy to target admin state elsewhere if needed
+  document.addEventListener("DOMContentLoaded", () => {
+    document.body.classList.add("is-admin");
+
+    const adminToggle = document.getElementById("adminToggle");
+    if (adminToggle) {
+      // Hide in a way that normal JS/CSS is unlikely to override
+      adminToggle.style.setProperty("display", "none", "important");
+      adminToggle.style.setProperty("visibility", "hidden", "important");
+      adminToggle.style.setProperty("pointer-events", "none", "important");
+    }
+  });
+})();
+
 const form = document.getElementById("ideaForm");
 const messageArea = document.getElementById("messageArea");
 const submitButton = form.querySelector("button");
@@ -151,5 +172,6 @@ form.addEventListener("submit", async function (event) {
     submitButton.textContent = "Serve idea";
   }
 });
+
 
 
