@@ -24,9 +24,9 @@
       <a href="/">About</a>
       <a href="/ideas.html">Ideas</a>
 
-      <!-- Hidden by default; app.js shows these only in admin session -->
-      <a href="/ideas.html?admin=unipadelgold" id="adminNavLink" style="display:none;">Admin</a>
-      <a href="/ideas.html" id="exitAdminLink" style="display:none;">Exit Admin</a>
+      <!-- Hidden by default; app.js shows these only during an admin session -->
+      <a href="/ideas.html?admin=unipadelgold" id="adminNavLink" hidden>Admin</a>
+      <a href="/ideas.html" id="exitAdminLink" hidden>Exit Admin</a>
     </div>
   </nav>
 
@@ -54,16 +54,11 @@
       <p id="messageArea"></p>
     </section>
 
-    <section id="adminSection">
-      <button id="adminToggle" type="button">Admin Mode</button>
-
-      <hr />
-
-      <div class="owner-only">
-        <h2>Submitted Ideas</h2>
-        <ul id="ideasList"></ul>
-      </div>
-    </section>
+    <!-- Admin list (app.js will show/hide this based on mode) -->
+    <div class="owner-only">
+      <h2>Submitted Ideas</h2>
+      <ul id="ideasList"></ul>
+    </div>
   </div>
 
   <script src="/app.js"></script>
