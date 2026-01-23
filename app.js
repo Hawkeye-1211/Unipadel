@@ -115,6 +115,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
+            // Spam protection: honeypot check (bots often fill hidden fields)
+      const gotcha = document.getElementById("website");
+      if (gotcha && gotcha.value.trim() !== "") {
+        if (messageArea) messageArea.textContent = "Submission blocked.";
+        return;
+      }
 
       const userName = document.getElementById("userName")?.value.trim() || "";
       const userEmail = document.getElementById("userEmail")?.value.trim() || "";
@@ -166,3 +172,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
