@@ -17,23 +17,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
 
-  // Elements (may not exist on every page)
-  const form = document.getElementById("ideaForm");
-  const messageArea = document.getElementById("messageArea");
-  const adminToggle = document.getElementById("adminToggle");
-  const ownerSection = document.querySelector(".owner-only");
-  const ideasList = document.getElementById("ideasList");
-
-  // Navbar links we show only in admin session (must exist in HTML)
+  // Navbar links (exist on pages where you want them to appear)
   const adminNavLink = document.getElementById("adminNavLink");
   const exitAdminLink = document.getElementById("exitAdminLink");
 
-  // Hide old toggle everywhere (we don't need it)
-  if (adminToggle) adminToggle.style.display = "none";
-
-  // Show/hide admin nav links based on admin session
-  if (adminNavLink) adminNavLink.style.display = isAdminMode ? "inline-block" : "none";
-  if (exitAdminLink) exitAdminLink.style.display = isAdminMode ? "inline-block" : "none";
+  // Show/hide admin nav links based on session (works with `hidden` attribute)
+  if (adminNavLink) adminNavLink.hidden = !isAdminMode;
+  if (exitAdminLink) exitAdminLink.hidden = !isAdminMode;
 
   if (exitAdminLink) {
     exitAdminLink.addEventListener("click", (e) => {
@@ -42,6 +32,17 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = "/ideas.html";
     });
   }
+
+  // Page elements (only exist on ideas.html)
+  const form = document.getElementById("ideaForm");
+  const messageArea = document.getElementById("messageArea");
+  const ownerSection = document.querySelector(".owner-only");
+  const ideasList = document.getElementById("ideasList");
+
+  // If we’re not on ideas.html (no form, no list), stop here after nav handling
+  // This is important so index.html doesn't throw errors.
+  const onIdeasPage = !!(form || ownerSection || ideasList);
+  if (!onIdeasPage) return;
 
   function loadIdeas() {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -94,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- MODE SWITCHING ---
+  // --- MODE SWITCHING (ideas.html) ---
   if (isAdminMode) {
     // Admin: show list, hide form
     if (form) form.style.display = "none";
@@ -102,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (ownerSection) ownerSection.style.display = "block";
     renderIdeas();
   } else {
-    // Public: hide list, show form if present
+    // Public: hide list, show form
     if (ownerSection) ownerSection.style.display = "none";
     if (form) form.style.display = "block";
     if (messageArea) messageArea.style.display = "block";
@@ -144,6 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         if (!response.ok) throw new Error("HTTP " + response.status);
+
         await response.json().catch(() => {});
         if (messageArea) messageArea.textContent = "Great return!! Now lets win the set.";
 
