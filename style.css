@@ -6,13 +6,16 @@ body {
   padding: 0;
 }
 
-/* ===== Navbar ===== */
+/* ===== Navbar (stable + centered logo) ===== */
 .navbar {
+  position: relative;              /* allows absolute-centered logo */
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 24px;
+  justify-content: flex-end;       /* tabs sit on the right */
+  align-items: flex-end;           /* tabs sit lower (near bottom) */
+  padding: 12px 24px;
   background: #0f172a;
+  min-height: 90px;                /* ensures room for 85px logo */
+  box-sizing: border-box;
 }
 
 .navbar a {
@@ -21,31 +24,36 @@ body {
   font-weight: 600;
 }
 
-.nav-links a {
-  .nav-links a {
-  margin-left: 16px;
-  opacity: 0.9;
-  position: relative;
-  top: 10px; /* moves tabs down */
+/* Center the logo in the navbar */
+.navbar .logo {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;                    /* keeps it nicely grounded */
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
 }
 
+/* Logo size */
+.navbar .nav-logo {
+  height: 85px;                    /* your chosen size */
+  width: auto;
+  display: block;
+}
+
+/* Right-side links */
+.nav-links {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.nav-links a {
+  opacity: 0.9;
+}
 
 .nav-links a:hover {
   opacity: 1;
-}
-
-/* Navbar brand link (logo image only or image+text) */
-.navbar .logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* Navbar logo image (make it clearly visible, but not huge) */
-.navbar .nav-logo {
-  height: 85px; /* visible; adjust to 48–64 if you want */
-  width: auto;
-  display: block;
 }
 
 /* ===== Card / Container (silver metallic) ===== */
@@ -55,7 +63,6 @@ body {
   padding: 30px;
   border-radius: 10px;
 
-  /* Darker, shinier silver */
   background:
     linear-gradient(
       135deg,
@@ -74,16 +81,6 @@ body {
   isolation: isolate;
 }
 
-/* ===== Page logo (ONLY if you use a big logo inside the container) =====
-   IMPORTANT: Do NOT use class="logo" for big page images anymore.
-   If you ever want a big centered logo inside the container, use class="page-logo".
-*/
-.page-logo {
-  display: block;
-  max-width: 350px;
-  margin: 0 auto 40px;
-}
-
 /* ===== Title (gold metallic text only) ===== */
 h1 {
   font-size: 2.4rem;
@@ -91,22 +88,19 @@ h1 {
   font-weight: 700;
   letter-spacing: 0.5px;
 
-  /* fallback if gradient clipping fails */
   color: #d4af37;
 
-  /* metallic gold */
   background: linear-gradient(180deg, #fff3b0, #d4af37, #9a7b1f);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  /* stops any big background “bar” effect */
   display: inline-block;
 }
 
 /* ===== Text ===== */
 p {
-  color: #1f2937; /* dark charcoal */
+  color: #1f2937;
 }
 
 label {
@@ -127,8 +121,8 @@ textarea {
 
 /* ===== Buttons ===== */
 button {
-  background-color: #1f2937; /* navy */
-  color: #f9fafb; /* readable */
+  background-color: #1f2937;
+  color: #f9fafb;
   border: none;
   padding: 12px 18px;
   border-radius: 6px;
@@ -137,10 +131,9 @@ button {
 }
 
 button:hover {
-  background-color: #111827; /* darker navy */
+  background-color: #111827;
 }
 
-/* Admin mode text color change */
 .admin-active {
   color: #f9fafb;
 }
@@ -165,4 +158,3 @@ button:hover {
 .owner-only li strong {
   color: #1f2937;
 }
-
