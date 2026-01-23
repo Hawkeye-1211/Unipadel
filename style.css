@@ -39,7 +39,7 @@ body {
 
 /* Navbar logo image (make it clearly visible, but not huge) */
 .navbar .nav-logo {
-  height: 75px; /* visible; adjust to 48–64 if you want */
+  height: 85px; /* visible; adjust to 48–64 if you want */
   width: auto;
   display: block;
 }
