@@ -11,6 +11,10 @@ const STORAGE_KEY = "Unipadel_ideas";
 const ADMIN_KEY = "unipadelgold";
 const params = new URLSearchParams(window.location.search);
 const isAdminUser = params.get("admin") === ADMIN_KEY;
+if (isAdmin && adminToggle) {
+  adminToggle.style.display = "none";
+}
+
 
 // --- Admin visibility (default: hidden) ---
 if (adminToggle && ownerSection) {
@@ -147,4 +151,5 @@ form.addEventListener("submit", async function (event) {
     submitButton.textContent = "Serve idea";
   }
 });
+
 
