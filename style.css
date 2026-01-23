@@ -1,129 +1,12 @@
 /* ===== Page ===== */
 body {
   font-family: "Poppins", system-ui, sans-serif;
-  background-color: #ffffff; /* calm page background */
+  background-color: #ffffff;
   margin: 0;
   padding: 0;
 }
 
-/* ===== Card / Container (silver metallic) ===== */
-
-.container {
-  max-width: 600px;
-  margin: 60px auto;
-  padding: 30px;
-  border-radius: 10px;
-
-  /* Darker, shinier silver */
-  background:
-    linear-gradient(
-      135deg,
-      #9ca3af,
-      #e5e7eb 25%,
-      #bfc3c9 50%,
-      #f9fafb 70%,
-      #9ca3af
-    );
-
-  box-shadow:
-    0 10px 25px rgba(17, 24, 39, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-
-  border-top: 4px solid #d4af37;
-  isolation: isolate;
-}
-
-
-/* ===== Logo ===== */
-.logo {
-  display: block;
-  max-width: 350px;
-  margin: 0 auto 40px;
-}
-
-/* ===== Title (gold metallic text only) ===== */
-h1 {
-  font-size: 2.4rem;
-  margin: 0 0 10px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-
-  /* fallback if gradient clipping fails */
-  color: #d4af37;
-
-  /* metallic gold */
-  background: linear-gradient(180deg, #fff3b0, #d4af37, #9a7b1f);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  /* stops any big background “bar” effect */
-  display: inline-block;
-}
-
-/* ===== Text ===== */
-p {
-  color: #1f2937; /* dark charcoal */
-}
-
-
-label {
-  font-weight: 600;
-  color: #1f2937;
-}
-
-
-/* ===== Inputs ===== */
-input,
-textarea {
-  width: 95%;
-  padding: 10px;
-  margin-top: 6px;
-  border: 3px solid #d4af37;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.9);
-}
-
-/* ===== Buttons ===== */
-button {
-  background-color: #1f2937; /* navy */
-  color: #f9fafb; /* readable */
-  border: none;
-  padding: 12px 18px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-button:hover {
-  background-color: #111827; /* darker navy */
-}
-
-/* Admin mode text color change */
-.admin-active {
-  color: #f9fafb; /* gold */
-}
-
-/* ===== Message ===== */
-#messageArea {
-  margin-top: 15px;
-  font-weight: bold;
-}
-
-/* ===== Admin-only history ===== */
-.owner-only {
-  display: none;
-  color: #1f2937;
-}
-
-.owner-only li {
-  color: #1f2937;
-  margin-bottom: 12px;
-}
-
-.owner-only li strong {
-  color: #1f2937;
-}
+/* ===== Navbar ===== */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -147,32 +30,127 @@ button:hover {
   opacity: 1;
 }
 
-/* Keep navbar height normal while showing logo image */
+/* Brand on the left (logo image + text) */
 .navbar .logo {
   display: inline-flex;
   align-items: center;
   gap: 10px;
 }
 
+/* Navbar logo image size */
 .navbar .nav-logo {
-  height: 28px;
+  height: 44px; /* bigger + visible */
   width: auto;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ===== Card / Container (silver metallic) ===== */
+.container {
+  max-width: 600px;
+  margin: 60px auto;
+  padding: 30px;
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #9ca3af,
+      #e5e7eb 25%,
+      #bfc3c9 50%,
+      #f9fafb 70%,
+      #9ca3af
+    );
+
+  box-shadow:
+    0 10px 25px rgba(17, 24, 39, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  border-top: 4px solid #d4af37;
+  isolation: isolate;
+}
+
+/* ===== Page Logo (ONLY if you use a big logo inside the container) ===== */
+.page-logo {
   display: block;
+  max-width: 350px;
+  margin: 0 auto 40px;
 }
 
+/* ===== Title (gold metallic text only) ===== */
+h1 {
+  font-size: 2.4rem;
+  margin: 0 0 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 
-/* Force navbar logo to always be visible (both Ideas + Admin URLs) */
-.navbar .nav-logo {
-  display: inline-block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  height: 40px;          /* adjust if you want bigger/smaller */
-  width: auto;
+  color: #d4af37;
+
+  background: linear-gradient(180deg, #fff3b0, #d4af37, #9a7b1f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  display: inline-block;
 }
 
-.navbar .logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+/* ===== Text ===== */
+p {
+  color: #1f2937;
 }
 
+label {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* ===== Inputs ===== */
+input,
+textarea {
+  width: 95%;
+  padding: 10px;
+  margin-top: 6px;
+  border: 3px solid #d4af37;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* ===== Buttons ===== */
+button {
+  background-color: #1f2937;
+  color: #f9fafb;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #111827;
+}
+
+.admin-active {
+  color: #f9fafb;
+}
+
+/* ===== Message ===== */
+#messageArea {
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+/* ===== Admin-only history ===== */
+.owner-only {
+  display: none;
+  color: #1f2937;
+}
+
+.owner-only li {
+  color: #1f2937;
+  margin-bottom: 12px;
+}
+
+.owner-only li strong {
+  color: #1f2937;
+}
