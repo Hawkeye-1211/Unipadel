@@ -1,7 +1,7 @@
 /* ===== Page ===== */
 body {
   font-family: "Poppins", system-ui, sans-serif;
-  background-color: #ffffff;
+  background-color: #ffffff; /* calm page background */
   margin: 0;
   padding: 0;
 }
@@ -30,19 +30,18 @@ body {
   opacity: 1;
 }
 
-/* Brand on the left (logo image + text) */
+/* Navbar brand link (logo image only or image+text) */
 .navbar .logo {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 10px;
 }
 
-/* Navbar logo image size */
+/* Navbar logo image (make it clearly visible, but not huge) */
 .navbar .nav-logo {
-  height: 44px; /* bigger + visible */
+  height: 56px; /* visible; adjust to 48–64 if you want */
   width: auto;
-  display: inline-block;
-  vertical-align: middle;
+  display: block;
 }
 
 /* ===== Card / Container (silver metallic) ===== */
@@ -52,6 +51,7 @@ body {
   padding: 30px;
   border-radius: 10px;
 
+  /* Darker, shinier silver */
   background:
     linear-gradient(
       135deg,
@@ -70,7 +70,10 @@ body {
   isolation: isolate;
 }
 
-/* ===== Page Logo (ONLY if you use a big logo inside the container) ===== */
+/* ===== Page logo (ONLY if you use a big logo inside the container) =====
+   IMPORTANT: Do NOT use class="logo" for big page images anymore.
+   If you ever want a big centered logo inside the container, use class="page-logo".
+*/
 .page-logo {
   display: block;
   max-width: 350px;
@@ -84,19 +87,22 @@ h1 {
   font-weight: 700;
   letter-spacing: 0.5px;
 
+  /* fallback if gradient clipping fails */
   color: #d4af37;
 
+  /* metallic gold */
   background: linear-gradient(180deg, #fff3b0, #d4af37, #9a7b1f);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 
+  /* stops any big background “bar” effect */
   display: inline-block;
 }
 
 /* ===== Text ===== */
 p {
-  color: #1f2937;
+  color: #1f2937; /* dark charcoal */
 }
 
 label {
@@ -117,8 +123,8 @@ textarea {
 
 /* ===== Buttons ===== */
 button {
-  background-color: #1f2937;
-  color: #f9fafb;
+  background-color: #1f2937; /* navy */
+  color: #f9fafb; /* readable */
   border: none;
   padding: 12px 18px;
   border-radius: 6px;
@@ -127,9 +133,10 @@ button {
 }
 
 button:hover {
-  background-color: #111827;
+  background-color: #111827; /* darker navy */
 }
 
+/* Admin mode text color change */
 .admin-active {
   color: #f9fafb;
 }
