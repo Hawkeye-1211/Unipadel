@@ -158,3 +158,58 @@ button:hover {
 .owner-only li strong {
   color: #1f2937;
 }
+/* ===== Mobile tweaks ===== */
+@media (max-width: 600px) {
+  /* Give the page some breathing room */
+  body {
+    font-size: 16px;
+  }
+
+  /* Container: full-width card with nicer spacing */
+  .container {
+    width: calc(100% - 24px);
+    margin: 18px auto;
+    padding: 18px;
+    border-radius: 12px;
+  }
+
+  /* Headings: smaller so they fit */
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  /* Inputs: actually full width on mobile */
+  input,
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Buttons: full width for easy tapping */
+  button {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 16px;
+  }
+
+  /* Navbar: shorter + readable */
+  .navbar {
+    padding: 10px 14px;
+    min-height: 74px; /* reduces the tall bar feel on phones */
+  }
+
+  /* Logo: still clear, but not huge on small screens */
+  .navbar .nav-logo {
+    height: 64px;
+  }
+
+  /* Tabs: slightly tighter */
+  .nav-links {
+    gap: 12px;
+  }
+
+  .nav-links a {
+    font-size: 14px;
+  }
+}
+
