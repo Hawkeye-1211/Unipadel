@@ -22,9 +22,13 @@ body {
 }
 
 .nav-links a {
+  .nav-links a {
   margin-left: 16px;
   opacity: 0.9;
+  position: relative;
+  top: 10px; /* moves tabs down */
 }
+
 
 .nav-links a:hover {
   opacity: 1;
@@ -161,3 +165,4 @@ button:hover {
 .owner-only li strong {
   color: #1f2937;
 }
+
