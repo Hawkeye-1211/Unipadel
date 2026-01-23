@@ -1,16 +1,18 @@
 // UniPadel app.js
-// Behaviour:
-// - /ideas.html                 => Ideas mode (form only)
-// - /ideas.html?admin=unipadelgold => Admin mode (list + remove only)
+// Modes:
+// - /ideas.html                      => public ideas form
+// - /ideas.html?admin=unipadelgold    => admin request (still requires device unlock)
 
 document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
   const STORAGE_KEY = "Unipadel_ideas";
+  const ADMIN_UNLOCK_KEY = "Unipadel_admin_unlocked"; // localStorage flag
 
   const params = new URLSearchParams(window.location.search);
-  const isAdminUser = params.get("admin") === ADMIN_KEY;
+  const adminKeyFromUrl = params.get("admin");
+  const isAdminUrl = adminKeyFromUrl === ADMIN_KEY;
 
-  // Elements (may or may not exist on every page)
+  // Elements
   const form = document.getElementById("ideaForm");
   const messageArea = document.getElementById("messageArea");
   const adminToggle = document.getElementById("adminToggle");
@@ -69,43 +71,66 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- MODE SWITCHING (Ideas vs Admin) ---
-  // You said:
-  // - Admin tab should ALWAYS be in admin mode (no toggle)
-  // - Ideas tab should show ONLY the form (no admin UI)
-
-  // Hide toggle everywhere (we don't need it anymore)
+  // Hide admin toggle everywhere (we don't use it)
   if (adminToggle) {
     adminToggle.style.setProperty("display", "none", "important");
     adminToggle.style.setProperty("visibility", "hidden", "important");
     adminToggle.style.setProperty("pointer-events", "none", "important");
   }
 
-  if (isAdminUser) {
-    // ADMIN MODE
+  // --- Admin unlock check ---
+  function isDeviceUnlocked() {
+    return localStorage.getItem(ADMIN_UNLOCK_KEY) === "true";
+  }
+
+  function unlockDevice() {
+    localStorage.setItem(ADMIN_UNLOCK_KEY, "true");
+  }
+
+  // If user hit admin URL but device isn't unlocked, prompt once.
+  // (Still not "real security", but prevents casual guessing from granting access.)
+  let isAdminMode = false;
+
+  if (isAdminUrl) {
+    if (isDeviceUnlocked()) {
+      isAdminMode = true;
+    } else {
+      const ok = window.confirm("Admin access: Unlock this device?");
+      if (ok) {
+        unlockDevice();
+        isAdminMode = true;
+      } else {
+        // If they cancel, drop to public mode (no admin list)
+        isAdminMode = false;
+      }
+    }
+  }
+
+  // --- Apply modes ---
+  if (isAdminMode) {
     document.body.classList.add("is-admin");
 
-    // Hide form + message area
+    // Hide form + message
     if (form) form.style.display = "none";
     if (messageArea) messageArea.style.display = "none";
 
-    // Show owner/admin section and render saved ideas
+    // Show admin list
     if (ownerSection) ownerSection.style.display = "block";
     renderIdeas();
   } else {
-    // IDEAS MODE (public)
     document.body.classList.remove("is-admin");
 
-    // Hide admin section
+    // Hide admin list
     if (ownerSection) ownerSection.style.display = "none";
 
-    // Ensure form is visible (if present)
+    // Show form (public)
     if (form) form.style.display = "block";
     if (messageArea) messageArea.style.display = "block";
 
-    // Attach Formspree submit handler ONLY in Ideas mode
+    // Attach Formspree submit handler ONLY in public mode
     if (form) {
-      const submitButton = form.querySelector('button[type="submit"]') || form.querySelector("button");
+      const submitButton =
+        form.querySelector('button[type="submit"]') || form.querySelector("button");
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -143,12 +168,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (!response.ok) throw new Error("HTTP " + response.status);
 
-          // Formspree sometimes returns JSON; don't fail if it doesn't
           await response.json().catch(() => {});
-
           if (messageArea) messageArea.textContent = "Great return!! Now lets win the set.";
 
-          // Save to local history (for admin view)
+          // Save to local history (for your admin view)
           const ideas = loadIdeas();
           ideas.unshift({ title, description, createdAt: Date.now() });
           saveIdeas(ideas);
