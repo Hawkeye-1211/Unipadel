@@ -6,22 +6,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
   const STORAGE_KEY = "Unipadel_ideas";
   const ADMIN_SESSION_KEY = "Unipadel_admin_session";
+  const LAST_SUBMIT_KEY = "Unipadel_last_submit_ts";
 
   const params = new URLSearchParams(window.location.search);
   const urlAdminKey = params.get("admin");
 
-  // Start/continue admin session if correct key is present in URL
   if (urlAdminKey === ADMIN_KEY) {
     sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
   }
 
   const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
 
-  // Navbar links (exist on pages where you want them to appear)
   const adminNavLink = document.getElementById("adminNavLink");
   const exitAdminLink = document.getElementById("exitAdminLink");
 
-  // Show/hide admin nav links based on session (works with `hidden` attribute)
   if (adminNavLink) adminNavLink.hidden = !isAdminMode;
   if (exitAdminLink) exitAdminLink.hidden = !isAdminMode;
 
@@ -33,24 +31,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Page elements (only exist on ideas.html)
   const form = document.getElementById("ideaForm");
   const messageArea = document.getElementById("messageArea");
   const ownerSection = document.querySelector(".owner-only");
   const ideasList = document.getElementById("ideasList");
-  // Spam protection: time-to-submit baseline
-  const pageLoadedAt = Date.now();
-  // Spam protection: simple per-browser rate limit
-  const LAST_SUBMIT_KEY = "Unipadel_last_submit_ts";
 
-  // Set hidden timestamp field if it exists (ideas.html)
-  const tsField = document.getElementById("submissionTs");
-  if (tsField) tsField.value = String(pageLoadedAt);
-
-  // If we’re not on ideas.html (no form, no list), stop here after nav handling
-  // This is important so index.html doesn't throw errors.
   const onIdeasPage = !!(form || ownerSection || ideasList);
   if (!onIdeasPage) return;
+
+  const pageLoadedAt = Date.now();
 
   function loadIdeas() {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -103,15 +92,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- MODE SWITCHING (ideas.html) ---
   if (isAdminMode) {
-    // Admin: show list, hide form
     if (form) form.style.display = "none";
     if (messageArea) messageArea.style.display = "none";
     if (ownerSection) ownerSection.style.display = "block";
     renderIdeas();
   } else {
-    // Public: hide list, show form
     if (ownerSection) ownerSection.style.display = "none";
     if (form) form.style.display = "block";
     if (messageArea) messageArea.style.display = "block";
@@ -123,24 +109,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-            // Spam protection: honeypot check (bots often fill hidden fields)
+
+      // Honeypot spam check
       const gotcha = document.getElementById("website");
       if (gotcha && gotcha.value.trim() !== "") {
         if (messageArea) messageArea.textContent = "Submission blocked.";
         return;
       }
-      // Spam protection: block submissions that happen too fast (likely bots)
+
+      // Too-fast submit check
       if (Date.now() - pageLoadedAt < 2500) {
-        if (messageArea) messageArea.textContent = "Please take a moment, then submit again.";
+        if (messageArea) messageArea.textContent =
+          "Please take a moment, then submit again.";
         return;
       }
-  // Spam protection: rate limit (30 seconds between submits per browser)
-  const lastSubmit = Number(localStorage.getItem(LAST_SUBMIT_KEY) || "0");
-  if (lastSubmit && Date.now() - lastSubmit < 30000) {
-    if (messageArea) messageArea.textContent = "You're submitting too quickly. Please wait a moment and try again.";
-    return;
-  }
-  localStorage.setItem(LAST_SUBMIT_KEY, String(Date.now()));
+
+      // Rate limit (30s)
+      const lastSubmit = Number(localStorage.getItem(LAST_SUBMIT_KEY) || "0");
+      if (lastSubmit && Date.now() - lastSubmit < 30000) {
+        if (messageArea) messageArea.textContent =
+          "You're submitting too quickly. Please wait a moment and try again.";
+        return;
+      }
+      localStorage.setItem(LAST_SUBMIT_KEY, String(Date.now()));
 
       const userName = document.getElementById("userName")?.value.trim() || "";
       const userEmail = document.getElementById("userEmail")?.value.trim() || "";
@@ -159,6 +150,29 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
+        const sheetUrl =
+          "https://script.google.com/macros/s/AKfycbza1at9k9rnVXa-4GkV5CzUUK-loch6E_oS2AEvhR2AdK37ZZ_zx4V4e9irLMlJ6bVj/exec";
+
+        // Send to Google Sheet (non-blocking)
+        try {
+          const formBody = new URLSearchParams();
+          formBody.append("name", userName);
+          formBody.append("email", userEmail);
+          formBody.append("ideaTitle", title);
+          formBody.append("ideaDescription", description);
+
+          await fetch(sheetUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+            },
+            body: formBody.toString(),
+          });
+        } catch (sheetErr) {
+          console.warn("Sheet submission failed:", sheetErr);
+        }
+
+        // Send to Formspree (email notifications)
         const response = await fetch("https://formspree.io/f/mykekkgg", {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -170,10 +184,11 @@ document.addEventListener("DOMContentLoaded", () => {
           }),
         });
 
-        if (!response.ok) throw new Error("HTTP " + response.status);
+        if (!response.ok) throw new Error("Formspree HTTP " + response.status);
 
         await response.json().catch(() => {});
-        if (messageArea) messageArea.textContent = "Great return!! Now lets win the set.";
+        if (messageArea) messageArea.textContent =
+          "Great return!! Now lets win the set.";
 
         const ideas = loadIdeas();
         ideas.unshift({ title, description, createdAt: Date.now() });
@@ -192,7 +207,3 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-
-
-
-
