@@ -88,6 +88,53 @@ document.addEventListener("DOMContentLoaded", () => {
         saveIdeas(updated);
         renderIdeas();
       });
+  async function renderIdeasFromSheet() {
+    if (!ideasList) return;
+
+    ideasList.innerHTML = "<li>Loading submissions...</li>";
+
+    try {
+      const res = await fetch(`${SHEET_WEB_APP_URL}?t=${Date.now()}`);
+      const data = await res.json();
+
+      if (!data || data.success !== true) throw new Error("Bad response from sheet");
+
+      const rows = Array.isArray(data.rows) ? data.rows : [];
+
+      if (rows.length === 0) {
+        ideasList.innerHTML = "<li>No submissions yet.</li>";
+        return;
+      }
+
+      ideasList.innerHTML = "";
+
+      for (const r of rows) {
+        const li = document.createElement("li");
+
+        const ts = r["Timestamp"] ? new Date(r["Timestamp"]).toLocaleString() : "";
+        const name = r["Name"] || "";
+        const email = r["Email"] || "";
+        const title = r["Idea Title"] || "";
+        const desc = r["Idea Description"] || "";
+
+        li.innerHTML = `
+          <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
+            <div>
+              <strong>${title}</strong><br/>
+              ${desc}<br/><br/>
+              <small>${ts}${name ? " · " + name : ""}${email ? " · " + email : ""}</small>
+            </div>
+          </div>
+        `;
+
+        li.style.marginBottom = "12px";
+        ideasList.appendChild(li);
+      }
+    } catch (err) {
+      console.error(err);
+      ideasList.innerHTML = "<li>Could not load submissions from Google Sheet.</li>";
+    }
+  }
 
       li.style.marginBottom = "12px";
       ideasList.appendChild(li);
@@ -209,4 +256,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
 
