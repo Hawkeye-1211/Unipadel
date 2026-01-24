@@ -4,9 +4,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_SESSION_KEY = "Unipadel_admin_session";
   const LAST_SUBMIT_KEY = "Unipadel_last_submit_ts";
 
-  // ✅ NEW Apps Script Web App URL (tab-name-proof)
+  // ✅ NEW Apps Script Web App URL (supports archive/delete actions)
   const SHEET_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbx9bMvmKiGRo-x_rcVpVuETZv0V7tiN2y6-8ezfUgLBYeOHhEN212OS-Zd36pieJ16ENw/exec";
+    "https://script.google.com/macros/s/AKfycbyEnYsHQgfJbkbEFLIhjwUI_IOiy57-jBkR-d2N0beSBr_K5VzzHkY-L-H4xUsnctlEKA/exec";
 
   // ---- ADMIN MODE ----
   const params = new URLSearchParams(window.location.search);
@@ -45,6 +45,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const onIdeasPage = !!(form || ownerSection || ideasList);
   if (!onIdeasPage) return;
 
+  // ---- ADMIN HELPERS ----
+  async function postAdminAction(action, id) {
+    const body = new URLSearchParams({ action, id });
+
+    // mode:"no-cors" sends reliably; we won't read the response body
+    await fetch(SHEET_WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    });
+  }
+
   // ---- ADMIN VIEW ----
   async function renderIdeasFromSheet() {
     if (!ideasList) return;
@@ -59,35 +72,89 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const rows = Array.isArray(data.rows) ? data.rows : [];
 
-      if (rows.length === 0) {
-        ideasList.innerHTML = "<li>No submissions yet.</li>";
+      // Show ONLY ACTIVE (so archived items disappear from the webpage)
+      const activeRows = rows.filter((r) => String(r["Status"] || "").trim() === "ACTIVE");
+
+      if (activeRows.length === 0) {
+        ideasList.innerHTML = "<li>No ACTIVE submissions.</li>";
         return;
       }
 
       ideasList.innerHTML = "";
 
-      for (const r of rows) {
+      for (const r of activeRows) {
         const li = document.createElement("li");
+        li.style.marginBottom = "12px";
 
-        const ts = r["Timestamp"] ? new Date(r["Timestamp"]).toLocaleString() : "";
+        const tsIso = r["Timestamp"] || ""; // this is the id we use
+        const tsNice = tsIso ? new Date(tsIso).toLocaleString() : "";
         const name = r["Name"] || "";
         const email = r["Email"] || "";
         const title = r["Idea Title"] || "";
         const desc = r["Idea Description"] || "";
-        const status = r["Status"] || "";
 
         li.innerHTML = `
           <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
-            <div>
+            <div style="flex:1;">
               <strong>${title}</strong><br/>
               ${desc}<br/><br/>
-              <small>${ts}${name ? " · " + name : ""}${email ? " · " + email : ""}</small>
-              ${status ? `<div style="margin-top:6px; font-size:12px;">Status: <strong>${status}</strong></div>` : ""}
+              <small>${tsNice}${name ? " · " + name : ""}${email ? " · " + email : ""}</small>
+              <div style="margin-top:6px; font-size:12px;">
+                Status: <strong>ACTIVE</strong>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+              <button type="button" data-action="archive" data-id="${tsIso}" style="padding:8px 12px; font-size:14px;">
+                Archive
+              </button>
+              <button type="button" data-action="delete" data-id="${tsIso}" style="padding:8px 12px; font-size:14px;">
+                Delete
+              </button>
             </div>
           </div>
         `;
 
-        li.style.marginBottom = "12px";
+        const archiveBtn = li.querySelector('button[data-action="archive"]');
+        const deleteBtn = li.querySelector('button[data-action="delete"]');
+
+        archiveBtn.addEventListener("click", async () => {
+          const ok = window.confirm("Archive this idea? (Removes from the website list, keeps it in the sheet.)");
+          if (!ok) return;
+
+          archiveBtn.disabled = true;
+          deleteBtn.disabled = true;
+
+          try {
+            await postAdminAction("archive", tsIso);
+            // Re-render (it will disappear because now it's ARCHIVED)
+            await renderIdeasFromSheet();
+          } catch (err) {
+            console.error(err);
+            alert("Archive failed. Please try again.");
+            archiveBtn.disabled = false;
+            deleteBtn.disabled = false;
+          }
+        });
+
+        deleteBtn.addEventListener("click", async () => {
+          const ok = window.confirm("Delete this idea from BOTH the website and the Google Sheet? This cannot be undone.");
+          if (!ok) return;
+
+          archiveBtn.disabled = true;
+          deleteBtn.disabled = true;
+
+          try {
+            await postAdminAction("delete", tsIso);
+            await renderIdeasFromSheet();
+          } catch (err) {
+            console.error(err);
+            alert("Delete failed. Please try again.");
+            archiveBtn.disabled = false;
+            deleteBtn.disabled = false;
+          }
+        });
+
         ideasList.appendChild(li);
       }
     } catch (err) {
@@ -150,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (messageArea) messageArea.textContent = "Submitting...";
 
     try {
-      // 1) Google Sheet (force-send; we don't need to read response)
+      // 1) Google Sheet
       const body = new URLSearchParams({
         name: userName,
         email: userEmail,
