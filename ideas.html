@@ -70,6 +70,18 @@
   </div>
 
   <!-- IMPORTANT: absolute path + cache-bust -->
-  <script src="/app.js?v=20260124-3"></script>
+  <script>
+  // Mobile diagnostic: show whether app.js is loading at all
+  const _ideasList = document.getElementById("ideasList");
+  if (_ideasList) _ideasList.innerHTML = "<li>Loading script...</li>";
+</script>
+
+<script
+  src="/app.js?v=20260124-4"
+  defer
+  onerror="document.getElementById('ideasList').innerHTML='<li>Failed to load app.js</li>'"
+></script>
+
 </body>
 </html>
+
