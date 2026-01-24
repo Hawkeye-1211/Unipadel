@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Google Apps Script Web App (v2) - READ + WRITE
   const SHEET_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbzVpIOKLpHdTzh37GBOoSlAQ1ymOyCJtVrceyaOQ0O4wjA_UiF3ogwLtdCWrsS7ujBvwQ/exec";
+    "https://script.google.com/macros/s/AKfycbyUsvLbrR6YSU4rvzFlz4XYB3atFa3rjmy67h4R_vO04tXizMCBP1-9cf8qbsTmSQMC/exec";
 
   const params = new URLSearchParams(window.location.search);
   const urlAdminKey = params.get("admin");
@@ -229,6 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       try {
         // 1) Send to Google Sheet (non-blocking)
+        // IMPORTANT: mode:"no-cors" forces the POST to actually be sent even if the browser won't let us read the response.
         try {
           const formBody = new URLSearchParams();
           formBody.append("name", userName);
@@ -238,9 +239,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
           await fetch(SHEET_WEB_APP_URL, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-            },
+            mode: "no-cors",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: formBody.toString(),
           });
         } catch (sheetErr) {
@@ -283,7 +283,3 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-
-
-
-
