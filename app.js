@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const STORAGE_KEY = "Unipadel_ideas";
   const ADMIN_SESSION_KEY = "Unipadel_admin_session";
   const LAST_SUBMIT_KEY = "Unipadel_last_submit_ts";
+  const SHEET_WEB_APP_URL =
+    "https://script.google.com/macros/s/AKfycbxFbz0AzSi5XhZjlxLX_tZHmNUjXtYP-GQg2EbHUi2Kd8e7IQWD7BARs3ovfq_2cQBLwQ/exec";
 
   const params = new URLSearchParams(window.location.search);
   const urlAdminKey = params.get("admin");
@@ -207,3 +209,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
