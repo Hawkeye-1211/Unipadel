@@ -17,15 +17,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Start/continue admin session if correct key is present in URL
   if (urlAdminKey === ADMIN_KEY) {
-  sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
+    sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
 
-  // Clean the URL so reloads don't lose admin during dev
-  if (window.history && window.history.replaceState) {
-    const cleanUrl = window.location.pathname;
-    window.history.replaceState({}, document.title, cleanUrl);
+    // Clean the URL so reloads don't lose admin during dev
+    if (window.history && window.history.replaceState) {
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
   }
-}
-
 
   const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
 
@@ -196,8 +195,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Spam: too fast
       if (Date.now() - pageLoadedAt < 2500) {
-        if (messageArea) messageArea.textContent =
-          "Please take a moment, then submit again.";
+        if (messageArea)
+          messageArea.textContent = "Please take a moment, then submit again.";
         return;
       }
 
@@ -214,7 +213,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const userName = document.getElementById("userName")?.value.trim() || "";
       const userEmail = document.getElementById("userEmail")?.value.trim() || "";
       const title = document.getElementById("ideaTitle")?.value.trim() || "";
-      const description = document.getElementById("ideaDescription")?.value.trim() || "";
+      const description =
+        document.getElementById("ideaDescription")?.value.trim() || "";
 
       if (!userName || !userEmail || !title || !description) {
         if (messageArea) messageArea.textContent = "Please fill out all fields.";
@@ -238,7 +238,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
           await fetch(SHEET_WEB_APP_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+            },
             body: formBody.toString(),
           });
         } catch (sheetErr) {
@@ -260,7 +262,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!response.ok) throw new Error("Formspree HTTP " + response.status);
 
         await response.json().catch(() => {});
-        if (messageArea) messageArea.textContent = "Great return!! Now lets win the set.";
+        if (messageArea)
+          messageArea.textContent = "Great return!! Now lets win the set.";
 
         // Keep local cache (optional)
         const ideas = loadIdeas();
