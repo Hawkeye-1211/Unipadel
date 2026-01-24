@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Google Apps Script Web App (v2) - READ + WRITE
   const SHEET_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbxFbz0AzSi5XhZjlxLX_tZHmNUjXtYP-GQg2EbHUi2Kd8e7IQWD7BARs3ovfq_2cQBLwQ/exec";
+    "https://script.google.com/macros/s/AKfycbznwRan1fwR_yEa9Tu81Zjbw5jXo63DU3NzhDdCsUCEBwfpSelXAgb7rqcL8blTlbSRfg/exec";
 
   const params = new URLSearchParams(window.location.search);
   const urlAdminKey = params.get("admin");
@@ -283,3 +283,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
