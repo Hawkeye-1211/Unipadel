@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_SESSION_KEY = "Unipadel_admin_session";
 
   const SHEET_WEB_APP_URL =
-    "PASTE_NEW_EXEC_URL_HERE";
+    "https://script.google.com/macros/s/AKfycbzQAkf68qpJl-tzBuJtergiuH4yDCJIr_TFZb2TqOikxntD3PEUD-iYLcxpqovDc9V2/exec";
 
   // --- Admin login ---
   const params = new URLSearchParams(window.location.search);
@@ -64,3 +64,4 @@ document.addEventListener("DOMContentLoaded", () => {
     loadIdeas();
   }
 });
+
