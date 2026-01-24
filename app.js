@@ -127,6 +127,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (messageArea) messageArea.textContent = "Submission blocked.";
         return;
       }
+      // Spam protection: block submissions that happen too fast (likely bots)
+      if (Date.now() - pageLoadedAt < 2500) {
+        if (messageArea) messageArea.textContent = "Please take a moment, then submit again.";
+        return;
+      }
 
       const userName = document.getElementById("userName")?.value.trim() || "";
       const userEmail = document.getElementById("userEmail")?.value.trim() || "";
@@ -178,5 +183,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
 
 
