@@ -38,6 +38,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const messageArea = document.getElementById("messageArea");
   const ownerSection = document.querySelector(".owner-only");
   const ideasList = document.getElementById("ideasList");
+  // Spam protection: time-to-submit baseline
+  const pageLoadedAt = Date.now();
+
+  // Set hidden timestamp field if it exists (ideas.html)
+  const tsField = document.getElementById("submissionTs");
+  if (tsField) tsField.value = String(pageLoadedAt);
 
   // If we’re not on ideas.html (no form, no list), stop here after nav handling
   // This is important so index.html doesn't throw errors.
@@ -172,4 +178,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
 
