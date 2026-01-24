@@ -10,16 +10,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Google Apps Script Web App (v2) - READ + WRITE
   const SHEET_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbxFbz0AzSi5XhZjlxLX_tZHmNUjXtYP-GQg2EbHUi2Kd8e7IQWD7BARs3ovfq_2cQBLwQ/exec
-";
+    "https://script.google.com/macros/s/AKfycbxFbz0AzSi5XhZjlxLX_tZHmNUjXtYP-GQg2EbHUi2Kd8e7IQWD7BARs3ovfq_2cQBLwQ/exec";
 
   const params = new URLSearchParams(window.location.search);
   const urlAdminKey = params.get("admin");
 
   // Start/continue admin session if correct key is present in URL
   if (urlAdminKey === ADMIN_KEY) {
-    sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
+  sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
+
+  // Clean the URL so reloads don't lose admin during dev
+  if (window.history && window.history.replaceState) {
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
   }
+}
+
 
   const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
 
@@ -43,6 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const messageArea = document.getElementById("messageArea");
   const ownerSection = document.querySelector(".owner-only");
   const ideasList = document.getElementById("ideasList");
+
   // DEBUG (temporary): show JS errors on the page (helps mobile debugging)
   window.addEventListener("error", (e) => {
     if (ideasList) {
@@ -189,15 +196,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Spam: too fast
       if (Date.now() - pageLoadedAt < 2500) {
-        if (messageArea) messageArea.textContent = "Please take a moment, then submit again.";
+        if (messageArea) messageArea.textContent =
+          "Please take a moment, then submit again.";
         return;
       }
 
       // Spam: rate limit 30s
       const lastSubmit = Number(localStorage.getItem(LAST_SUBMIT_KEY) || "0");
       if (lastSubmit && Date.now() - lastSubmit < 30000) {
-        if (messageArea) messageArea.textContent =
-          "You're submitting too quickly. Please wait a moment and try again.";
+        if (messageArea)
+          messageArea.textContent =
+            "You're submitting too quickly. Please wait a moment and try again.";
         return;
       }
       localStorage.setItem(LAST_SUBMIT_KEY, String(Date.now()));
@@ -271,5 +280,3 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-
-
