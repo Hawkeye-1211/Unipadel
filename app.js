@@ -4,9 +4,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_SESSION_KEY = "Unipadel_admin_session";
   const LAST_SUBMIT_KEY = "Unipadel_last_submit_ts";
 
-  // ✅ NEW Apps Script Web App URL (supports archive/delete actions)
+  // ✅ Apps Script Web App URL (must return JSON { success:true, rows:[...] } on GET)
   const SHEET_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbwKyjwHmVcpl0advXxEULq_cYMwV1a3cXSlsOEPTdjzpBhhdHPF6YpIlxlhlntcqog5oQ/exec";
+    "https://script.google.com/macros/s/AKfycbx9bMvmKiGRo-x_rcVpVuETZv0V7tiN2y6-8ezfUgLBYeOHhEN212OS-Zd36pieJ16ENw/exec";
 
   // ---- ADMIN MODE ----
   const params = new URLSearchParams(window.location.search);
@@ -49,7 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
   async function postAdminAction(action, id) {
     const body = new URLSearchParams({ action, id });
 
-    // mode:"no-cors" sends reliably; we won't read the response body
     await fetch(SHEET_WEB_APP_URL, {
       method: "POST",
       mode: "no-cors",
@@ -68,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(`${SHEET_WEB_APP_URL}?t=${Date.now()}`);
       const data = await res.json();
 
-      if (!data || data.success !== true) throw new Error("Bad response");
+      if (!data || data.success !== true) throw new Error("Bad response from web app");
 
       const rows = Array.isArray(data.rows) ? data.rows : [];
 
@@ -86,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const li = document.createElement("li");
         li.style.marginBottom = "12px";
 
-        const tsIso = r["Timestamp"] || ""; // this is the id we use
+        const tsIso = r["Timestamp"] || ""; // id we use for actions
         const tsNice = tsIso ? new Date(tsIso).toLocaleString() : "";
         const name = r["Name"] || "";
         const email = r["Email"] || "";
@@ -119,7 +118,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const deleteBtn = li.querySelector('button[data-action="delete"]');
 
         archiveBtn.addEventListener("click", async () => {
-          const ok = window.confirm("Archive this idea? (Removes from the website list, keeps it in the sheet.)");
+          const ok = window.confirm(
+            "Archive this idea? (Removes from the website list, keeps it in the sheet.)"
+          );
           if (!ok) return;
 
           archiveBtn.disabled = true;
@@ -127,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
           try {
             await postAdminAction("archive", tsIso);
-            // Re-render (it will disappear because now it's ARCHIVED)
             await renderIdeasFromSheet();
           } catch (err) {
             console.error(err);
@@ -138,7 +138,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         deleteBtn.addEventListener("click", async () => {
-          const ok = window.confirm("Delete this idea from BOTH the website and the Google Sheet? This cannot be undone.");
+          const ok = window.confirm(
+            "Delete this idea from BOTH the website and the Google Sheet? This cannot be undone."
+          );
           if (!ok) return;
 
           archiveBtn.disabled = true;
@@ -159,7 +161,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (err) {
       console.error(err);
-      ideasList.innerHTML = "<li>Failed to load submissions from Google Sheet.</li>";
+      ideasList.innerHTML =
+        "<li>Failed to load submissions from Google Sheet.</li>";
     }
   }
 
@@ -254,4 +257,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
