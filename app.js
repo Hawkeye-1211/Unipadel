@@ -40,6 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const ideasList = document.getElementById("ideasList");
   // Spam protection: time-to-submit baseline
   const pageLoadedAt = Date.now();
+  // Spam protection: simple per-browser rate limit
+  const LAST_SUBMIT_KEY = "Unipadel_last_submit_ts";
 
   // Set hidden timestamp field if it exists (ideas.html)
   const tsField = document.getElementById("submissionTs");
@@ -132,6 +134,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (messageArea) messageArea.textContent = "Please take a moment, then submit again.";
         return;
       }
+  // Spam protection: rate limit (30 seconds between submits per browser)
+  const lastSubmit = Number(localStorage.getItem(LAST_SUBMIT_KEY) || "0");
+  if (lastSubmit && Date.now() - lastSubmit < 30000) {
+    if (messageArea) messageArea.textContent = "You're submitting too quickly. Please wait a moment and try again.";
+    return;
+  }
+  localStorage.setItem(LAST_SUBMIT_KEY, String(Date.now()));
 
       const userName = document.getElementById("userName")?.value.trim() || "";
       const userEmail = document.getElementById("userEmail")?.value.trim() || "";
@@ -183,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
 
 
 
