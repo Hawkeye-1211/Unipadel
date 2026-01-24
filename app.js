@@ -7,18 +7,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const STORAGE_KEY = "Unipadel_ideas";
   const ADMIN_SESSION_KEY = "Unipadel_admin_session";
   const LAST_SUBMIT_KEY = "Unipadel_last_submit_ts";
+
+  // Google Apps Script Web App (v2) - READ + WRITE
   const SHEET_WEB_APP_URL =
     "https://script.google.com/macros/s/AKfycbxFbz0AzSi5XhZjlxLX_tZHmNUjXtYP-GQg2EbHUi2Kd8e7IQWD7BARs3ovfq_2cQBLwQ/exec";
 
   const params = new URLSearchParams(window.location.search);
   const urlAdminKey = params.get("admin");
 
+  // Start/continue admin session if correct key is present in URL
   if (urlAdminKey === ADMIN_KEY) {
     sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
   }
 
   const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
 
+  // Navbar links
   const adminNavLink = document.getElementById("adminNavLink");
   const exitAdminLink = document.getElementById("exitAdminLink");
 
@@ -33,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Page elements (ideas.html)
   const form = document.getElementById("ideaForm");
   const messageArea = document.getElementById("messageArea");
   const ownerSection = document.querySelector(".owner-only");
@@ -41,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const onIdeasPage = !!(form || ownerSection || ideasList);
   if (!onIdeasPage) return;
 
+  // Spam protection: time-to-submit baseline
   const pageLoadedAt = Date.now();
 
   function loadIdeas() {
@@ -56,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ideas));
   }
 
+  // Kept for stability (local cache). Not used for admin sheet view.
   function renderIdeas() {
     if (!ideasList) return;
 
@@ -88,6 +95,13 @@ document.addEventListener("DOMContentLoaded", () => {
         saveIdeas(updated);
         renderIdeas();
       });
+
+      li.style.marginBottom = "12px";
+      ideasList.appendChild(li);
+    }
+  }
+
+  // Admin view: render from Google Sheet (works on any device)
   async function renderIdeasFromSheet() {
     if (!ideasList) return;
 
@@ -136,17 +150,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-      li.style.marginBottom = "12px";
-      ideasList.appendChild(li);
-    }
-  }
-
+  // MODE SWITCHING
   if (isAdminMode) {
+    // Admin: show list, hide form
     if (form) form.style.display = "none";
     if (messageArea) messageArea.style.display = "none";
     if (ownerSection) ownerSection.style.display = "block";
-    renderIdeas();
+
+    // IMPORTANT: Admin reads from Google Sheet (not local)
+    renderIdeasFromSheet();
   } else {
+    // Public: hide list, show form
     if (ownerSection) ownerSection.style.display = "none";
     if (form) form.style.display = "block";
     if (messageArea) messageArea.style.display = "block";
@@ -159,21 +173,20 @@ document.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
-      // Honeypot spam check
+      // Spam: honeypot
       const gotcha = document.getElementById("website");
       if (gotcha && gotcha.value.trim() !== "") {
         if (messageArea) messageArea.textContent = "Submission blocked.";
         return;
       }
 
-      // Too-fast submit check
+      // Spam: too fast
       if (Date.now() - pageLoadedAt < 2500) {
-        if (messageArea) messageArea.textContent =
-          "Please take a moment, then submit again.";
+        if (messageArea) messageArea.textContent = "Please take a moment, then submit again.";
         return;
       }
 
-      // Rate limit (30s)
+      // Spam: rate limit 30s
       const lastSubmit = Number(localStorage.getItem(LAST_SUBMIT_KEY) || "0");
       if (lastSubmit && Date.now() - lastSubmit < 30000) {
         if (messageArea) messageArea.textContent =
@@ -199,10 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
-        const sheetUrl =
-          "https://script.google.com/macros/s/AKfycbza1at9k9rnVXa-4GkV5CzUUK-loch6E_oS2AEvhR2AdK37ZZ_zx4V4e9irLMlJ6bVj/exec";
-
-        // Send to Google Sheet (non-blocking)
+        // 1) Send to Google Sheet (non-blocking)
         try {
           const formBody = new URLSearchParams();
           formBody.append("name", userName);
@@ -210,18 +220,16 @@ document.addEventListener("DOMContentLoaded", () => {
           formBody.append("ideaTitle", title);
           formBody.append("ideaDescription", description);
 
-          await fetch(sheetUrl, {
+          await fetch(SHEET_WEB_APP_URL, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-            },
+            headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
             body: formBody.toString(),
           });
         } catch (sheetErr) {
           console.warn("Sheet submission failed:", sheetErr);
         }
 
-        // Send to Formspree (email notifications)
+        // 2) Send to Formspree (emails)
         const response = await fetch("https://formspree.io/f/mykekkgg", {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -236,9 +244,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!response.ok) throw new Error("Formspree HTTP " + response.status);
 
         await response.json().catch(() => {});
-        if (messageArea) messageArea.textContent =
-          "Great return!! Now lets win the set.";
+        if (messageArea) messageArea.textContent = "Great return!! Now lets win the set.";
 
+        // Keep local cache (optional)
         const ideas = loadIdeas();
         ideas.unshift({ title, description, createdAt: Date.now() });
         saveIdeas(ideas);
@@ -256,5 +264,3 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-
-
