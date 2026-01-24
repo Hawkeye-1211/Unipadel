@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ✅ NEW Apps Script Web App URL (supports archive/delete actions)
   const SHEET_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbyEnYsHQgfJbkbEFLIhjwUI_IOiy57-jBkR-d2N0beSBr_K5VzzHkY-L-H4xUsnctlEKA/exec";
+    "https://script.google.com/macros/s/AKfycbwKyjwHmVcpl0advXxEULq_cYMwV1a3cXSlsOEPTdjzpBhhdHPF6YpIlxlhlntcqog5oQ/exec";
 
   // ---- ADMIN MODE ----
   const params = new URLSearchParams(window.location.search);
@@ -254,3 +254,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
