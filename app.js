@@ -42,6 +42,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const messageArea = document.getElementById("messageArea");
   const ownerSection = document.querySelector(".owner-only");
   const ideasList = document.getElementById("ideasList");
+  // DEBUG (temporary): show JS errors on the page (helps mobile debugging)
+  window.addEventListener("error", (e) => {
+    if (ideasList) {
+      ideasList.innerHTML = `<li style="white-space:pre-wrap;">JS error: ${e.message}</li>`;
+    }
+  });
 
   const onIdeasPage = !!(form || ownerSection || ideasList);
   if (!onIdeasPage) return;
@@ -264,3 +270,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
