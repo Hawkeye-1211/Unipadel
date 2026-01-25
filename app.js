@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const userNameEl = document.getElementById("userName");
   const userEmailEl = document.getElementById("userEmail");
-  const ideaSourceEl = document.getElementById("ideaSource"); // ✅ NEW
+  const ideaSourceEl = document.getElementById("ideaSource"); // ✅ dropdown from ideas.html
   const ideaTitleEl = document.getElementById("ideaTitle");
   const ideaDescriptionEl = document.getElementById("ideaDescription");
 
@@ -229,11 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
           downBtn.style.border = "1px solid rgba(182,230,0,.35)";
         }
 
-        // Vote logic:
-        // - allow one active vote per idea per device (up OR down OR none)
-        // - clicking same vote again removes it (delta reverses)
         async function handleVote(dir) {
-          // prevent vote spam clicking
           upBtn.disabled = true;
           downBtn.disabled = true;
 
@@ -244,15 +240,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (dir === "up") {
               if (cur.up) {
-                // remove upvote
                 netDelta = -1;
                 nextState = "";
               } else if (cur.down) {
-                // switch down -> up
                 netDelta = 2;
                 nextState = "up";
               } else {
-                // add upvote
                 netDelta = 1;
                 nextState = "up";
               }
@@ -260,15 +253,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (dir === "down") {
               if (cur.down) {
-                // remove downvote
                 netDelta = 1;
                 nextState = "";
               } else if (cur.up) {
-                // switch up -> down
                 netDelta = -2;
                 nextState = "down";
               } else {
-                // add downvote
                 netDelta = -1;
                 nextState = "down";
               }
@@ -276,23 +266,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (netDelta === 0) return;
 
-            // optimistic UI
             const newScore = (Number(scoreEl.textContent.replace("Score:", "").trim()) || score) + netDelta;
             scoreEl.textContent = `Score: ${newScore}`;
 
-            // save local vote state immediately
             setVoteState(tsIso, nextState);
 
-            // send to backend
             await postVote(tsIso, netDelta > 0 ? 1 : -1);
-            // If netDelta is +/-2 we must send twice (because backend accepts +1/-1 only)
             if (netDelta === 2) {
               await postVote(tsIso, 1);
             } else if (netDelta === -2) {
               await postVote(tsIso, -1);
             }
 
-            // Re-render after a short delay to resort by new score
             setTimeout(() => {
               renderPublicIdeasFromSheet();
             }, 600);
@@ -498,11 +483,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const userName = userNameEl?.value.trim() || "";
     const userEmail = userEmailEl?.value.trim() || "";
-    const source = ideaSourceEl?.value.trim() || ""; // ✅ NEW
+    const sourceVal = ideaSourceEl?.value.trim() || "";
     const title = ideaTitleEl?.value.trim() || "";
     const description = ideaDescriptionEl?.value.trim() || "";
 
-    if (!userName || !userEmail || !source || !title || !description) {
+    if (!userName || !userEmail || !sourceVal || !title || !description) {
       if (messageArea) messageArea.textContent = "Please fill out all fields.";
       return;
     }
@@ -515,12 +500,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       // 1) Google Sheet
+      // ✅ Send under multiple keys to match whatever your Apps Script expects
       const body = new URLSearchParams({
         name: userName,
         email: userEmail,
         ideaTitle: title,
         ideaDescription: description,
-        source, // ✅ NEW (maps to Sheet "Source" column)
+
+        // try all likely parameter names
+        source: sourceVal,
+        ideaSource: sourceVal,
+        Source: sourceVal,
       });
 
       await fetch(SHEET_WEB_APP_URL, {
@@ -539,7 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
           email: userEmail,
           ideaTitle: title,
           ideaDescription: description,
-          source, // ✅ NEW
+          source: sourceVal,
         }),
       });
 
