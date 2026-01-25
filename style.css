@@ -8,13 +8,13 @@ body {
 
 /* ===== Navbar (logo bottom-left, tabs right) ===== */
 .navbar {
-  position: relative;              /* needed for absolute-positioned logo */
+  position: relative;
   display: flex;
-  justify-content: flex-end;       /* tabs stay on the right */
-  align-items: flex-end;           /* tabs sit on the bottom */
+  justify-content: flex-end;
+  align-items: flex-end;
   padding: 12px 24px;
   background: #0f172a;
-  min-height: 110px;               /* normal nav height; logo won't force height */
+  min-height: 110px;
   box-sizing: border-box;
 }
 
@@ -24,18 +24,18 @@ body {
   font-weight: 600;
 }
 
-/* Logo pinned to bottom-left and DOES NOT affect tab layout */
+/* Logo pinned to bottom-left */
 .navbar .logo {
   position: absolute;
   left: 24px;
-  bottom: 8px;                     /* tweak this if you want it lower/higher */
+  bottom: -14px;   /* 🔧 LOWERED from 8px → -14px */
   display: block;
   line-height: 0;
 }
 
 /* Logo size */
 .navbar .nav-logo {
-  height: 170px;                   /* your chosen size */
+  height: 170px;
   width: auto;
   display: block;
 }
@@ -56,7 +56,7 @@ body {
   opacity: 1;
 }
 
-/* ===== Card / Container (silver metallic) ===== */
+/* ===== Card / Container ===== */
 .container {
   max-width: 600px;
   margin: 60px auto;
@@ -78,24 +78,18 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
 
   border-top: 4px solid #d4af37;
-  isolation: isolate;
 }
 
-/* ===== Title (gold metallic text only) ===== */
+/* ===== Title ===== */
 h1 {
   font-size: 2.4rem;
   margin: 0 0 10px;
   font-weight: 700;
-  letter-spacing: 0.5px;
-
-  color: #d4af37;
 
   background: linear-gradient(180deg, #fff3b0, #d4af37, #9a7b1f);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-
-  display: inline-block;
 }
 
 /* ===== Text ===== */
@@ -127,15 +121,10 @@ button {
   padding: 12px 18px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 16px;
 }
 
 button:hover {
   background-color: #111827;
-}
-
-.admin-active {
-  color: #f9fafb;
 }
 
 /* ===== Message ===== */
@@ -144,31 +133,35 @@ button:hover {
   font-weight: bold;
 }
 
-/* ===== Admin-only history ===== */
+/* ===== Admin-only ===== */
 .owner-only {
   display: none;
-  color: #1f2937;
-}
-
-.owner-only li {
-  color: #1f2937;
-  margin-bottom: 12px;
-}
-
-.owner-only li strong {
-  color: #1f2937;
 }
 
 /* ===== Mobile tweaks ===== */
 @media (max-width: 600px) {
-  body {
-    font-size: 16px;
+  .navbar {
+    padding: 10px 14px;
+    min-height: 90px;
+  }
+
+  .navbar .logo {
+    left: 14px;
+    bottom: -10px;
+  }
+
+  .navbar .nav-logo {
+    height: 120px;
+  }
+
+  .nav-links a {
+    font-size: 14px;
   }
 
   .container {
-    width: calc(100% - 20px);
-    margin: 14px auto;
-    padding: 10px;
+    width: calc(100% - 32px);
+    margin: 16px auto;
+    padding: 18px;
   }
 
   h1 {
@@ -183,55 +176,5 @@ button:hover {
 
   button {
     width: 100%;
-    padding: 14px 18px;
-    font-size: 16px;
-  }
-
-  .navbar {
-    padding: 10px 14px;
-    min-height: 90px;
-  }
-
-  .navbar .logo {
-    left: 14px;
-    bottom: 6px;
-  }
-
-  .navbar .nav-logo {
-    height: 120px;
-  }
-
-  .nav-links {
-    gap: 12px;
-    padding-bottom: 6px;
-  }
-
-  .nav-links a {
-    font-size: 14px;
-  }
-}
-
-/* --- Mobile fix: keep container inside screen --- */
-@media (max-width: 640px) {
-  .container {
-    width: calc(100% - 24px);
-    max-width: none;
-    margin: 20px auto;
-    padding: 20px;
-    box-sizing: border-box;
-  }
-}
-
-/* --- Mobile spacing fix: add real side gutters --- */
-@media (max-width: 640px) {
-  .container {
-    width: 100%;
-    max-width: none;
-    margin: 16px auto;
-    padding: 18px;
-    box-sizing: border-box;
-
-    margin-left: 16px;
-    margin-right: 16px;
   }
 }
