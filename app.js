@@ -54,6 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const userNameEl = document.getElementById("userName");
   const userEmailEl = document.getElementById("userEmail");
+  const ideaSourceEl = document.getElementById("ideaSource"); // ✅ NEW
   const ideaTitleEl = document.getElementById("ideaTitle");
   const ideaDescriptionEl = document.getElementById("ideaDescription");
 
@@ -497,10 +498,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const userName = userNameEl?.value.trim() || "";
     const userEmail = userEmailEl?.value.trim() || "";
+    const source = ideaSourceEl?.value.trim() || ""; // ✅ NEW
     const title = ideaTitleEl?.value.trim() || "";
     const description = ideaDescriptionEl?.value.trim() || "";
 
-    if (!userName || !userEmail || !title || !description) {
+    if (!userName || !userEmail || !source || !title || !description) {
       if (messageArea) messageArea.textContent = "Please fill out all fields.";
       return;
     }
@@ -518,6 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
         email: userEmail,
         ideaTitle: title,
         ideaDescription: description,
+        source, // ✅ NEW (maps to Sheet "Source" column)
       });
 
       await fetch(SHEET_WEB_APP_URL, {
@@ -536,6 +539,7 @@ document.addEventListener("DOMContentLoaded", () => {
           email: userEmail,
           ideaTitle: title,
           ideaDescription: description,
+          source, // ✅ NEW
         }),
       });
 
