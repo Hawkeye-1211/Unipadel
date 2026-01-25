@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Local vote key namespace (per-device voting guard)
   const VOTE_KEY_PREFIX = "Unipadel_vote_";
 
-  // ✅ Web App URL
+  // ✅ Live Web App URL (your current deployment)
   const SHEET_WEB_APP_URL =
     "https://script.google.com/macros/s/AKfycbx_SbZlBKAPFOyAb_mbllCytQEKTpzn-bafaZ7RloDTXsRLmsXB9Bngjp_Dv_h-I2tGHA/exec";
 
@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ Admin triage update (no new rows)
+  // Admin triage update (no new rows)
   async function postTriage(id, category, priority, notes) {
     if (!id || typeof id !== "string" || id.trim() === "") {
       throw new Error("Missing Timestamp id.");
@@ -436,6 +436,46 @@ document.addEventListener("DOMContentLoaded", () => {
         const notesEl = li.querySelector('textarea[data-triage="notes"]');
         const savedEl = li.querySelector('span[data-triage="saved"]');
 
+        // --- triage "dirty" (unsaved changes) detection ---
+        const initial = {
+          category: existingCategory,
+          priority: existingPriority,
+          notes: existingNotes,
+        };
+
+        function setSaveBtnDirty(isDirty) {
+          if (!saveBtn) return;
+          if (isDirty) {
+            saveBtn.style.background = "linear-gradient(180deg,#D9FF4F,#B6E600 55%,#8FBF00)";
+            saveBtn.style.color = "#0B0F14";
+            saveBtn.style.boxShadow = "0 14px 30px rgba(182,230,0,.25), inset 0 2px 0 rgba(255,255,255,.25)";
+            saveBtn.style.borderRadius = "12px";
+          } else {
+            saveBtn.style.background = "#1F2937";
+            saveBtn.style.color = "#E5E7EB";
+            saveBtn.style.boxShadow = "none";
+            saveBtn.style.borderRadius = "6px";
+          }
+        }
+
+        function computeDirty() {
+          const c = categorySel ? String(categorySel.value || "").trim() : "";
+          const p = prioritySel ? String(prioritySel.value || "").trim() : "";
+          const n = notesEl ? String(notesEl.value || "") : "";
+          return c !== initial.category || p !== initial.priority || n !== initial.notes;
+        }
+
+        function onTriageChanged() {
+          setSaveBtnDirty(computeDirty());
+          if (savedEl) savedEl.textContent = "";
+        }
+
+        if (categorySel) categorySel.addEventListener("change", onTriageChanged);
+        if (prioritySel) prioritySel.addEventListener("change", onTriageChanged);
+        if (notesEl) notesEl.addEventListener("input", onTriageChanged);
+
+        setSaveBtnDirty(false);
+
         function setRowBusy(isBusy) {
           if (archiveBtn) archiveBtn.disabled = isBusy;
           if (deleteBtn) deleteBtn.disabled = isBusy;
@@ -452,8 +492,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
           try {
             await postAdminAction("archive", tsIso);
-
-            // ✅ Key fix: remove only this row from DOM (no full rerender => no scroll jump)
             li.remove();
             ensureNotEmptyMessage();
           } catch (err) {
@@ -473,8 +511,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
           try {
             await postAdminAction("delete", tsIso);
-
-            // ✅ Key fix: remove only this row from DOM (no full rerender => no scroll jump)
             li.remove();
             ensureNotEmptyMessage();
           } catch (err) {
@@ -495,6 +531,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
               await postTriage(tsIso, category, priority, notes);
+
+              // ✅ update "initial" snapshot after save
+              initial.category = String(category || "").trim();
+              initial.priority = String(priority || "").trim();
+              initial.notes = String(notes || "");
+
+              // ✅ de-highlight button after save
+              setSaveBtnDirty(false);
+
               if (savedEl) savedEl.textContent = "Saved ✓";
               setTimeout(() => {
                 if (savedEl) savedEl.textContent = "";
@@ -502,6 +547,8 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch (err) {
               console.error(err);
               alert("Save failed. Please try again.");
+              // keep dirty highlight if it failed
+              setSaveBtnDirty(true);
             } finally {
               saveBtn.disabled = false;
             }
@@ -630,4 +677,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
