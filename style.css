@@ -8,7 +8,7 @@ body {
   /* Space-black base */
   background-color: #0B0F14;
 
-  /* Premium sparkle: subtle nebula + tiny star points (no images needed) */
+  /* Premium sparkle: subtle nebula + tiny star points */
   background-image:
     radial-gradient(900px 600px at 15% 10%, rgba(47, 128, 237, 0.22), transparent 60%),
     radial-gradient(700px 500px at 85% 20%, rgba(182, 230, 0, 0.10), transparent 55%),
@@ -29,7 +29,6 @@ body {
   min-height: 110px;
   box-sizing: border-box;
 
-  /* Deep premium bar */
   background: linear-gradient(180deg, #0F1622, #0B111B);
   border-bottom: 1px solid rgba(201, 204, 210, 0.14);
   box-shadow: 0 10px 30px rgba(0,0,0,0.35);
@@ -75,7 +74,7 @@ body {
   text-shadow: 0 0 14px rgba(47, 128, 237, 0.25);
 }
 
-/* Optional: subtle indication of current page without changing layout */
+/* Subtle "current tab" glow (no layout changes) */
 body[data-page="home"] .nav-links a[href="/"],
 body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
   opacity: 1;
@@ -90,7 +89,6 @@ body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
   padding: 30px;
   border-radius: 10px;
 
-  /* Metallic plate + depth (visual only) */
   background:
     linear-gradient(135deg,
       rgba(255,255,255,0.08),
@@ -109,11 +107,11 @@ body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
   border: 1px solid rgba(201, 204, 210, 0.18);
   border-top: 4px solid #2F80ED;
 
-  position: relative; /* for shine overlay */
-  overflow: hidden;   /* contains shine */
+  position: relative;
+  overflow: hidden;
 }
 
-/* Subtle diagonal shine across the card (sparkle / metallic effect) */
+/* Metallic diagonal shine overlay */
 .container::before {
   content: "";
   position: absolute;
@@ -135,7 +133,6 @@ h1 {
   margin: 0 0 10px;
   font-weight: 700;
 
-  /* Chrome -> Blue shimmer */
   background: linear-gradient(
     90deg,
     #C9CCD2 0%,
@@ -148,7 +145,6 @@ h1 {
   background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  /* Lift */
   text-shadow:
     0 0 14px rgba(47, 128, 237, 0.25),
     0 0 1px rgba(255, 255, 255, 0.18);
@@ -174,104 +170,4 @@ textarea {
   border: 1px solid rgba(201, 204, 210, 0.25);
   border-radius: 6px;
 
-  background: rgba(15, 22, 34, 0.85);
-  color: #E5E7EB;
-
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-}
-
-input:focus,
-textarea:focus {
-  outline: none;
-  border-color: #2F80ED;
-  box-shadow:
-    0 0 0 3px rgba(47, 128, 237, 0.25),
-    inset 0 1px 0 rgba(255,255,255,0.05);
-}
-
-/* ===== Buttons (base) ===== */
-button {
-  background-color: #1F2937;
-  color: #F9FAFB;
-  border: none;
-  padding: 12px 18px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #111827;
-}
-
-/* ✅ ONLY the Serve idea button (scoped to ideas form) */
-#ideaForm button[type="submit"] {
-  background-color: #B6E600; /* padel green */
-  color: #FFFFFF;           /* white text */
-  position: relative;
-  top: 6px;                 /* floating slightly */
-
-  /* Premium glow + depth */
-  box-shadow:
-    0 10px 24px rgba(182, 230, 0, 0.22),
-    inset 0 2px 0 rgba(255,255,255,0.18);
-}
-
-#ideaForm button[type="submit"]:hover {
-  background-color: #A4D600;
-  box-shadow:
-    0 14px 30px rgba(182, 230, 0, 0.28),
-    inset 0 2px 0 rgba(255,255,255,0.20);
-}
-
-/* ===== Message ===== */
-#messageArea {
-  margin-top: 15px;
-  font-weight: bold;
-  color: #E5E7EB;
-}
-
-/* ===== Admin-only ===== */
-.owner-only {
-  display: none;
-}
-
-/* ===== Mobile tweaks ===== */
-@media (max-width: 600px) {
-  .navbar {
-    padding: 10px 14px;
-    min-height: 90px;
-  }
-
-  .navbar .logo {
-    left: 14px;
-    bottom: -10px;
-  }
-
-  .navbar .nav-logo {
-    height: 120px;
-  }
-
-  .nav-links a {
-    font-size: 14px;
-  }
-
-  .container {
-    width: calc(100% - 32px);
-    margin: 16px auto;
-    padding: 18px;
-  }
-
-  h1 {
-    font-size: 1.8rem;
-  }
-
-  input,
-  textarea {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  button {
-    width: 100%;
-  }
-}
+  background: rgba(15, 22, 34
