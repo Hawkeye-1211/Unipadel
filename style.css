@@ -28,7 +28,7 @@ body {
 .navbar .logo {
   position: absolute;
   left: 24px;
-  bottom: -45px;   /* 🔧 LOWERED from 8px → -14px */
+  bottom: -60px;   /* 🔧 LOWERED from 8px → -14px */
   display: block;
   line-height: 0;
 }
@@ -178,6 +178,7 @@ button:hover {
     width: 100%;
   }
 }
+
 
 
 
