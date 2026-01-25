@@ -4,10 +4,9 @@ body {
   margin: 0;
   padding: 0;
   color: #E5E7EB;
-
   background-color: #0B0F14;
 
-  /* Nebula glow + premium star field (balanced: more stars, not too many) */
+  /* Nebula glow + balanced star field */
   background-image:
     radial-gradient(900px 600px at 20% 10%, rgba(47,128,237,.25), transparent 60%),
     radial-gradient(700px 500px at 80% 20%, rgba(182,230,0,.12), transparent 55%),
@@ -38,10 +37,9 @@ body {
   align-items: flex-end;
   padding: 12px 24px;
   min-height: 110px;
-
   background: linear-gradient(180deg, #0F1622, #0B111B);
-  border-bottom: 1px solid rgba(201, 204, 210, 0.14);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  border-bottom: 1px solid rgba(201,204,210,.14);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 
 .navbar a {
@@ -50,44 +48,26 @@ body {
   font-weight: 600;
 }
 
-/* Logo pinned to bottom-left */
 .navbar .logo {
   position: absolute;
   left: 24px;
   bottom: -35px;
-  display: block;
-  line-height: 0;
 }
 
-/* Logo size */
 .navbar .nav-logo {
   height: 170px;
-  width: auto;
-  display: block;
 }
 
-/* Right-side links */
+/* ===== Nav Links ===== */
 .nav-links {
   display: flex;
-  align-items: flex-end;
   gap: 16px;
   padding-bottom: 8px;
 }
 
-.nav-links a { opacity: 0.9; }
-
 .nav-links a:hover {
-  opacity: 1;
   color: #2F80ED;
-  text-shadow: 0 0 14px rgba(47, 128, 237, 0.25);
-}
-
-/* Subtle current-tab glow (no layout changes) */
-body[data-page="home"] .nav-links a[href="/"],
-body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
-  opacity: 1;
-  color: #E6E8EB;
-  text-shadow: 0 0 18px rgba(47, 128, 237, 0.18);
+  text-shadow: 0 0 12px rgba(47,128,237,.25);
 }
 
 /* ===== Container ===== */
@@ -111,12 +91,10 @@ body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
     inset 0 1px 0 rgba(255,255,255,.08);
 
   border-top: 4px solid #2F80ED;
-
   position: relative;
   overflow: hidden;
 }
 
-/* Metallic diagonal shine */
 .container::before {
   content: "";
   position: absolute;
@@ -128,48 +106,43 @@ body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
     transparent 55%
   );
   transform: rotate(8deg);
-  pointer-events: none;
   opacity: 0.35;
 }
 
-/* ===== Brand Header (logo-like, with POP) ===== */
-.brand{
+/* ===== Brand Header (EXACT logo colours) ===== */
+.brand {
   font-size: 2.4rem;
   margin: 0 0 10px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.05;
-  letter-spacing: 0.2px;
 }
 
-/* Metallic "Uni" — brighter + specular band + depth */
-.brand-uni{
+/* Uni — polished silver from logo */
+.brand-uni {
   background: linear-gradient(
     180deg,
     #FFFFFF 0%,
-    #FAFBFC 14%,
-    #D7DBDF 32%,
-    #FFFFFF 48%,
-    #C4C9CE 64%,
-    #9FA5AA 100%
+    #F2F3F4 22%,
+    #C9CCD1 45%,
+    #FFFFFF 62%,
+    #B6BBC1 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 
   text-shadow:
-    0 1.5px 0 rgba(0,0,0,0.45),
-    0 -1px 0 rgba(255,255,255,0.85),
-    0 0 6px rgba(255,255,255,0.25);
+    0 1px 0 rgba(0,0,0,0.35),
+    0 -1px 0 rgba(255,255,255,0.65);
 }
 
-/* Blue "Padel" — vibrant top highlight + deeper base */
-.brand-padel{
+/* Padel — electric logo blue */
+.brand-padel {
   background: linear-gradient(
     180deg,
-    #B8DBF4 0%,
-    #7FBDE6 30%,
-    #4A9BD3 52%,
-    #337BAB 72%,
+    #9FD0F0 0%,
+    #5FA9DA 35%,
+    #2F80ED 65%,
     #2C4D6A 100%
   );
   -webkit-background-clip: text;
@@ -177,17 +150,12 @@ body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
   color: transparent;
 
   text-shadow:
-    0 1.5px 0 rgba(0,0,0,0.45),
-    0 0 10px rgba(79,156,211,0.35);
+    0 1px 0 rgba(0,0,0,0.35);
 }
 
 /* ===== Text ===== */
 p { color: #D1D5DB; }
-
-label {
-  font-weight: 600;
-  color: #E5E7EB;
-}
+label { font-weight: 600; color: #E5E7EB; }
 
 /* ===== Inputs ===== */
 input,
@@ -196,7 +164,6 @@ textarea {
   padding: 10px;
   margin-top: 6px;
   border-radius: 6px;
-
   background: rgba(15,22,34,.9);
   color: #E5E7EB;
   border: 1px solid rgba(201,204,210,.3);
@@ -209,7 +176,7 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(47,128,237,.25);
 }
 
-/* ===== Buttons (default safe) ===== */
+/* ===== Buttons ===== */
 button {
   background: #1F2937;
   color: #E5E7EB;
@@ -221,7 +188,7 @@ button {
 
 button:hover { background: #111827; }
 
-/* ===== SERVE BUTTON ONLY (premium luminous) ===== */
+/* ===== Serve Button (unchanged & perfect) ===== */
 #ideaForm button[type="submit"] {
   display: block;
   margin: 26px auto 0;
@@ -237,7 +204,6 @@ button:hover { background: #111827; }
 
   color: #FFFFFF;
   font-weight: 700;
-  letter-spacing: .3px;
   border-radius: 12px;
   padding: 14px 30px;
 
@@ -245,19 +211,6 @@ button:hover { background: #111827; }
     0 18px 40px rgba(182,230,0,.35),
     inset 0 2px 0 rgba(255,255,255,.35),
     0 0 18px rgba(182,230,0,.25);
-}
-
-#ideaForm button[type="submit"]:hover {
-  box-shadow:
-    0 24px 48px rgba(182,230,0,.45),
-    inset 0 2px 0 rgba(255,255,255,.45),
-    0 0 28px rgba(182,230,0,.4);
-}
-
-/* ===== Message ===== */
-#messageArea {
-  margin-top: 15px;
-  font-weight: bold;
 }
 
 /* ===== Admin-only ===== */
@@ -268,17 +221,8 @@ button:hover { background: #111827; }
   .navbar { min-height: 90px; padding: 10px 14px; }
   .navbar .logo { bottom: -10px; left: 14px; }
   .navbar .nav-logo { height: 120px; }
-  .nav-links a { font-size: 14px; }
-
-  .container {
-    width: calc(100% - 32px);
-    margin: 16px auto;
-    padding: 18px;
-  }
-
+  .container { margin: 16px auto; padding: 18px; }
   .brand { font-size: 1.8rem; }
-
-  input, textarea { width: 100%; box-sizing: border-box; }
-
+  input, textarea { width: 100%; }
   button { width: 100%; }
 }
