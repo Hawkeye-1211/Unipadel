@@ -12,8 +12,7 @@
     rel="stylesheet"
   />
 
-  <!-- cache-bust CSS -->
-  <link rel="stylesheet" href="/style.css?v=20260125-4" />
+  <link rel="stylesheet" href="/style.css?v=20260125-7" />
 </head>
 
 <body data-page="ideas">
@@ -26,21 +25,22 @@
       <a href="/">About</a>
       <a href="/ideas.html">Ideas</a>
 
-      <!-- Hidden by default; app.js shows these only during an admin session -->
       <a href="/ideas.html?admin=unipadelgold" id="adminNavLink" hidden>Admin</a>
       <a href="/ideas.html" id="exitAdminLink" hidden>Exit Admin</a>
     </div>
   </nav>
 
   <div class="container">
-    <h1>UniPadel</h1>
+    <h1 class="brand">
+      <span class="brand-uni">Uni</span><span class="brand-padel">Padel</span>
+    </h1>
+
     <p>Submit ideas for the future UniPadel site.</p>
 
     <section id="ideasSection">
       <form id="ideaForm">
         <input type="hidden" id="submissionTs" name="_submission_ts" value="" />
 
-        <!-- Spam protection: honeypot (humans won't fill this; bots often do) -->
         <div style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
           <label for="website">Website</label>
           <input type="text" id="website" name="_gotcha" tabindex="-1" autocomplete="off" />
@@ -64,7 +64,6 @@
       <p id="messageArea"></p>
     </section>
 
-    <!-- Admin list (app.js will show/hide this based on mode) -->
     <div class="owner-only">
       <h2>Submitted Ideas</h2>
       <ul id="ideasList"></ul>
@@ -72,7 +71,6 @@
   </div>
 
   <script>
-    // Mobile diagnostic: show whether app.js is loading at all
     const _ideasList = document.getElementById("ideasList");
     if (_ideasList) _ideasList.innerHTML = "<li>Loading script...</li>";
   </script>
