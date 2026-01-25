@@ -24,20 +24,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
 
-  // ---- NAVBAR LINKS (must work on ALL pages) ----
+  // Navbar links
   const adminNavLink = document.getElementById("adminNavLink");
   const exitAdminLink = document.getElementById("exitAdminLink");
 
-  function setHidden(el, shouldHide) {
-    if (!el) return;
-    el.hidden = shouldHide;
-    if (shouldHide) el.setAttribute("hidden", "");
-    else el.removeAttribute("hidden");
-  }
-
-  // Show Admin/Exit Admin only during an admin session (on every page)
-  setHidden(adminNavLink, !isAdminMode);
-  setHidden(exitAdminLink, !isAdminMode);
+  if (adminNavLink) adminNavLink.hidden = !isAdminMode;
+  if (exitAdminLink) exitAdminLink.hidden = !isAdminMode;
 
   if (exitAdminLink) {
     exitAdminLink.addEventListener("click", (e) => {
@@ -47,18 +39,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ---- PAGE ELEMENTS (Ideas page only below this point) ----
+  // ---- PAGE ELEMENTS ----
   const form = document.getElementById("ideaForm");
   const messageArea = document.getElementById("messageArea");
   const ownerSection = document.querySelector(".owner-only");
   const ideasList = document.getElementById("ideasList");
+
+  // Public ideas section (read-only)
+  const publicIdeasSection = document.getElementById("publicIdeasSection");
+  const publicIdeasList = document.getElementById("publicIdeasList");
 
   const userNameEl = document.getElementById("userName");
   const userEmailEl = document.getElementById("userEmail");
   const ideaTitleEl = document.getElementById("ideaTitle");
   const ideaDescriptionEl = document.getElementById("ideaDescription");
 
-  const onIdeasPage = !!(form || ownerSection || ideasList);
+  const onIdeasPage = !!(form || ownerSection || ideasList || publicIdeasList);
   if (!onIdeasPage) return;
 
   // ---- ADMIN HELPERS ----
@@ -77,6 +73,102 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ---- FETCH ROWS (shared) ----
+  async function fetchRowsFromSheet() {
+    const res = await fetch(`${SHEET_WEB_APP_URL}?t=${Date.now()}`);
+    const data = await res.json();
+    if (!data || data.success !== true) throw new Error("Bad response from sheet");
+    return Array.isArray(data.rows) ? data.rows : [];
+  }
+
+  // ---- PUBLIC VIEW (READ-ONLY CARDS) ----
+  async function renderPublicIdeasFromSheet() {
+    if (!publicIdeasList) return;
+
+    publicIdeasList.innerHTML =
+      '<div style="opacity:.75; font-size:14px;">Loading ideas...</div>';
+
+    try {
+      const rows = await fetchRowsFromSheet();
+
+      const activeRows = rows
+        .filter((r) => String(r["Status"] || "").trim() === "ACTIVE")
+        .filter((r) => String(r["Timestamp"] || "").trim() !== "");
+
+      // Newest first
+      activeRows.sort((a, b) => {
+        const ta = Date.parse(String(a["Timestamp"] || "")) || 0;
+        const tb = Date.parse(String(b["Timestamp"] || "")) || 0;
+        return tb - ta;
+      });
+
+      // Limit so it stays clean
+      const visible = activeRows.slice(0, 12);
+
+      if (visible.length === 0) {
+        publicIdeasList.innerHTML =
+          '<div style="opacity:.75; font-size:14px;">No ideas yet — be the first to serve one 🎾</div>';
+        return;
+      }
+
+      publicIdeasList.innerHTML = "";
+
+      for (const r of visible) {
+        const title = String(r["Idea Title"] || "").trim();
+        const desc = String(r["Idea Description"] || "").trim();
+        const tsIso = String(r["Timestamp"] || "").trim();
+
+        const dateNice = (() => {
+          const d = new Date(tsIso);
+          return isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+        })();
+
+        // Card wrapper
+        const card = document.createElement("div");
+
+        // Premium-ish styling inline (so it looks good even before Step 3 CSS)
+        card.style.margin = "12px 0";
+        card.style.padding = "14px 14px";
+        card.style.borderRadius = "12px";
+        card.style.background =
+          "linear-gradient(135deg, rgba(255,255,255,.06), rgba(47,128,237,.06) 45%, rgba(0,0,0,.25) 100%), linear-gradient(135deg, #141A22, #0F1622)";
+        card.style.border = "1px solid rgba(201,204,210,.16)";
+        card.style.boxShadow = "0 12px 28px rgba(0,0,0,.35)";
+        card.style.backdropFilter = "blur(6px)";
+
+        const t = document.createElement("div");
+        t.style.fontWeight = "700";
+        t.style.fontSize = "16px";
+        t.style.color = "#E5E7EB";
+        t.textContent = title || "Untitled idea";
+
+        const d = document.createElement("div");
+        d.style.marginTop = "8px";
+        d.style.fontSize = "14px";
+        d.style.lineHeight = "1.5";
+        d.style.color = "#D1D5DB";
+        d.textContent = desc || "";
+
+        const meta = document.createElement("div");
+        meta.style.marginTop = "10px";
+        meta.style.fontSize = "12px";
+        meta.style.opacity = "0.75";
+        meta.style.color = "#C9CCD1";
+        meta.textContent = dateNice ? `Submitted · ${dateNice}` : "";
+
+        card.appendChild(t);
+        if (desc) card.appendChild(d);
+        if (dateNice) card.appendChild(meta);
+
+        publicIdeasList.appendChild(card);
+      }
+    } catch (err) {
+      console.error(err);
+      publicIdeasList.innerHTML =
+        '<div style="opacity:.75; font-size:14px;">Could not load ideas right now.</div>';
+    }
+  }
+
   // ---- ADMIN VIEW ----
   async function renderIdeasFromSheet() {
     if (!ideasList) return;
@@ -84,12 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ideasList.innerHTML = "<li>Loading submissions...</li>";
 
     try {
-      const res = await fetch(`${SHEET_WEB_APP_URL}?t=${Date.now()}`);
-      const data = await res.json();
-
-      if (!data || data.success !== true) throw new Error("Bad response from sheet");
-
-      const rows = Array.isArray(data.rows) ? data.rows : [];
+      const rows = await fetchRowsFromSheet();
 
       // ONLY ACTIVE rows
       const activeRows = rows.filter(
@@ -105,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       for (const r of activeRows) {
         const tsIso = String(r["Timestamp"] || "").trim();
-        if (!tsIso) continue; // skip junk rows with no timestamp
+        if (!tsIso) continue;
 
         const li = document.createElement("li");
         li.style.marginBottom = "12px";
@@ -152,7 +239,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
           try {
             await postAdminAction("archive", tsIso);
-            // Refresh list (archived item disappears because it won't be ACTIVE)
             await renderIdeasFromSheet();
           } catch (err) {
             console.error(err);
@@ -198,13 +284,19 @@ document.addEventListener("DOMContentLoaded", () => {
   if (isAdminMode) {
     if (form) form.style.display = "none";
     if (messageArea) messageArea.style.display = "none";
+    if (publicIdeasSection) publicIdeasSection.style.display = "none"; // ✅ hide public list in admin mode
     if (ownerSection) ownerSection.style.display = "block";
     renderIdeasFromSheet();
     return;
   }
 
-  // ---- PUBLIC SUBMIT ----
+  // ---- PUBLIC MODE ----
   if (ownerSection) ownerSection.style.display = "none";
+  // Show public ideas list (read-only)
+  if (publicIdeasSection) publicIdeasSection.style.display = "block";
+  renderPublicIdeasFromSheet();
+
+  // ---- PUBLIC SUBMIT ----
   if (!form) return;
 
   const submitButton =
@@ -283,6 +375,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       form.reset();
       if (messageArea) messageArea.textContent = "Great point!! Now lets win the set!";
+
+      // ✅ Refresh public list so the new idea shows up soon
+      // (Sheets write may take a moment; this is still a nice UX)
+      setTimeout(() => {
+        renderPublicIdeasFromSheet();
+      }, 1200);
     } catch (err) {
       console.error(err);
       if (messageArea) messageArea.textContent = "Submission failed.";
