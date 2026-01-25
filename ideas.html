@@ -54,6 +54,17 @@
         <label for="userEmail">Your email</label><br />
         <input type="email" id="userEmail" name="userEmail" required /><br /><br />
 
+        <!-- ✅ Source (required by app.js) -->
+        <label for="ideaSource">Which platform is this about?</label><br />
+        <select id="ideaSource" name="ideaSource" required style="width:95%; padding:10px; border-radius:6px;">
+          <option value="" selected disabled>Choose one…</option>
+          <option value="Playtomic">Playtomic</option>
+          <option value="Other booking app">Other booking app</option>
+          <option value="unipadel.online">UniPadel</option>
+          <option value="Other">Other</option>
+        </select>
+        <br /><br />
+
         <label for="ideaTitle">What's your idea</label><br />
         <input type="text" id="ideaTitle" name="ideaTitle" required /><br /><br />
 
@@ -74,9 +85,7 @@
         <div style="height:1px; background: rgba(201,204,210,.18); flex:1;"></div>
       </div>
 
-      <div id="publicIdeasList">
-        <!-- app.js will render premium cards here -->
-      </div>
+      <div id="publicIdeasList"></div>
     </section>
 
     <!-- Admin list -->
@@ -86,9 +95,8 @@
     </div>
   </div>
 
-  <!-- ✅ Cache-bust: bumped version -->
   <script
-    src="/app.js?v=20260125-TRIAGE-1"
+    src="/app.js?v=20260125-TRIAGE-FIX-2"
     defer
     onerror="document.getElementById('ideasList').innerHTML='<li>Failed to load app.js</li>'"
   ></script>
