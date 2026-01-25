@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_SESSION_KEY = "Unipadel_admin_session";
   const LAST_SUBMIT_KEY = "Unipadel_last_submit_ts";
 
-  // ✅ NEW FIXED Web App URL
+  // ✅ Web App URL
   const SHEET_WEB_APP_URL =
     "https://script.google.com/macros/s/AKfycbw1B9iFPa4T3S81Gft7EBwHYFzWKB1H6LeO-OrOvmuYpMmvJJnc-EV8wEqfmsNzumQllw/exec";
 
@@ -24,12 +24,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
 
-  // Navbar links
+  // ---- NAVBAR LINKS (must work on ALL pages) ----
   const adminNavLink = document.getElementById("adminNavLink");
   const exitAdminLink = document.getElementById("exitAdminLink");
 
-  if (adminNavLink) adminNavLink.hidden = !isAdminMode;
-  if (exitAdminLink) exitAdminLink.hidden = !isAdminMode;
+  function setHidden(el, shouldHide) {
+    if (!el) return;
+    el.hidden = shouldHide;
+    if (shouldHide) el.setAttribute("hidden", "");
+    else el.removeAttribute("hidden");
+  }
+
+  // Show Admin/Exit Admin only during an admin session (on every page)
+  setHidden(adminNavLink, !isAdminMode);
+  setHidden(exitAdminLink, !isAdminMode);
 
   if (exitAdminLink) {
     exitAdminLink.addEventListener("click", (e) => {
@@ -39,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ---- PAGE ELEMENTS ----
+  // ---- PAGE ELEMENTS (Ideas page only below this point) ----
   const form = document.getElementById("ideaForm");
   const messageArea = document.getElementById("messageArea");
   const ownerSection = document.querySelector(".owner-only");
