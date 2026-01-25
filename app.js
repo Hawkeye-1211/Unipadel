@@ -1,23 +1,22 @@
 // UniPadel app.js
-// Stable setup: Public submits -> Google Sheet + Formspree emails
-// Admin view reads from Google Sheet (any device)
+// Public submits -> Google Sheet + Formspree emails
+// Admin reads from Google Sheet
 // Admin actions: Archive (Status->ARCHIVED) or Delete (remove row)
-// IMPORTANT: Admin actions never create new rows (backend enforces this too)
+// Shows ONLY ACTIVE ideas in admin list (so archived clears from website list)
 
 document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
   const ADMIN_SESSION_KEY = "Unipadel_admin_session";
   const LAST_SUBMIT_KEY = "Unipadel_last_submit_ts";
 
-  // ✅ FIXED Apps Script Web App URL (your latest)
+  // ✅ NEW FIXED Web App URL
   const SHEET_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbx2qKfbFj6fDUSuJIqGsPiQwpkgy9f_NQAo7hwPVGBXYGaOir4jBhoR-JA2XYmejY5E0w/exec";
+    "https://script.google.com/macros/s/AKfycbw1B9iFPa4T3S81Gft7EBwHYFzWKB1H6LeO-OrOvmuYpMmvJJnc-EV8wEqfmsNzumQllw/exec";
 
   // ---- ADMIN MODE ----
   const params = new URLSearchParams(window.location.search);
   if (params.get("admin") === ADMIN_KEY) {
     sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
-    // Keep admin session but remove key from URL
     if (window.history && window.history.replaceState) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -56,14 +55,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---- ADMIN HELPERS ----
   async function postAdminAction(action, id) {
-    // Guard: never send an action without a real id
     if (!id || typeof id !== "string" || id.trim() === "") {
-      throw new Error("Missing Timestamp id (cannot perform admin action).");
+      throw new Error("Missing Timestamp id.");
     }
 
     const body = new URLSearchParams({ action, id });
 
-    // Use no-cors so it always sends. Backend will NOT append rows on actions.
     await fetch(SHEET_WEB_APP_URL, {
       method: "POST",
       mode: "no-cors",
@@ -86,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const rows = Array.isArray(data.rows) ? data.rows : [];
 
-      // Only show ACTIVE ideas (so ARCHIVED clears from the webpage)
+      // ONLY ACTIVE rows
       const activeRows = rows.filter(
         (r) => String(r["Status"] || "").trim() === "ACTIVE"
       );
@@ -99,16 +96,13 @@ document.addEventListener("DOMContentLoaded", () => {
       ideasList.innerHTML = "";
 
       for (const r of activeRows) {
-        // Timestamp is our unique id
         const tsIso = String(r["Timestamp"] || "").trim();
-
-        // Guard: if some older/junk row has no timestamp, don't render it
-        if (!tsIso) continue;
+        if (!tsIso) continue; // skip junk rows with no timestamp
 
         const li = document.createElement("li");
         li.style.marginBottom = "12px";
 
-        const tsNice = tsIso ? new Date(tsIso).toLocaleString() : "";
+        const tsNice = new Date(tsIso).toLocaleString();
         const name = r["Name"] || "";
         const email = r["Email"] || "";
         const title = r["Idea Title"] || "";
@@ -150,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           try {
             await postAdminAction("archive", tsIso);
-            // Refresh list (archived item should disappear)
+            // Refresh list (archived item disappears because it won't be ACTIVE)
             await renderIdeasFromSheet();
           } catch (err) {
             console.error(err);
@@ -183,7 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
         ideasList.appendChild(li);
       }
 
-      // If everything got skipped due to missing timestamps, show a message
       if (!ideasList.children.length) {
         ideasList.innerHTML = "<li>No ACTIVE submissions.</li>";
       }
@@ -195,7 +188,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---- MODE SWITCH ----
   if (isAdminMode) {
-    // Admin: show list, hide form
     if (form) form.style.display = "none";
     if (messageArea) messageArea.style.display = "none";
     if (ownerSection) ownerSection.style.display = "block";
@@ -207,7 +199,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (ownerSection) ownerSection.style.display = "none";
   if (!form) return;
 
-  const submitButton = form.querySelector('button[type="submit"]') || form.querySelector("button");
+  const submitButton =
+    form.querySelector('button[type="submit"]') || form.querySelector("button");
   const pageLoadedAt = Date.now();
 
   form.addEventListener("submit", async (e) => {
@@ -220,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Time check (anti-bot)
+    // Time check
     if (Date.now() - pageLoadedAt < 2000) {
       if (messageArea) messageArea.textContent = "Please wait a moment.";
       return;
@@ -245,10 +238,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (messageArea) messageArea.textContent = "Submitting...";
-    if (submitButton) submitButton.disabled = true;
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Sending...";
+    }
 
     try {
-      // 1) Google Sheet (send reliably; response not needed)
+      // 1) Google Sheet
       const body = new URLSearchParams({
         name: userName,
         email: userEmail,
@@ -263,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
         body: body.toString(),
       });
 
-      // 2) Formspree (emails)
+      // 2) Formspree emails
       const fsRes = await fetch("https://formspree.io/f/mykekkgg", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -278,12 +274,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!fsRes.ok) throw new Error("Formspree HTTP " + fsRes.status);
 
       form.reset();
-      if (messageArea) messageArea.textContent = "Idea submitted successfully!";
+      if (messageArea) messageArea.textContent = "Great point!! Now lets win the set!";
     } catch (err) {
       console.error(err);
       if (messageArea) messageArea.textContent = "Submission failed.";
     } finally {
-      if (submitButton) submitButton.disabled = false;
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = "Serve idea";
+      }
     }
   });
 });
