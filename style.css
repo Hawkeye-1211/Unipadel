@@ -2,7 +2,7 @@
 html, body {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden; /* key for the “overhang” issue */
+  overflow-x: hidden;
 }
 
 /* ===== Page ===== */
@@ -13,7 +13,7 @@ body {
   color: #E5E7EB;
   background-color: #0B0F14;
 
-  /* Nebula glow + enhanced premium star field */
+  /* Nebula glow + premium star field */
   background-image:
     radial-gradient(900px 600px at 20% 10%, rgba(47,128,237,.25), transparent 60%),
     radial-gradient(700px 500px at 80% 20%, rgba(182,230,0,.12), transparent 55%),
@@ -85,7 +85,10 @@ body {
   padding-bottom: 8px;
 }
 
+.nav-links a { opacity: 0.9; }
+
 .nav-links a:hover {
+  opacity: 1;
   color: #2F80ED;
   text-shadow: 0 0 12px rgba(47,128,237,.25);
 }
@@ -96,15 +99,26 @@ body {
   margin: 60px auto;
   padding: 30px;
   border-radius: 10px;
+
   background:
-    linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.03) 25%, rgba(47,128,237,.06) 50%, rgba(0,0,0,.20) 100%),
+    linear-gradient(135deg,
+      rgba(255,255,255,.08),
+      rgba(255,255,255,.03) 25%,
+      rgba(47,128,237,.06) 50%,
+      rgba(0,0,0,.20) 100%
+    ),
     linear-gradient(135deg, #141A22, #0F1622);
-  box-shadow: 0 20px 60px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.08);
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.65),
+    inset 0 1px 0 rgba(255,255,255,.08);
+
   border-top: 4px solid #2F80ED;
   position: relative;
   overflow: hidden;
 }
 
+/* Metallic diagonal shine */
 .container::before {
   content: "";
   position: absolute;
@@ -124,7 +138,14 @@ body {
 }
 
 .brand-uni {
-  background: linear-gradient(180deg,#FFFFFF,#F2F3F4 22%,#C9CCD1 45%,#FFFFFF 62%,#B6BBC1);
+  background: linear-gradient(
+    180deg,
+    #FFFFFF 0%,
+    #F2F3F4 22%,
+    #C9CCD1 45%,
+    #FFFFFF 62%,
+    #B6BBC1 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -132,18 +153,29 @@ body {
 }
 
 .brand-padel {
-  background: linear-gradient(180deg,#9FD0F0,#5FA9DA 35%,#2F80ED 65%,#2C4D6A);
+  background: linear-gradient(
+    180deg,
+    #9FD0F0 0%,
+    #5FA9DA 35%,
+    #2F80ED 65%,
+    #2C4D6A 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   text-shadow: 0 1px 0 rgba(0,0,0,.35);
 }
 
+/* ===== Text ===== */
+p { color: #D1D5DB; }
+label { font-weight: 600; color: #E5E7EB; }
+
 /* ===== Inputs ===== */
 input,
 textarea {
   width: 95%;
   padding: 10px;
+  margin-top: 6px;
   background: rgba(15,22,34,.9);
   color: #E5E7EB;
   border: 1px solid rgba(201,204,210,.3);
@@ -154,25 +186,43 @@ textarea {
 button {
   background: #1F2937;
   color: #E5E7EB;
+  border: none;
   padding: 12px 18px;
   border-radius: 6px;
-  border: none;
   cursor: pointer;
 }
 
+button:hover { background: #111827; }
+
+/* ===== Serve Button ONLY ===== */
 #ideaForm button[type="submit"] {
   display: block;
   margin: 26px auto 0;
   position: relative;
   top: 6px;
-  background: linear-gradient(180deg,#D9FF4F,#B6E600 55%,#8FBF00);
-  color: #FFF;
+
+  background: linear-gradient(180deg,#D9FF4F 0%,#B6E600 55%,#8FBF00 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  letter-spacing: .3px;
   border-radius: 12px;
   padding: 14px 30px;
-  box-shadow: 0 18px 40px rgba(182,230,0,.35), inset 0 2px 0 rgba(255,255,255,.35);
+
+  box-shadow:
+    0 18px 40px rgba(182,230,0,.35),
+    inset 0 2px 0 rgba(255,255,255,.35),
+    0 0 18px rgba(182,230,0,.25);
 }
 
-/* ===== Admin-only ===== */
+#ideaForm button[type="submit"]:hover {
+  box-shadow:
+    0 24px 48px rgba(182,230,0,.45),
+    inset 0 2px 0 rgba(255,255,255,.45),
+    0 0 28px rgba(182,230,0,.4);
+}
+
+/* ===== Message / Admin ===== */
+#messageArea { margin-top: 15px; font-weight: bold; }
 .owner-only { display: none; }
 
 /* ========================================================= */
@@ -180,13 +230,13 @@ button {
 /* ========================================================= */
 
 @media (max-width: 600px) {
-  /* Prevent any element from causing width overflow */
+  /* Prevent overflow on mobile */
   *, *::before, *::after { box-sizing: border-box; }
   body { overflow-x: hidden; }
 
-  /* ✅ Mobile navbar layout: logo left, tabs right, no overlap */
+  /* ✅ Mobile navbar: logo left, tabs right, no overlap */
   .navbar {
-    min-height: 78px;
+    min-height: 84px;
     padding: 10px 12px;
     display: flex;
     justify-content: space-between;
@@ -200,26 +250,27 @@ button {
     bottom: auto;
   }
 
-  /* Smaller logo so more tabs can fit */
+  /* ✅ Bigger logo that is still safe */
   .navbar .nav-logo {
-    height: 70px;      /* key change */
-    max-width: 69vw;   /* prevents it eating the whole row */
+    height: 92px;      /* tuned bigger */
     width: auto;
+    max-width: none;   /* IMPORTANT: lets height control size */
+    display: block;
   }
 
-  /* Tabs can wrap to a second line if needed */
+  /* ✅ Tabs wrap instead of colliding with logo */
   .nav-links {
     padding-bottom: 0;
     align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
+    gap: 12px;
+    flex-wrap: wrap;        /* key: wraps onto a second line */
     justify-content: flex-end;
-    max-width: 45vw;
+    max-width: 44vw;        /* reserves room for logo */
   }
 
   .nav-links a { font-size: 14px; }
 
-  /* ✅ Container fully inside viewport */
+  /* ✅ Container fits inside viewport */
   .container {
     width: calc(100% - 24px);
     max-width: none;
@@ -229,7 +280,7 @@ button {
 
   .brand { font-size: 1.9rem; }
 
-  /* ✅ Inputs/textarea cannot overflow */
+  /* Inputs never overflow */
   input, textarea {
     width: 100%;
     max-width: 100%;
@@ -238,12 +289,10 @@ button {
   /* Buttons full width on mobile */
   button { width: 100%; }
 
-  /* Serve button full width on mobile but keeps premium look */
+  /* Serve stays premium but full width on mobile */
   #ideaForm button[type="submit"] {
     width: 100%;
     margin-left: 0;
     margin-right: 0;
   }
 }
-
-
