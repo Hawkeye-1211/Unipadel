@@ -1,85 +1,231 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>UniPadel</title>
+/* ===== Global safety to prevent sideways overflow ===== */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
-    rel="stylesheet"
-  />
+/* ===== Page ===== */
+body {
+  font-family: "Poppins", system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #E5E7EB;
+  background-color: #0B0F14;
 
-  <!-- cache-bust CSS -->
-  <link rel="stylesheet" href="/style.css?v=20260125-3" />
-</head>
+  /* Nebula glow + premium star field */
+  background-image:
+    radial-gradient(900px 600px at 20% 10%, rgba(47,128,237,.25), transparent 60%),
+    radial-gradient(700px 500px at 80% 20%, rgba(182,230,0,.12), transparent 55%),
 
-<body data-page="ideas">
-  <nav class="navbar">
-    <a href="/" class="logo">
-      <img src="/Images/UniPadel-logo.png" alt="UniPadel logo" class="nav-logo" />
-    </a>
+    radial-gradient(1px 1px at 8% 18%, rgba(255,255,255,.55), transparent 2px),
+    radial-gradient(1px 1px at 14% 62%, rgba(255,255,255,.28), transparent 2px),
+    radial-gradient(1px 1px at 22% 36%, rgba(255,255,255,.38), transparent 2px),
+    radial-gradient(1px 1px at 28% 78%, rgba(255,255,255,.22), transparent 2px),
+    radial-gradient(1px 1px at 33% 22%, rgba(255,255,255,.30), transparent 2px),
+    radial-gradient(1px 1px at 41% 52%, rgba(255,255,255,.26), transparent 2px),
+    radial-gradient(1px 1px at 47% 30%, rgba(255,255,255,.42), transparent 2px),
+    radial-gradient(1px 1px at 54% 70%, rgba(255,255,255,.24), transparent 2px),
+    radial-gradient(1px 1px at 61% 42%, rgba(255,255,255,.32), transparent 2px),
+    radial-gradient(1px 1px at 68% 18%, rgba(255,255,255,.28), transparent 2px),
+    radial-gradient(1px 1px at 74% 58%, rgba(255,255,255,.40), transparent 2px),
+    radial-gradient(1px 1px at 82% 36%, rgba(255,255,255,.26), transparent 2px),
+    radial-gradient(1px 1px at 88% 72%, rgba(255,255,255,.22), transparent 2px),
+    radial-gradient(1px 1px at 92% 24%, rgba(255,255,255,.34), transparent 2px),
 
-    <div class="nav-links">
-      <a href="/">About</a>
-      <a href="/ideas.html">Ideas</a>
+    radial-gradient(1px 1px at 18% 12%, rgba(255,255,255,.18), transparent 2px),
+    radial-gradient(1px 1px at 36% 18%, rgba(255,255,255,.20), transparent 2px),
+    radial-gradient(1px 1px at 52% 26%, rgba(255,255,255,.16), transparent 2px),
+    radial-gradient(1px 1px at 66% 14%, rgba(255,255,255,.18), transparent 2px),
+    radial-gradient(1px 1px at 78% 46%, rgba(255,255,255,.20), transparent 2px),
+    radial-gradient(1px 1px at 58% 82%, rgba(255,255,255,.16), transparent 2px);
 
-      <!-- Hidden by default; app.js shows these only during an admin session -->
-      <a href="/ideas.html?admin=unipadelgold" id="adminNavLink" hidden>Admin</a>
-      <a href="/ideas.html" id="exitAdminLink" hidden>Exit Admin</a>
-    </div>
-  </nav>
+  background-repeat: no-repeat;
+}
 
-  <div class="container">
-    <h1>UniPadel</h1>
-    <p>Submit ideas for the future UniPadel site.</p>
+/* ===== Navbar (desktop) ===== */
+.navbar {
+  position: sticky;          /* ✅ STICKY */
+  top: 0;                    /* ✅ STICKY */
+  z-index: 1000;             /* ✅ stays above content */
 
-    <section id="ideasSection">
-      <form id="ideaForm">
-        <input type="hidden" id="submissionTs" name="_submission_ts" value="" />
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  padding: 12px 24px;
+  min-height: 110px;
+  background: linear-gradient(180deg, #0F1622, #0B111B);
+  border-bottom: 1px solid rgba(201,204,210,.14);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
 
-        <!-- Spam protection: honeypot -->
-        <div style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
-          <label for="website">Website</label>
-          <input type="text" id="website" name="_gotcha" tabindex="-1" autocomplete="off" />
-        </div>
+.navbar a {
+  color: #E5E7EB;
+  text-decoration: none;
+  font-weight: 600;
+}
 
-        <label for="userName">Your name</label><br />
-        <input type="text" id="userName" name="userName" required /><br /><br />
+/* Logo pinned to bottom-left (desktop) */
+.navbar .logo {
+  position: absolute;
+  left: 24px;
+  bottom: -35px;
+  display: block;
+  line-height: 0;
+}
 
-        <label for="userEmail">Your email</label><br />
-        <input type="email" id="userEmail" name="userEmail" required /><br /><br />
+.navbar .nav-logo {
+  height: 170px;
+  width: auto;
+  display: block;
+}
 
-        <label for="ideaTitle">What's your idea</label><br />
-        <input type="text" id="ideaTitle" name="ideaTitle" required /><br /><br />
+/* Right-side links */
+.nav-links {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding-bottom: 8px;
+}
 
-        <label for="ideaDescription">Tell us more</label><br />
-        <textarea id="ideaDescription" name="ideaDescription" rows="5" required></textarea><br /><br />
+.nav-links a { opacity: 0.9; }
 
-        <button type="submit">Serve idea</button>
-      </form>
+.nav-links a:hover {
+  opacity: 1;
+  color: #2F80ED;
+  text-shadow: 0 0 12px rgba(47,128,237,.25);
+}
 
-      <p id="messageArea"></p>
-    </section>
+/* ===== Container ===== */
+.container {
+  max-width: 600px;
+  margin: 60px auto;
+  padding: 30px;
+  border-radius: 10px;
 
-    <!-- Admin list -->
-    <div class="owner-only">
-      <h2>Submitted Ideas</h2>
-      <ul id="ideasList"></ul>
-    </div>
-  </div>
+  background:
+    linear-gradient(135deg,
+      rgba(255,255,255,.08),
+      rgba(255,255,255,.03) 25%,
+      rgba(47,128,237,.06) 50%,
+      rgba(0,0,0,.20) 100%
+    ),
+    linear-gradient(135deg, #141A22, #0F1622);
 
-  <script>
-    const _ideasList = document.getElementById("ideasList");
-    if (_ideasList) _ideasList.innerHTML = "<li>Loading script...</li>";
-  </script>
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.65),
+    inset 0 1px 0 rgba(255,255,255,.08);
 
-  <script
-    src="/app.js?v=20260124-4"
-    defer
-    onerror="document.getElementById('ideasList').innerHTML='<li>Failed to load app.js</li>'"
-  ></script>
+  border-top: 4px solid #2F80ED;
+  position: relative;
+  overflow: hidden;
+}
 
-</body>
-</html>
+/* Metallic diagonal shine */
+.container::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(120deg, transparent 35%, rgba(201,204,210,0.18) 45%, transparent 55%);
+  transform: rotate(8deg);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ===== Brand Header ===== */
+.brand {
+  font-size: 2.4rem;
+  margin: 0 0 10px;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.brand-uni {
+  background: linear-gradient(
+    180deg,
+    #FFFFFF 0%,
+    #F2F3F4 22%,
+    #C9CCD1 45%,
+    #FFFFFF 62%,
+    #B6BBC1 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.brand-padel {
+  background: linear-gradient(
+    180deg,
+    #9FD0F0 0%,
+    #5FA9DA 35%,
+    #2F80ED 65%,
+    #2C4D6A 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ===== Text ===== */
+p { color: #D1D5DB; }
+label { font-weight: 600; color: #E5E7EB; }
+
+/* ===== Inputs ===== */
+input,
+textarea {
+  width: 95%;
+  padding: 10px;
+  margin-top: 6px;
+  background: rgba(15,22,34,.9);
+  color: #E5E7EB;
+  border: 1px solid rgba(201,204,210,.3);
+  border-radius: 6px;
+}
+
+/* ===== Buttons ===== */
+button {
+  background: #1F2937;
+  color: #E5E7EB;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover { background: #111827; }
+
+/* ===== Message / Admin ===== */
+#messageArea { margin-top: 15px; font-weight: bold; }
+.owner-only { display: none; }
+
+/* ===== Mobile ===== */
+@media (max-width: 600px) {
+  .navbar {
+    min-height: 84px;
+    padding: 10px 12px;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .navbar .logo {
+    position: static;
+  }
+
+  .navbar .nav-logo {
+    height: 92px;
+  }
+
+  .nav-links {
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-width: 44vw;
+  }
+
+  .container {
+    width: calc(100% - 24px);
+    margin: 14px auto;
+    padding: 18px;
+  }
+}
