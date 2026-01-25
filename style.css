@@ -1,8 +1,15 @@
+
 /* ===== Global safety ===== */
 html, body {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+}
+
+/* ✅ FIX: make width calculations include padding + border
+   This stops the triage Notes textarea (width:100%) spilling out. */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 /* ===== Page ===== */
@@ -156,57 +163,6 @@ button {
 /* ===== Admin-only ===== */
 .owner-only { display: none; }
 
-/* ===== NEW: Feedback brief styling (minimal, product-grade) ===== */
-.feedback-brief {
-  margin: 18px 0 20px;
-  padding: 14px 14px;
-  border-radius: 12px;
-  background: rgba(15,22,34,.55);
-  border: 1px solid rgba(201,204,210,.16);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
-}
-
-.feedback-brief-title {
-  font-weight: 700;
-  letter-spacing: .2px;
-  margin-bottom: 6px;
-}
-
-.feedback-brief-sub {
-  font-size: 13px;
-  opacity: .85;
-  line-height: 1.5;
-  margin-bottom: 12px;
-}
-
-.feedback-brief-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.feedback-brief-heading {
-  font-size: 12px;
-  opacity: .9;
-  letter-spacing: .2px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.feedback-brief-list {
-  margin: 0;
-  padding-left: 18px;
-  font-size: 12px;
-  opacity: .85;
-  line-height: 1.55;
-}
-
-.form-footnote {
-  margin-top: 10px;
-  font-size: 12px;
-  opacity: .75;
-}
-
 /* ========================================================= */
 /* =================== MOBILE ONLY ========================= */
 /* ========================================================= */
@@ -260,8 +216,5 @@ button {
   #ideaForm button[type="submit"] {
     width: 100%;
   }
-
-  .feedback-brief-grid {
-    grid-template-columns: 1fr;
-  }
 }
+
