@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const userNameEl = document.getElementById("userName");
   const userEmailEl = document.getElementById("userEmail");
-  const ideaSourceEl = document.getElementById("ideaSource"); // ✅ dropdown from ideas.html
+  const ideaSourceEl = document.getElementById("ideaSource");
   const ideaTitleEl = document.getElementById("ideaTitle");
   const ideaDescriptionEl = document.getElementById("ideaDescription");
 
@@ -68,6 +68,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const body = new URLSearchParams({ action, id });
+
+    await fetch(SHEET_WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    });
+  }
+
+  // ✅ NEW: triage update (admin-only)
+  async function postTriageUpdate(id, category, priority, notes) {
+    if (!id || typeof id !== "string" || id.trim() === "") {
+      throw new Error("Missing Timestamp id.");
+    }
+
+    const body = new URLSearchParams({
+      action: "triage",
+      id,
+      category: String(category || ""),
+      priority: String(priority || ""),
+      notes: String(notes || ""),
+    });
 
     await fetch(SHEET_WEB_APP_URL, {
       method: "POST",
@@ -345,18 +367,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
       ideasList.innerHTML = "";
 
+      const categoryOptions = ["", "Bug", "UX", "Feature", "Performance", "Pricing"];
+      const priorityOptions = ["", "Next", "Soon", "Later", "Won’t"];
+
       for (const r of activeRows) {
         const tsIso = String(r["Timestamp"] || "").trim();
         if (!tsIso) continue;
 
         const li = document.createElement("li");
-        li.style.marginBottom = "12px";
+        li.style.marginBottom = "14px";
 
         const tsNice = new Date(tsIso).toLocaleString();
         const name = r["Name"] || "";
         const email = r["Email"] || "";
         const title = r["Idea Title"] || "";
         const desc = r["Idea Description"] || "";
+
+        const existingCategory = String(r["Category"] || "").trim();
+        const existingPriority = String(r["Priority"] || "").trim();
+        const existingNotes = String(r["Notes"] || "").trim();
 
         li.innerHTML = `
           <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
@@ -366,6 +395,39 @@ document.addEventListener("DOMContentLoaded", () => {
               <small>${tsNice}${name ? " · " + name : ""}${email ? " · " + email : ""}</small>
               <div style="margin-top:6px; font-size:12px;">
                 Status: <strong>ACTIVE</strong>
+              </div>
+
+              <div style="margin-top:10px; padding:10px; border:1px solid rgba(201,204,210,.18); border-radius:10px; background:rgba(15,22,34,.55);">
+                <div style="font-size:12px; font-weight:700; opacity:.9; margin-bottom:8px;">Triage</div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                  <label style="font-size:12px; opacity:.85;">Category</label>
+                  <select data-triage="category" style="padding:8px 10px; border-radius:8px; background:rgba(15,22,34,.9); color:#E5E7EB; border:1px solid rgba(201,204,210,.3);">
+                    ${categoryOptions.map(opt => {
+                      const sel = (opt === existingCategory) ? "selected" : "";
+                      const label = opt === "" ? "—" : opt;
+                      return `<option value="${opt}" ${sel}>${label}</option>`;
+                    }).join("")}
+                  </select>
+
+                  <label style="font-size:12px; opacity:.85;">Priority</label>
+                  <select data-triage="priority" style="padding:8px 10px; border-radius:8px; background:rgba(15,22,34,.9); color:#E5E7EB; border:1px solid rgba(201,204,210,.3);">
+                    ${priorityOptions.map(opt => {
+                      const sel = (opt === existingPriority) ? "selected" : "";
+                      const label = opt === "" ? "—" : opt;
+                      return `<option value="${opt}" ${sel}>${label}</option>`;
+                    }).join("")}
+                  </select>
+                </div>
+
+                <div style="margin-top:10px;">
+                  <label style="font-size:12px; opacity:.85;">Notes</label><br/>
+                  <textarea data-triage="notes" rows="3" style="width:100%; margin-top:6px; padding:10px; border-radius:10px; background:rgba(15,22,34,.9); color:#E5E7EB; border:1px solid rgba(201,204,210,.3);">${existingNotes}</textarea>
+                  <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                    <button type="button" data-action="save-triage" style="padding:8px 12px; font-size:14px;">Save triage</button>
+                    <span data-triage="saved" style="font-size:12px; opacity:.75; align-self:center;"></span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -382,6 +444,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const archiveBtn = li.querySelector('button[data-action="archive"]');
         const deleteBtn = li.querySelector('button[data-action="delete"]');
+        const saveBtn = li.querySelector('button[data-action="save-triage"]');
+
+        const categorySel = li.querySelector('select[data-triage="category"]');
+        const prioritySel = li.querySelector('select[data-triage="priority"]');
+        const notesEl = li.querySelector('textarea[data-triage="notes"]');
+        const savedEl = li.querySelector('span[data-triage="saved"]');
 
         archiveBtn.addEventListener("click", async () => {
           const ok = window.confirm(
@@ -391,6 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           archiveBtn.disabled = true;
           deleteBtn.disabled = true;
+          if (saveBtn) saveBtn.disabled = true;
 
           try {
             await postAdminAction("archive", tsIso);
@@ -400,6 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Archive failed. Please try again.");
             archiveBtn.disabled = false;
             deleteBtn.disabled = false;
+            if (saveBtn) saveBtn.disabled = false;
           }
         });
 
@@ -411,6 +481,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           archiveBtn.disabled = true;
           deleteBtn.disabled = true;
+          if (saveBtn) saveBtn.disabled = true;
 
           try {
             await postAdminAction("delete", tsIso);
@@ -420,8 +491,33 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Delete failed. Please try again.");
             archiveBtn.disabled = false;
             deleteBtn.disabled = false;
+            if (saveBtn) saveBtn.disabled = false;
           }
         });
+
+        if (saveBtn) {
+          saveBtn.addEventListener("click", async () => {
+            const category = categorySel ? categorySel.value : "";
+            const priority = prioritySel ? prioritySel.value : "";
+            const notes = notesEl ? notesEl.value : "";
+
+            savedEl.textContent = "";
+            saveBtn.disabled = true;
+
+            try {
+              await postTriageUpdate(tsIso, category, priority, notes);
+              savedEl.textContent = "Saved ✓";
+              setTimeout(() => {
+                if (savedEl) savedEl.textContent = "";
+              }, 1500);
+            } catch (err) {
+              console.error(err);
+              alert("Save failed. Please try again.");
+            } finally {
+              saveBtn.disabled = false;
+            }
+          });
+        }
 
         ideasList.appendChild(li);
       }
@@ -483,11 +579,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const userName = userNameEl?.value.trim() || "";
     const userEmail = userEmailEl?.value.trim() || "";
-    const sourceVal = ideaSourceEl?.value.trim() || "";
+    const source = ideaSourceEl?.value.trim() || "";
     const title = ideaTitleEl?.value.trim() || "";
     const description = ideaDescriptionEl?.value.trim() || "";
 
-    if (!userName || !userEmail || !sourceVal || !title || !description) {
+    if (!userName || !userEmail || !source || !title || !description) {
       if (messageArea) messageArea.textContent = "Please fill out all fields.";
       return;
     }
@@ -500,17 +596,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       // 1) Google Sheet
-      // ✅ Send under multiple keys to match whatever your Apps Script expects
       const body = new URLSearchParams({
         name: userName,
         email: userEmail,
         ideaTitle: title,
         ideaDescription: description,
 
-        // try all likely parameter names
-        source: sourceVal,
-        ideaSource: sourceVal,
-        Source: sourceVal,
+        // source keys (kept compatible)
+        source,
+        ideaSource: source,
+        Source: source,
       });
 
       await fetch(SHEET_WEB_APP_URL, {
@@ -529,7 +624,7 @@ document.addEventListener("DOMContentLoaded", () => {
           email: userEmail,
           ideaTitle: title,
           ideaDescription: description,
-          source: sourceVal,
+          source,
         }),
       });
 
