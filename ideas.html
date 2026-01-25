@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+
+  <!-- ✅ REQUIRED for mobile scaling -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <title>UniPadel</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -11,8 +15,7 @@
     rel="stylesheet"
   />
 
-  <!-- cache-bust CSS -->
-  <link rel="stylesheet" href="/style.css?v=20260125-3" />
+  <link rel="stylesheet" href="/style.css" />
 </head>
 
 <body data-page="ideas">
@@ -32,7 +35,10 @@
   </nav>
 
   <div class="container">
-    <h1>UniPadel</h1>
+    <h1 class="brand">
+      <span class="brand-uni">Uni</span><span class="brand-padel">Padel</span>
+    </h1>
+
     <p>Submit ideas for the future UniPadel site.</p>
 
     <section id="ideasSection">
@@ -70,16 +76,10 @@
     </div>
   </div>
 
-  <script>
-    const _ideasList = document.getElementById("ideasList");
-    if (_ideasList) _ideasList.innerHTML = "<li>Loading script...</li>";
-  </script>
-
   <script
     src="/app.js?v=20260124-4"
     defer
     onerror="document.getElementById('ideasList').innerHTML='<li>Failed to load app.js</li>'"
   ></script>
-
 </body>
 </html>
