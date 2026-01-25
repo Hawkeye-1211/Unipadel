@@ -1,3 +1,10 @@
+/* ===== Global safety to prevent sideways overflow ===== */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden; /* key for the “overhang” issue */
+}
+
 /* ===== Page ===== */
 body {
   font-family: "Poppins", system-ui, sans-serif;
@@ -36,7 +43,7 @@ body {
   background-repeat: no-repeat;
 }
 
-/* ===== Navbar ===== */
+/* ===== Navbar (desktop) ===== */
 .navbar {
   position: relative;
   display: flex;
@@ -55,19 +62,25 @@ body {
   font-weight: 600;
 }
 
+/* Logo pinned to bottom-left (desktop) */
 .navbar .logo {
   position: absolute;
   left: 24px;
   bottom: -35px;
+  display: block;
+  line-height: 0;
 }
 
 .navbar .nav-logo {
   height: 170px;
+  width: auto;
+  display: block;
 }
 
-/* ===== Nav Links ===== */
+/* Right-side links */
 .nav-links {
   display: flex;
+  align-items: flex-end;
   gap: 16px;
   padding-bottom: 8px;
 }
@@ -92,7 +105,17 @@ body {
   overflow: hidden;
 }
 
-/* ===== Brand Header ===== */
+.container::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(120deg, transparent 35%, rgba(201,204,210,0.18) 45%, transparent 55%);
+  transform: rotate(8deg);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ===== Brand Header (logo accurate) ===== */
 .brand {
   font-size: 2.4rem;
   margin: 0 0 10px;
@@ -103,6 +126,7 @@ body {
 .brand-uni {
   background: linear-gradient(180deg,#FFFFFF,#F2F3F4 22%,#C9CCD1 45%,#FFFFFF 62%,#B6BBC1);
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
   text-shadow: 0 1px 0 rgba(0,0,0,.35), 0 -1px 0 rgba(255,255,255,.65);
 }
@@ -110,6 +134,7 @@ body {
 .brand-padel {
   background: linear-gradient(180deg,#9FD0F0,#5FA9DA 35%,#2F80ED 65%,#2C4D6A);
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
   text-shadow: 0 1px 0 rgba(0,0,0,.35);
 }
@@ -132,12 +157,14 @@ button {
   padding: 12px 18px;
   border-radius: 6px;
   border: none;
+  cursor: pointer;
 }
 
-/* Serve button */
 #ideaForm button[type="submit"] {
   display: block;
   margin: 26px auto 0;
+  position: relative;
+  top: 6px;
   background: linear-gradient(180deg,#D9FF4F,#B6E600 55%,#8FBF00);
   color: #FFF;
   border-radius: 12px;
@@ -153,53 +180,68 @@ button {
 /* ========================================================= */
 
 @media (max-width: 600px) {
+  /* Prevent any element from causing width overflow */
+  *, *::before, *::after { box-sizing: border-box; }
+  body { overflow-x: hidden; }
 
-  /* Prevent overflow on mobile */
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
-
+  /* ✅ Mobile navbar layout: logo left, tabs right, no overlap */
   .navbar {
-    min-height: 90px;
-    padding: 10px 14px;
+    min-height: 78px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
+  /* Stop absolute positioning on mobile */
   .navbar .logo {
-    bottom: -10px;
-    left: 14px;
+    position: static;
+    left: auto;
+    bottom: auto;
   }
 
+  /* Smaller logo so more tabs can fit */
   .navbar .nav-logo {
-    height: 120px;
+    height: 56px;      /* key change */
+    max-width: 55vw;   /* prevents it eating the whole row */
+    width: auto;
   }
 
-  .nav-links a {
-    font-size: 14px;
+  /* Tabs can wrap to a second line if needed */
+  .nav-links {
+    padding-bottom: 0;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 45vw;
   }
 
-  /* Container stays fully on screen */
+  .nav-links a { font-size: 14px; }
+
+  /* ✅ Container fully inside viewport */
   .container {
     width: calc(100% - 24px);
-    margin: 16px auto;
+    max-width: none;
+    margin: 14px auto;
     padding: 18px;
   }
 
-  .brand {
-    font-size: 1.8rem;
-  }
+  .brand { font-size: 1.9rem; }
 
-  /* Inputs never overflow */
-  input,
-  textarea {
+  /* ✅ Inputs/textarea cannot overflow */
+  input, textarea {
     width: 100%;
     max-width: 100%;
   }
 
-  button {
-    width: 100%;
-  }
+  /* Buttons full width on mobile */
+  button { width: 100%; }
 
+  /* Serve button full width on mobile but keeps premium look */
   #ideaForm button[type="submit"] {
     width: 100%;
+    margin-left: 0;
+    margin-right: 0;
   }
 }
