@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ✅ Web App URL
   const SHEET_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbw1B9iFPa4T3S81Gft7EBwHYFzWKB1H6LeO-OrOvmuYpMmvJJnc-EV8wEqfmsNzumQllw/exec";
+    "https://script.google.com/macros/s/AKfycbzOxwHR4fnRDV0kDuGXHfWxd5dXvHLL9YgN6-Qb6Ys-ZW01gk_naPlE4ShcVA6FGN9X-A/exec";
 
   // ---- ADMIN MODE ----
   const params = new URLSearchParams(window.location.search);
@@ -647,3 +647,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
