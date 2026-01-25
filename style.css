@@ -1,4 +1,4 @@
-/* ===== Global safety to prevent sideways overflow ===== */
+/* ===== Global safety ===== */
 html, body {
   width: 100%;
   max-width: 100%;
@@ -13,7 +13,7 @@ body {
   color: #E5E7EB;
   background-color: #0B0F14;
 
-  /* Nebula glow + premium star field */
+  /* Desktop star background */
   background-image:
     radial-gradient(900px 600px at 20% 10%, rgba(47,128,237,.25), transparent 60%),
     radial-gradient(700px 500px at 80% 20%, rgba(182,230,0,.12), transparent 55%),
@@ -31,19 +31,12 @@ body {
     radial-gradient(1px 1px at 74% 58%, rgba(255,255,255,.40), transparent 2px),
     radial-gradient(1px 1px at 82% 36%, rgba(255,255,255,.26), transparent 2px),
     radial-gradient(1px 1px at 88% 72%, rgba(255,255,255,.22), transparent 2px),
-    radial-gradient(1px 1px at 92% 24%, rgba(255,255,255,.34), transparent 2px),
-
-    radial-gradient(1px 1px at 18% 12%, rgba(255,255,255,.18), transparent 2px),
-    radial-gradient(1px 1px at 36% 18%, rgba(255,255,255,.20), transparent 2px),
-    radial-gradient(1px 1px at 52% 26%, rgba(255,255,255,.16), transparent 2px),
-    radial-gradient(1px 1px at 66% 14%, rgba(255,255,255,.18), transparent 2px),
-    radial-gradient(1px 1px at 78% 46%, rgba(255,255,255,.20), transparent 2px),
-    radial-gradient(1px 1px at 58% 82%, rgba(255,255,255,.16), transparent 2px);
+    radial-gradient(1px 1px at 92% 24%, rgba(255,255,255,.34), transparent 2px);
 
   background-repeat: no-repeat;
 }
 
-/* ===== Navbar (desktop) ===== */
+/* ===== Navbar ===== */
 .navbar {
   position: relative;
   display: flex;
@@ -62,7 +55,6 @@ body {
   font-weight: 600;
 }
 
-/* Logo pinned to bottom-left (desktop) */
 .navbar .logo {
   position: absolute;
   left: 24px;
@@ -71,10 +63,9 @@ body {
 
 .navbar .nav-logo {
   height: 170px;
-  width: auto;
 }
 
-/* Right-side links */
+/* ===== Nav Links ===== */
 .nav-links {
   display: flex;
   gap: 16px;
@@ -86,12 +77,13 @@ body {
   text-shadow: 0 0 12px rgba(47,128,237,.25);
 }
 
-/* ===== Container (desktop) ===== */
+/* ===== Container (UNCHANGED) ===== */
 .container {
   max-width: 600px;
   margin: 60px auto;
   padding: 30px;
   border-radius: 10px;
+
   background:
     linear-gradient(135deg,
       rgba(255,255,255,.08),
@@ -121,19 +113,13 @@ body {
   background: linear-gradient(180deg,#FFFFFF,#F2F3F4 22%,#C9CCD1 45%,#FFFFFF 62%,#B6BBC1);
   -webkit-background-clip: text;
   color: transparent;
-  text-shadow: 0 1px 0 rgba(0,0,0,.35), 0 -1px 0 rgba(255,255,255,.65);
 }
 
 .brand-padel {
   background: linear-gradient(180deg,#9FD0F0,#5FA9DA 35%,#2F80ED 65%,#2C4D6A);
   -webkit-background-clip: text;
   color: transparent;
-  text-shadow: 0 1px 0 rgba(0,0,0,.35);
 }
-
-/* ===== Text ===== */
-p { color: #D1D5DB; }
-label { color: #E5E7EB; font-weight: 600; }
 
 /* ===== Inputs ===== */
 input,
@@ -176,9 +162,18 @@ button {
 @media (max-width: 600px) {
 
   *, *::before, *::after { box-sizing: border-box; }
-  body { overflow-x: hidden; }
+  body {
+    overflow-x: hidden;
 
-  /* Mobile navbar */
+    /* ✅ Mobile page background is white */
+    background: #FFFFFF;
+  }
+
+  /* Remove stars on mobile so white is clean */
+  body {
+    background-image: none;
+  }
+
   .navbar {
     min-height: 84px;
     padding: 10px 12px;
@@ -195,33 +190,16 @@ button {
     gap: 12px;
   }
 
-  /* ✅ LIGHT container on mobile */
+  /* Container stays dark & premium */
   .container {
     width: calc(100% - 24px);
     margin: 14px auto;
     padding: 18px;
-
-    background: linear-gradient(
-      180deg,
-      #F8F9FA,
-      #ECEFF1
-    );
-
-    border-top: 4px solid #2F80ED;
-  }
-
-  /* Dark text for light background */
-  .container p,
-  .container label {
-    color: #1F2937;
   }
 
   input,
   textarea {
     width: 100%;
-    background: #FFFFFF;
-    color: #111827;
-    border: 1px solid #CBD5E1;
   }
 
   button { width: 100%; }
