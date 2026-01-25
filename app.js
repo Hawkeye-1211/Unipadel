@@ -3,6 +3,7 @@
 // Admin reads from Google Sheet
 // Admin actions: Archive (Status->ARCHIVED) or Delete (remove row)
 // Public view shows ACTIVE ideas + voting (Score) and sorts by Score
+// Admin triage: Category / Priority / Notes (action=triage) updates existing row
 
 document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
@@ -14,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ✅ Web App URL
   const SHEET_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbzOxwHR4fnRDV0kDuGXHfWxd5dXvHLL9YgN6-Qb6Ys-ZW01gk_naPlE4ShcVA6FGN9X-A/exec";
+    "https://script.google.com/macros/s/AKfycbw1B9iFPa4T3S81Gft7EBwHYFzWKB1H6LeO-OrOvmuYpMmvJJnc-EV8wEqfmsNzumQllw/exec";
 
   // ---- ADMIN MODE ----
   const params = new URLSearchParams(window.location.search);
@@ -77,8 +78,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ NEW: triage update (admin-only)
-  async function postTriageUpdate(id, category, priority, notes) {
+  // ✅ NEW: Admin triage update (no new rows)
+  async function postTriage(id, category, priority, notes) {
     if (!id || typeof id !== "string" || id.trim() === "") {
       throw new Error("Missing Timestamp id.");
     }
@@ -163,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (sb !== sa) return sb - sa;
 
         const ta = Date.parse(String(a["Timestamp"] || "")) || 0;
-        const tb = Date.parse(String(b["Timestamp"] || "")) || 0;
+        const tb = Date.parse(String(a["Timestamp"] || "")) || 0;
         return tb - ta;
       });
 
@@ -243,9 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Apply visual state (per-device)
         const state = getVoteState(tsIso);
-        if (state.up) {
-          upBtn.style.background = "#2F80ED";
-        }
+        if (state.up) upBtn.style.background = "#2F80ED";
         if (state.down) {
           downBtn.style.background = "#1F2937";
           downBtn.style.border = "1px solid rgba(182,230,0,.35)";
@@ -261,29 +260,15 @@ document.addEventListener("DOMContentLoaded", () => {
             let nextState = "";
 
             if (dir === "up") {
-              if (cur.up) {
-                netDelta = -1;
-                nextState = "";
-              } else if (cur.down) {
-                netDelta = 2;
-                nextState = "up";
-              } else {
-                netDelta = 1;
-                nextState = "up";
-              }
+              if (cur.up) { netDelta = -1; nextState = ""; }
+              else if (cur.down) { netDelta = 2; nextState = "up"; }
+              else { netDelta = 1; nextState = "up"; }
             }
 
             if (dir === "down") {
-              if (cur.down) {
-                netDelta = 1;
-                nextState = "";
-              } else if (cur.up) {
-                netDelta = -2;
-                nextState = "down";
-              } else {
-                netDelta = -1;
-                nextState = "down";
-              }
+              if (cur.down) { netDelta = 1; nextState = ""; }
+              else if (cur.up) { netDelta = -2; nextState = "down"; }
+              else { netDelta = -1; nextState = "down"; }
             }
 
             if (netDelta === 0) return;
@@ -294,11 +279,8 @@ document.addEventListener("DOMContentLoaded", () => {
             setVoteState(tsIso, nextState);
 
             await postVote(tsIso, netDelta > 0 ? 1 : -1);
-            if (netDelta === 2) {
-              await postVote(tsIso, 1);
-            } else if (netDelta === -2) {
-              await postVote(tsIso, -1);
-            }
+            if (netDelta === 2) await postVote(tsIso, 1);
+            else if (netDelta === -2) await postVote(tsIso, -1);
 
             setTimeout(() => {
               renderPublicIdeasFromSheet();
@@ -424,7 +406,9 @@ document.addEventListener("DOMContentLoaded", () => {
                   <label style="font-size:12px; opacity:.85;">Notes</label><br/>
                   <textarea data-triage="notes" rows="3" style="width:100%; margin-top:6px; padding:10px; border-radius:10px; background:rgba(15,22,34,.9); color:#E5E7EB; border:1px solid rgba(201,204,210,.3);">${existingNotes}</textarea>
                   <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
-                    <button type="button" data-action="save-triage" style="padding:8px 12px; font-size:14px;">Save triage</button>
+                    <button type="button" data-action="save-triage" style="padding:8px 12px; font-size:14px;">
+                      Save triage
+                    </button>
                     <span data-triage="saved" style="font-size:12px; opacity:.75; align-self:center;"></span>
                   </div>
                 </div>
@@ -501,12 +485,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const priority = prioritySel ? prioritySel.value : "";
             const notes = notesEl ? notesEl.value : "";
 
-            savedEl.textContent = "";
+            if (savedEl) savedEl.textContent = "";
             saveBtn.disabled = true;
 
             try {
-              await postTriageUpdate(tsIso, category, priority, notes);
-              savedEl.textContent = "Saved ✓";
+              await postTriage(tsIso, category, priority, notes);
+              if (savedEl) savedEl.textContent = "Saved ✓";
               setTimeout(() => {
                 if (savedEl) savedEl.textContent = "";
               }, 1500);
@@ -602,7 +586,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ideaTitle: title,
         ideaDescription: description,
 
-        // source keys (kept compatible)
+        // source keys (compatible)
         source,
         ideaSource: source,
         Source: source,
@@ -647,4 +631,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
