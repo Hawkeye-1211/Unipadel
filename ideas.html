@@ -2,10 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-
-  <!-- ✅ REQUIRED for mobile scaling -->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <title>UniPadel</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -67,6 +64,19 @@
       </form>
 
       <p id="messageArea"></p>
+    </section>
+
+    <!-- ✅ PUBLIC IDEAS (read-only) - app.js will fill this for non-admin users -->
+    <section id="publicIdeasSection" aria-label="Recent ideas" style="margin-top:28px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <div style="height:1px; background: rgba(201,204,210,.18); flex:1;"></div>
+        <h2 style="margin:0; font-size:16px; letter-spacing:.3px; opacity:.85;">Recent Ideas</h2>
+        <div style="height:1px; background: rgba(201,204,210,.18); flex:1;"></div>
+      </div>
+
+      <div id="publicIdeasList">
+        <!-- app.js will render premium cards here -->
+      </div>
     </section>
 
     <!-- Admin list -->
