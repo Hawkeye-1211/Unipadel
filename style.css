@@ -9,12 +9,13 @@ body {
 /* ===== Navbar ===== */
 .navbar {
   display: flex;
-  justify-content: space-between; /* logo left, tabs right */
-  align-items: flex-end;          /* everything sits on bottom */
+  justify-content: space-between;
+  align-items: flex-end;
   padding: 12px 24px;
   background: #0f172a;
-  min-height: 170px;              /* match your new logo size */
+  height: 110px;                 /* VISUAL navbar height */
   box-sizing: border-box;
+  overflow: hidden;              /* hides transparent PNG overflow */
 }
 
 .navbar a {
@@ -26,14 +27,20 @@ body {
 /* Logo container */
 .navbar .logo {
   display: flex;
-  align-items: flex-end;          /* logo sits on bottom */
+  align-items: flex-end;
+  height: 100%;
+  overflow: hidden;              /* key: clips invisible PNG padding */
 }
 
-/* Logo size */
+/* Logo image */
 .navbar .nav-logo {
-  height: 170px;                  /* your chosen size */
+  height: 170px;                 /* keeps visible logo size */
   width: auto;
+  object-fit: contain;
   display: block;
+
+  /* Pull logo DOWN so transparent top padding is clipped */
+  margin-bottom: -10px;
 }
 
 /* Right-side links */
@@ -41,6 +48,7 @@ body {
   display: flex;
   align-items: flex-end;
   gap: 16px;
+  padding-bottom: 8px;           /* aligns with logo baseline */
 }
 
 .nav-links a {
@@ -73,7 +81,6 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
 
   border-top: 4px solid #d4af37;
-  isolation: isolate;
 }
 
 /* ===== Title ===== */
@@ -81,7 +88,6 @@ h1 {
   font-size: 2.4rem;
   margin: 0 0 10px;
   font-weight: 700;
-  letter-spacing: 0.5px;
 
   background: linear-gradient(180deg, #fff3b0, #d4af37, #9a7b1f);
   -webkit-background-clip: text;
@@ -118,7 +124,6 @@ button {
   padding: 12px 18px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 16px;
 }
 
 button:hover {
@@ -134,17 +139,22 @@ button:hover {
 /* ===== Admin-only ===== */
 .owner-only {
   display: none;
-  color: #1f2937;
-}
-
-.owner-only li {
-  margin-bottom: 12px;
 }
 
 /* ===== Mobile tweaks ===== */
 @media (max-width: 600px) {
-  body {
-    font-size: 16px;
+  .navbar {
+    height: 90px;
+    padding: 10px 14px;
+  }
+
+  .navbar .nav-logo {
+    height: 120px;
+    margin-bottom: -8px;
+  }
+
+  .nav-links a {
+    font-size: 14px;
   }
 
   .container {
@@ -165,18 +175,5 @@ button:hover {
 
   button {
     width: 100%;
-  }
-
-  .navbar {
-    min-height: 120px;            /* slightly smaller on mobile */
-    padding: 10px 14px;
-  }
-
-  .navbar .nav-logo {
-    height: 120px;
-  }
-
-  .nav-links a {
-    font-size: 14px;
   }
 }
