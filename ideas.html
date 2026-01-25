@@ -38,35 +38,6 @@
 
     <p>Submit ideas for the future UniPadel site.</p>
 
-    <!-- ✅ NEW: brief to increase idea quality + credibility -->
-    <section class="feedback-brief" aria-label="How to submit great feedback">
-      <div class="feedback-brief-title">Help us beat the “booking app frustration”</div>
-      <div class="feedback-brief-sub">
-        UniPadel is building the padel platform players actually want. The most valuable submissions are specific pain points
-        (especially Playtomic) with a clear expectation of what “good” looks like.
-      </div>
-
-      <div class="feedback-brief-grid">
-        <div class="feedback-brief-col">
-          <div class="feedback-brief-heading">Best submissions include</div>
-          <ul class="feedback-brief-list">
-            <li><strong>Where</strong> it happens (booking, payments, finding games, rankings, etc.)</li>
-            <li><strong>What</strong> feels broken or annoying</li>
-            <li><strong>Why</strong> it’s bad (time, money, confusion, unfairness)</li>
-            <li><strong>What you expected</strong> instead</li>
-          </ul>
-        </div>
-
-        <div class="feedback-brief-col">
-          <div class="feedback-brief-heading">Privacy & trust</div>
-          <ul class="feedback-brief-list">
-            <li>Your email is used only for follow-up and is <strong>never shown publicly</strong>.</li>
-            <li>UniPadel is an <strong>independent</strong> project (not affiliated with booking platforms).</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
     <section id="ideasSection">
       <form id="ideaForm">
         <input type="hidden" id="submissionTs" name="_submission_ts" value="" />
@@ -83,39 +54,13 @@
         <label for="userEmail">Your email</label><br />
         <input type="email" id="userEmail" name="userEmail" required /><br /><br />
 
-        <!-- ✅ NEW: maps to your Sheet "Source" column -->
-        <label for="ideaSource">Which platform is this about?</label><br />
-        <select id="ideaSource" name="ideaSource" required>
-          <option value="" selected disabled>Select one…</option>
-          <option value="Playtomic">Playtomic</option>
-          <option value="Other booking app">Other booking app</option>
-          <option value="UniPadel (this site)">UniPadel (this site)</option>
-          <option value="General padel">General padel</option>
-        </select><br /><br />
-
-        <label for="ideaTitle">What’s the issue or improvement?</label><br />
-        <input
-          type="text"
-          id="ideaTitle"
-          name="ideaTitle"
-          required
-          placeholder="Example: Booking flow is unclear when splitting payment"
-        /><br /><br />
+        <label for="ideaTitle">What's your idea</label><br />
+        <input type="text" id="ideaTitle" name="ideaTitle" required /><br /><br />
 
         <label for="ideaDescription">Tell us more</label><br />
-        <textarea
-          id="ideaDescription"
-          name="ideaDescription"
-          rows="5"
-          required
-          placeholder="What happened? Why is it frustrating? What would a better version do instead?"
-        ></textarea><br /><br />
+        <textarea id="ideaDescription" name="ideaDescription" rows="5" required></textarea><br /><br />
 
         <button type="submit">Serve idea</button>
-
-        <div class="form-footnote">
-          Tip: The more specific you are, the more likely UniPadel builds it.
-        </div>
       </form>
 
       <p id="messageArea"></p>
@@ -141,8 +86,9 @@
     </div>
   </div>
 
+  <!-- ✅ Cache-bust: bumped version -->
   <script
-    src="/app.js?v=20260125-ideas-1"
+    src="/app.js?v=20260125-TRIAGE-1"
     defer
     onerror="document.getElementById('ideasList').innerHTML='<li>Failed to load app.js</li>'"
   ></script>
