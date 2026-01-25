@@ -202,8 +202,8 @@ button {
 
   /* Smaller logo so more tabs can fit */
   .navbar .nav-logo {
-    height: 60px;      /* key change */
-    max-width: 59vw;   /* prevents it eating the whole row */
+    height: 70px;      /* key change */
+    max-width: 69vw;   /* prevents it eating the whole row */
     width: auto;
   }
 
@@ -245,4 +245,5 @@ button {
     margin-right: 0;
   }
 }
+
 
