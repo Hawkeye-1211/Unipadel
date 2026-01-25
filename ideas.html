@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>UniPadel</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -12,7 +11,8 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="/style.css?v=58" />
+  <!-- cache-bust CSS -->
+  <link rel="stylesheet" href="/style.css?v=20260125-3" />
 </head>
 
 <body data-page="ideas">
@@ -25,22 +25,21 @@
       <a href="/">About</a>
       <a href="/ideas.html">Ideas</a>
 
+      <!-- Hidden by default; app.js shows these only during an admin session -->
       <a href="/ideas.html?admin=unipadelgold" id="adminNavLink" hidden>Admin</a>
       <a href="/ideas.html" id="exitAdminLink" hidden>Exit Admin</a>
     </div>
   </nav>
 
   <div class="container">
-    <h1 class="brand">
-  <span class="brand-uni">Uni</span><span class="brand-padel">Padel</span>
-</h1>
-
+    <h1>UniPadel</h1>
     <p>Submit ideas for the future UniPadel site.</p>
 
     <section id="ideasSection">
       <form id="ideaForm">
         <input type="hidden" id="submissionTs" name="_submission_ts" value="" />
 
+        <!-- Spam protection: honeypot -->
         <div style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
           <label for="website">Website</label>
           <input type="text" id="website" name="_gotcha" tabindex="-1" autocomplete="off" />
@@ -64,6 +63,7 @@
       <p id="messageArea"></p>
     </section>
 
+    <!-- Admin list -->
     <div class="owner-only">
       <h2>Submitted Ideas</h2>
       <ul id="ideasList"></ul>
@@ -76,20 +76,10 @@
   </script>
 
   <script
-    src="/app.js?v=20260125-2"
+    src="/app.js?v=20260124-4"
     defer
     onerror="document.getElementById('ideasList').innerHTML='<li>Failed to load app.js</li>'"
   ></script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
