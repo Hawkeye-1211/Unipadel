@@ -178,3 +178,18 @@ button:hover {
     width: 100%;
   }
 }
+/* TEMP STABILISER: restore default button look */
+button {
+  background-color: #1F2937;
+  color: #F9FAFB;
+}
+button:hover {
+  background-color: #111827;
+}
+
+/* ONLY the Serve button should be green */
+#ideaForm button[type="submit"]{
+  background-color: #B6E600;
+  color: #FFFFFF;
+}
+
