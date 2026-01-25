@@ -10,14 +10,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_SESSION_KEY = "Unipadel_admin_session";
   const LAST_SUBMIT_KEY = "Unipadel_last_submit_ts";
 
-  // Local vote key namespace (per-device voting guard)
   const VOTE_KEY_PREFIX = "Unipadel_vote_";
 
-  // ✅ Web App URL
+  // ✅ IMPORTANT: Paste your NEW deployment /exec URL here
   const SHEET_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbw1B9iFPa4T3S81Gft7EBwHYFzWKB1H6LeO-OrOvmuYpMmvJJnc-EV8wEqfmsNzumQllw/exec";
+    "https://script.google.com/macros/s/AKfycbx_SbZlBKAPFOyAb_mbllCytQEKTpzn-bafaZ7RloDTXsRLmsXB9Bngjp_Dv_h-I2tGHA/exec";
 
-  // ---- ADMIN MODE ----
   const params = new URLSearchParams(window.location.search);
   if (params.get("admin") === ADMIN_KEY) {
     sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
@@ -28,7 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
 
-  // Navbar links
   const adminNavLink = document.getElementById("adminNavLink");
   const exitAdminLink = document.getElementById("exitAdminLink");
 
@@ -43,13 +40,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ---- PAGE ELEMENTS ----
   const form = document.getElementById("ideaForm");
   const messageArea = document.getElementById("messageArea");
   const ownerSection = document.querySelector(".owner-only");
   const ideasList = document.getElementById("ideasList");
 
-  // Public ideas section (read-only + voting)
   const publicIdeasSection = document.getElementById("publicIdeasSection");
   const publicIdeasList = document.getElementById("publicIdeasList");
 
@@ -62,7 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const onIdeasPage = !!(form || ownerSection || ideasList || publicIdeasList);
   if (!onIdeasPage) return;
 
-  // ---- ADMIN HELPERS ----
   async function postAdminAction(action, id) {
     if (!id || typeof id !== "string" || id.trim() === "") {
       throw new Error("Missing Timestamp id.");
@@ -78,7 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ Admin triage update (no new rows)
   async function postTriage(id, category, priority, notes) {
     if (!id || typeof id !== "string" || id.trim() === "") {
       throw new Error("Missing Timestamp id.");
@@ -100,7 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ---- SHEET HELPERS ----
   async function fetchRowsFromSheet() {
     const res = await fetch(`${SHEET_WEB_APP_URL}?t=${Date.now()}`);
     const data = await res.json();
@@ -109,17 +101,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function postVote(id, delta) {
-    if (!id || typeof id !== "string" || id.trim() === "") {
-      throw new Error("Missing id");
-    }
+    if (!id || typeof id !== "string" || id.trim() === "") throw new Error("Missing id");
     const d = Number(delta);
     if (d !== 1 && d !== -1) throw new Error("Bad delta");
 
-    const body = new URLSearchParams({
-      action: "vote",
-      id,
-      delta: String(d),
-    });
+    const body = new URLSearchParams({ action: "vote", id, delta: String(d) });
 
     await fetch(SHEET_WEB_APP_URL, {
       method: "POST",
@@ -135,14 +121,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return { up, down };
   }
 
-  function setVoteState(id, dir /* "up" | "down" | "" */) {
+  function setVoteState(id, dir) {
     localStorage.removeItem(`${VOTE_KEY_PREFIX}${id}_up`);
     localStorage.removeItem(`${VOTE_KEY_PREFIX}${id}_down`);
     if (dir === "up") localStorage.setItem(`${VOTE_KEY_PREFIX}${id}_up`, "1");
     if (dir === "down") localStorage.setItem(`${VOTE_KEY_PREFIX}${id}_down`, "1");
   }
 
-  // ---- PUBLIC VIEW (CARDS + VOTING) ----
   async function renderPublicIdeasFromSheet() {
     if (!publicIdeasList) return;
 
@@ -156,14 +141,13 @@ document.addEventListener("DOMContentLoaded", () => {
         .filter((r) => String(r["Status"] || "").trim() === "ACTIVE")
         .filter((r) => String(r["Timestamp"] || "").trim() !== "");
 
-      // Sort: Score desc, then newest
       activeRows.sort((a, b) => {
         const sa = Number(a["Score"] || 0);
         const sb = Number(b["Score"] || 0);
         if (sb !== sa) return sb - sa;
 
         const ta = Date.parse(String(a["Timestamp"] || "")) || 0;
-        const tb = Date.parse(String(b["Timestamp"] || "")) || 0; // ✅ FIXED
+        const tb = Date.parse(String(b["Timestamp"] || "")) || 0;
         return tb - ta;
       });
 
@@ -324,7 +308,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ---- ADMIN VIEW ----
   async function renderIdeasFromSheet() {
     if (!ideasList) return;
 
@@ -333,9 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const rows = await fetchRowsFromSheet();
 
-      const activeRows = rows.filter(
-        (r) => String(r["Status"] || "").trim() === "ACTIVE"
-      );
+      const activeRows = rows.filter((r) => String(r["Status"] || "").trim() === "ACTIVE");
 
       if (activeRows.length === 0) {
         ideasList.innerHTML = "<li>No ACTIVE submissions.</li>";
@@ -500,17 +481,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         ideasList.appendChild(li);
       }
-
-      if (!ideasList.children.length) {
-        ideasList.innerHTML = "<li>No ACTIVE submissions.</li>";
-      }
     } catch (err) {
       console.error(err);
       ideasList.innerHTML = "<li>Failed to load submissions from Google Sheet.</li>";
     }
   }
 
-  // ---- MODE SWITCH ----
   if (isAdminMode) {
     if (form) form.style.display = "none";
     if (messageArea) messageArea.style.display = "none";
@@ -520,12 +496,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // ---- PUBLIC MODE ----
   if (ownerSection) ownerSection.style.display = "none";
   if (publicIdeasSection) publicIdeasSection.style.display = "block";
   renderPublicIdeasFromSheet();
 
-  // ---- PUBLIC SUBMIT ----
   if (!form) return;
 
   const submitButton =
@@ -535,20 +509,17 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Honeypot
     const gotcha = document.getElementById("website");
     if (gotcha && gotcha.value.trim() !== "") {
       if (messageArea) messageArea.textContent = "Submission blocked.";
       return;
     }
 
-    // Time check
     if (Date.now() - pageLoadedAt < 2000) {
       if (messageArea) messageArea.textContent = "Please wait a moment.";
       return;
     }
 
-    // Rate limit
     const lastSubmit = Number(localStorage.getItem(LAST_SUBMIT_KEY) || 0);
     if (Date.now() - lastSubmit < 30000) {
       if (messageArea) messageArea.textContent = "Please wait before submitting again.";
@@ -574,14 +545,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // 1) Google Sheet
       const body = new URLSearchParams({
         name: userName,
         email: userEmail,
         ideaTitle: title,
         ideaDescription: description,
-
-        // source keys (compatible)
         source,
         ideaSource: source,
         Source: source,
@@ -594,7 +562,6 @@ document.addEventListener("DOMContentLoaded", () => {
         body: body.toString(),
       });
 
-      // 2) Formspree emails
       const fsRes = await fetch("https://formspree.io/f/mykekkgg", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
