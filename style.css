@@ -1,20 +1,20 @@
 /* ===== Page ===== */
 body {
   font-family: "Poppins", system-ui, sans-serif;
-  background-color: #ffffff; /* calm page background */
+  background-color: #ffffff;
   margin: 0;
   padding: 0;
 }
 
-/* ===== Navbar (logo bottom-left, tabs right, logo does NOT affect tabs) ===== */
+/* ===== Navbar (logo bottom-left, tabs right) ===== */
 .navbar {
-  position: relative;              /* allows absolute logo without affecting tabs */
+  position: relative;              /* needed for absolute-positioned logo */
   display: flex;
-  justify-content: flex-end;       /* tabs sit on the right */
-  align-items: flex-end;           /* tabs sit near the bottom */
+  justify-content: flex-end;       /* tabs stay on the right */
+  align-items: flex-end;           /* tabs sit on the bottom */
   padding: 12px 24px;
   background: #0f172a;
-  min-height: 110px;               /* keep banner tidy (logo won't control height) */
+  min-height: 110px;               /* normal nav height; logo won't force height */
   box-sizing: border-box;
 }
 
@@ -24,16 +24,16 @@ body {
   font-weight: 600;
 }
 
-/* Logo pinned to bottom-left (doesn't take layout space) */
+/* Logo pinned to bottom-left and DOES NOT affect tab layout */
 .navbar .logo {
   position: absolute;
   left: 24px;
-  bottom: 8px;                     /* adjust this to fine-tune vertical position */
-  display: flex;
-  align-items: flex-end;
+  bottom: 8px;                     /* tweak this if you want it lower/higher */
+  display: block;
+  line-height: 0;
 }
 
-/* Logo size (can be big; it won't force navbar height) */
+/* Logo size */
 .navbar .nav-logo {
   height: 170px;                   /* your chosen size */
   width: auto;
@@ -45,7 +45,7 @@ body {
   display: flex;
   align-items: flex-end;
   gap: 16px;
-  padding-bottom: 8px;             /* aligns tabs nicely with the bottom */
+  padding-bottom: 8px;
 }
 
 .nav-links a {
@@ -229,4 +229,9 @@ button:hover {
     max-width: none;
     margin: 16px auto;
     padding: 18px;
-    box
+    box-sizing: border-box;
+
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+}
