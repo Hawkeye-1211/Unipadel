@@ -1,15 +1,23 @@
 /* ===== Page ===== */
 body {
   font-family: "Poppins", system-ui, sans-serif;
-  background-color: #0B0F14;
   margin: 0;
   padding: 0;
   color: #E5E7EB;
 
-  /* subtle space glow */
+  /* Space-black base */
+  background-color: #0B0F14;
+
+  /* Sparkle + subtle nebula + tiny star points */
   background-image:
     radial-gradient(900px 600px at 20% 10%, rgba(47,128,237,.25), transparent 60%),
-    radial-gradient(700px 500px at 80% 20%, rgba(182,230,0,.12), transparent 55%);
+    radial-gradient(700px 500px at 80% 20%, rgba(182,230,0,.12), transparent 55%),
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,.55), transparent 2px),
+    radial-gradient(1px 1px at 30% 80%, rgba(255,255,255,.35), transparent 2px),
+    radial-gradient(1px 1px at 70% 30%, rgba(255,255,255,.45), transparent 2px),
+    radial-gradient(1px 1px at 90% 70%, rgba(255,255,255,.30), transparent 2px),
+    radial-gradient(1px 1px at 55% 55%, rgba(255,255,255,.25), transparent 2px),
+    radial-gradient(1px 1px at 40% 35%, rgba(255,255,255,.22), transparent 2px);
   background-repeat: no-repeat;
 }
 
@@ -21,7 +29,10 @@ body {
   align-items: flex-end;
   padding: 12px 24px;
   min-height: 110px;
-  background: #0F1622;
+
+  background: linear-gradient(180deg, #0F1622, #0B111B);
+  border-bottom: 1px solid rgba(201, 204, 210, 0.14);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
 }
 
 .navbar a {
@@ -30,24 +41,46 @@ body {
   font-weight: 600;
 }
 
+/* Logo pinned to bottom-left */
 .navbar .logo {
   position: absolute;
   left: 24px;
   bottom: -35px;
+  display: block;
+  line-height: 0;
 }
 
+/* Logo size */
 .navbar .nav-logo {
   height: 170px;
+  width: auto;
+  display: block;
 }
 
+/* Right-side links */
 .nav-links {
   display: flex;
+  align-items: flex-end;
   gap: 16px;
   padding-bottom: 8px;
 }
 
+.nav-links a {
+  opacity: 0.9;
+}
+
 .nav-links a:hover {
+  opacity: 1;
   color: #2F80ED;
+  text-shadow: 0 0 14px rgba(47, 128, 237, 0.25);
+}
+
+/* Subtle current-tab glow (no layout changes) */
+body[data-page="home"] .nav-links a[href="/"],
+body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
+  opacity: 1;
+  color: #E6E8EB;
+  text-shadow: 0 0 18px rgba(47, 128, 237, 0.18);
 }
 
 /* ===== Container ===== */
@@ -57,12 +90,13 @@ body {
   padding: 30px;
   border-radius: 10px;
 
+  /* metallic plate */
   background:
     linear-gradient(135deg,
       rgba(255,255,255,.08),
       rgba(255,255,255,.03) 25%,
       rgba(47,128,237,.06) 50%,
-      rgba(0,0,0,.2) 100%
+      rgba(0,0,0,.20) 100%
     ),
     linear-gradient(135deg, #141A22, #0F1622);
 
@@ -71,30 +105,69 @@ body {
     inset 0 1px 0 rgba(255,255,255,.08);
 
   border-top: 4px solid #2F80ED;
+
+  position: relative;
+  overflow: hidden;
 }
 
-/* ===== Header (Chrome + Blue) ===== */
-h1 {
+/* Metallic diagonal shine */
+.container::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(
+    120deg,
+    transparent 35%,
+    rgba(201,204,210,0.18) 45%,
+    transparent 55%
+  );
+  transform: rotate(8deg);
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* ===== Brand Header (Logo accurate: Uni chrome + Padel blue) ===== */
+.brand {
   font-size: 2.4rem;
   margin: 0 0 10px;
   font-weight: 700;
+  line-height: 1.1;
+}
 
+/* Chrome silver "Uni" */
+.brand-uni {
   background: linear-gradient(
-    90deg,
-    #E6E8EB 0%,
-    #FFFFFF 20%,
-    #C9CCD2 40%,
-    #2F80ED 75%,
-    #2563EB 100%
+    180deg,
+    #ffffff 0%,
+    #f1f5f9 20%,
+    #c9ccd2 45%,
+    #ffffff 65%,
+    #9ca3af 100%
   );
-
   -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: transparent;
 
   text-shadow:
-    0 0 12px rgba(47,128,237,.35),
-    0 0 2px rgba(255,255,255,.3);
+    0 1px 0 rgba(255,255,255,0.7),
+    0 0 10px rgba(255,255,255,0.35);
+}
+
+/* Electric blue "Padel" */
+.brand-padel {
+  background: linear-gradient(
+    180deg,
+    #93c5fd 0%,
+    #2f80ed 45%,
+    #2563eb 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  text-shadow:
+    0 0 18px rgba(47,128,237,0.75),
+    0 0 2px rgba(255,255,255,0.25);
 }
 
 /* ===== Text ===== */
@@ -127,7 +200,7 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(47,128,237,.25);
 }
 
-/* ===== Buttons (default / admin / archive safe) ===== */
+/* ===== Buttons (default safe) ===== */
 button {
   background: #1F2937;
   color: #E5E7EB;
@@ -141,7 +214,7 @@ button:hover {
   background: #111827;
 }
 
-/* ===== SERVE BUTTON ONLY ===== */
+/* ===== SERVE BUTTON ONLY (premium luminous) ===== */
 #ideaForm button[type="submit"] {
   display: block;
   margin: 26px auto 0;
@@ -201,19 +274,24 @@ button:hover {
     height: 120px;
   }
 
+  .nav-links a {
+    font-size: 14px;
+  }
+
   .container {
     width: calc(100% - 32px);
     margin: 16px auto;
     padding: 18px;
   }
 
-  h1 {
+  .brand {
     font-size: 1.8rem;
   }
 
   input,
   textarea {
     width: 100%;
+    box-sizing: border-box;
   }
 
   button {
