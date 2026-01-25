@@ -36,7 +36,7 @@ body {
 
 /* Logo size */
 .navbar .nav-logo {
-  height: 250px;                    /* your chosen size */
+  height: 210px;                    /* your chosen size */
   width: auto;
   display: block;
 }
@@ -251,6 +251,7 @@ button:hover {
     margin-right: 16x;
   }
 }
+
 
 
 
