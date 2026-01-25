@@ -1,20 +1,19 @@
 /* ===== Page ===== */
 body {
   font-family: "Poppins", system-ui, sans-serif;
-  background-color: #ffffff; /* calm page background */
+  background-color: #ffffff;
   margin: 0;
   padding: 0;
 }
 
-/* ===== Navbar (stable + centered logo) ===== */
+/* ===== Navbar ===== */
 .navbar {
-  position: relative;              /* allows absolute-centered logo */
   display: flex;
-  justify-content: flex-end;       /* tabs sit on the right */
-  align-items: flex-end;           /* tabs sit lower (near bottom) */
+  justify-content: space-between; /* logo left, tabs right */
+  align-items: flex-end;          /* everything sits on bottom */
   padding: 12px 24px;
   background: #0f172a;
-  min-height: 90px;                /* ensures room for 85px logo */
+  min-height: 170px;              /* match your new logo size */
   box-sizing: border-box;
 }
 
@@ -24,19 +23,15 @@ body {
   font-weight: 600;
 }
 
-/* Center the logo in the navbar */
+/* Logo container */
 .navbar .logo {
-  position: absolute;
-  left: 50%;
-  bottom: 10px;                    /* keeps it nicely grounded */
-  transform: translateX(-50%);
   display: flex;
-  align-items: center;
+  align-items: flex-end;          /* logo sits on bottom */
 }
 
 /* Logo size */
 .navbar .nav-logo {
-  height: 170px;                    /* your chosen size */
+  height: 170px;                  /* your chosen size */
   width: auto;
   display: block;
 }
@@ -56,7 +51,7 @@ body {
   opacity: 1;
 }
 
-/* ===== Card / Container (silver metallic) ===== */
+/* ===== Card / Container ===== */
 .container {
   max-width: 600px;
   margin: 60px auto;
@@ -81,21 +76,17 @@ body {
   isolation: isolate;
 }
 
-/* ===== Title (gold metallic text only) ===== */
+/* ===== Title ===== */
 h1 {
   font-size: 2.4rem;
   margin: 0 0 10px;
   font-weight: 700;
   letter-spacing: 0.5px;
 
-  color: #d4af37;
-
   background: linear-gradient(180deg, #fff3b0, #d4af37, #9a7b1f);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-
-  display: inline-block;
 }
 
 /* ===== Text ===== */
@@ -134,133 +125,58 @@ button:hover {
   background-color: #111827;
 }
 
-.admin-active {
-  color: #f9fafb;
-}
-
 /* ===== Message ===== */
 #messageArea {
   margin-top: 15px;
   font-weight: bold;
 }
 
-/* ===== Admin-only history ===== */
+/* ===== Admin-only ===== */
 .owner-only {
   display: none;
   color: #1f2937;
 }
 
 .owner-only li {
-  color: #1f2937;
   margin-bottom: 12px;
 }
 
-.owner-only li strong {
-  color: #1f2937;
-}
 /* ===== Mobile tweaks ===== */
 @media (max-width: 600px) {
-  /* Give the page some breathing room */
   body {
     font-size: 16px;
   }
 
-  /* Container: full-width card with nicer spacing */
   .container {
-  width: calc(100% - 20px);
-  margin: 14px auto;
-  padding: 10px;
-}
+    width: calc(100% - 32px);
+    margin: 16px auto;
+    padding: 18px;
+  }
 
-
-  /* Headings: smaller so they fit */
   h1 {
     font-size: 1.8rem;
   }
 
-  /* Inputs: actually full width on mobile */
   input,
   textarea {
     width: 100%;
     box-sizing: border-box;
   }
 
-  /* Buttons: full width for easy tapping */
   button {
     width: 100%;
-    padding: 14px 18px;
-    font-size: 16px;
   }
 
-  /* Navbar: shorter + readable */
   .navbar {
+    min-height: 120px;            /* slightly smaller on mobile */
     padding: 10px 14px;
-    min-height: 74px; /* reduces the tall bar feel on phones */
   }
 
-  /* Logo: still clear, but not huge on small screens */
   .navbar .nav-logo {
-    height: 64px;
-  }
-
-  /* Tabs: slightly tighter */
-  .nav-links {
-    gap: 12px;
+    height: 120px;
   }
 
   .nav-links a {
     font-size: 14px;
   }
 }
-/* --- Mobile fix: keep container inside screen --- */
-@media (max-width: 640px) {
-  .container {
-    width: calc(100% - 24px);
-    max-width: none;
-    margin: 20px auto;
-    padding: 20px;
-    box-sizing: border-box;
-  }
-}
-/* --- Mobile spacing fix: add real side gutters --- */
-@media (max-width: 640px) {
-  .container {
-    width: 100%;
-    max-width: none;
-    margin: 16px auto;     /* top/bottom spacing */
-    padding: 18px;         /* inner padding */
-    box-sizing: border-box;
-
-    /* This is the key: outer side gutters */
-    margin-left: 16px;
-    margin-right: 16px;
-  }
-}
-
-/* --- Mobile spacing fix: add real side gutters --- */
-@media (max-width: 640px) {
-  .container {
-    width: 100%;
-    max-width: none;
-    margin: 16px auto;     /* top/bottom spacing */
-    padding: 18px;         /* inner padding */
-    box-sizing: border-box;
-
-    /* This is the key: outer side gutters */
-    margin-left: 16px;
-    margin-right: 16x;
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
