@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ✅ Web App URL
   const SHEET_WEB_APP_URL =
-    "https://script.google.com/macros/s/PASTE_YOUR_CURRENT_DEPLOYMENT_ID/exec";
+    "https://script.google.com/macros/s/AKfycbx_SbZlBKAPFOyAb_mbllCytQEKTpzn-bafaZ7RloDTXsRLmsXB9Bngjp_Dv_h-I2tGHA/exec";
 
   // ---- ADMIN MODE ----
   const params = new URLSearchParams(window.location.search);
@@ -630,3 +630,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
