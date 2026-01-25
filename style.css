@@ -1,1 +1,298 @@
+/* ===== Global safety to prevent sideways overflow ===== */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
 
+/* ===== Page ===== */
+body {
+  font-family: "Poppins", system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #E5E7EB;
+  background-color: #0B0F14;
+
+  /* Nebula glow + premium star field */
+  background-image:
+    radial-gradient(900px 600px at 20% 10%, rgba(47,128,237,.25), transparent 60%),
+    radial-gradient(700px 500px at 80% 20%, rgba(182,230,0,.12), transparent 55%),
+
+    radial-gradient(1px 1px at 8% 18%, rgba(255,255,255,.55), transparent 2px),
+    radial-gradient(1px 1px at 14% 62%, rgba(255,255,255,.28), transparent 2px),
+    radial-gradient(1px 1px at 22% 36%, rgba(255,255,255,.38), transparent 2px),
+    radial-gradient(1px 1px at 28% 78%, rgba(255,255,255,.22), transparent 2px),
+    radial-gradient(1px 1px at 33% 22%, rgba(255,255,255,.30), transparent 2px),
+    radial-gradient(1px 1px at 41% 52%, rgba(255,255,255,.26), transparent 2px),
+    radial-gradient(1px 1px at 47% 30%, rgba(255,255,255,.42), transparent 2px),
+    radial-gradient(1px 1px at 54% 70%, rgba(255,255,255,.24), transparent 2px),
+    radial-gradient(1px 1px at 61% 42%, rgba(255,255,255,.32), transparent 2px),
+    radial-gradient(1px 1px at 68% 18%, rgba(255,255,255,.28), transparent 2px),
+    radial-gradient(1px 1px at 74% 58%, rgba(255,255,255,.40), transparent 2px),
+    radial-gradient(1px 1px at 82% 36%, rgba(255,255,255,.26), transparent 2px),
+    radial-gradient(1px 1px at 88% 72%, rgba(255,255,255,.22), transparent 2px),
+    radial-gradient(1px 1px at 92% 24%, rgba(255,255,255,.34), transparent 2px),
+
+    radial-gradient(1px 1px at 18% 12%, rgba(255,255,255,.18), transparent 2px),
+    radial-gradient(1px 1px at 36% 18%, rgba(255,255,255,.20), transparent 2px),
+    radial-gradient(1px 1px at 52% 26%, rgba(255,255,255,.16), transparent 2px),
+    radial-gradient(1px 1px at 66% 14%, rgba(255,255,255,.18), transparent 2px),
+    radial-gradient(1px 1px at 78% 46%, rgba(255,255,255,.20), transparent 2px),
+    radial-gradient(1px 1px at 58% 82%, rgba(255,255,255,.16), transparent 2px);
+
+  background-repeat: no-repeat;
+}
+
+/* ===== Navbar (desktop) ===== */
+.navbar {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  padding: 12px 24px;
+  min-height: 110px;
+  background: linear-gradient(180deg, #0F1622, #0B111B);
+  border-bottom: 1px solid rgba(201,204,210,.14);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+.navbar a {
+  color: #E5E7EB;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Logo pinned to bottom-left (desktop) */
+.navbar .logo {
+  position: absolute;
+  left: 24px;
+  bottom: -35px;
+  display: block;
+  line-height: 0;
+}
+
+.navbar .nav-logo {
+  height: 170px;
+  width: auto;
+  display: block;
+}
+
+/* Right-side links */
+.nav-links {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding-bottom: 8px;
+}
+
+.nav-links a { opacity: 0.9; }
+
+.nav-links a:hover {
+  opacity: 1;
+  color: #2F80ED;
+  text-shadow: 0 0 12px rgba(47,128,237,.25);
+}
+
+/* ===== Container ===== */
+.container {
+  max-width: 600px;
+  margin: 60px auto;
+  padding: 30px;
+  border-radius: 10px;
+
+  background:
+    linear-gradient(135deg,
+      rgba(255,255,255,.08),
+      rgba(255,255,255,.03) 25%,
+      rgba(47,128,237,.06) 50%,
+      rgba(0,0,0,.20) 100%
+    ),
+    linear-gradient(135deg, #141A22, #0F1622);
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.65),
+    inset 0 1px 0 rgba(255,255,255,.08);
+
+  border-top: 4px solid #2F80ED;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Metallic diagonal shine */
+.container::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(120deg, transparent 35%, rgba(201,204,210,0.18) 45%, transparent 55%);
+  transform: rotate(8deg);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ===== Brand Header (logo accurate) ===== */
+.brand {
+  font-size: 2.4rem;
+  margin: 0 0 10px;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.brand-uni {
+  background: linear-gradient(
+    180deg,
+    #FFFFFF 0%,
+    #F2F3F4 22%,
+    #C9CCD1 45%,
+    #FFFFFF 62%,
+    #B6BBC1 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 1px 0 rgba(0,0,0,.35), 0 -1px 0 rgba(255,255,255,.65);
+}
+
+.brand-padel {
+  background: linear-gradient(
+    180deg,
+    #9FD0F0 0%,
+    #5FA9DA 35%,
+    #2F80ED 65%,
+    #2C4D6A 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 1px 0 rgba(0,0,0,.35);
+}
+
+/* ===== Text ===== */
+p { color: #D1D5DB; }
+label { font-weight: 600; color: #E5E7EB; }
+
+/* ===== Inputs ===== */
+input,
+textarea {
+  width: 95%;
+  padding: 10px;
+  margin-top: 6px;
+  background: rgba(15,22,34,.9);
+  color: #E5E7EB;
+  border: 1px solid rgba(201,204,210,.3);
+  border-radius: 6px;
+}
+
+/* ===== Buttons ===== */
+button {
+  background: #1F2937;
+  color: #E5E7EB;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover { background: #111827; }
+
+/* ===== Serve Button ONLY ===== */
+#ideaForm button[type="submit"] {
+  display: block;
+  margin: 26px auto 0;
+  position: relative;
+  top: 6px;
+
+  background: linear-gradient(180deg,#D9FF4F 0%,#B6E600 55%,#8FBF00 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  letter-spacing: .3px;
+  border-radius: 12px;
+  padding: 14px 30px;
+
+  box-shadow:
+    0 18px 40px rgba(182,230,0,.35),
+    inset 0 2px 0 rgba(255,255,255,.35),
+    0 0 18px rgba(182,230,0,.25);
+}
+
+#ideaForm button[type="submit"]:hover {
+  box-shadow:
+    0 24px 48px rgba(182,230,0,.45),
+    inset 0 2px 0 rgba(255,255,255,.45),
+    0 0 28px rgba(182,230,0,.4);
+}
+
+/* ===== Message / Admin ===== */
+#messageArea { margin-top: 15px; font-weight: bold; }
+.owner-only { display: none; }
+
+/* ========================================================= */
+/* =================== MOBILE FIX ONLY ===================== */
+/* ========================================================= */
+
+@media (max-width: 600px) {
+  /* Prevent overflow on mobile */
+  *, *::before, *::after { box-sizing: border-box; }
+  body { overflow-x: hidden; }
+
+  /* ✅ Mobile navbar: logo left, tabs right, no overlap */
+  .navbar {
+    min-height: 84px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Stop absolute positioning on mobile */
+  .navbar .logo {
+    position: static;
+    left: auto;
+    bottom: auto;
+  }
+
+  /* ✅ Bigger logo that is still safe */
+  .navbar .nav-logo {
+    height: 92px;      /* tuned bigger */
+    width: auto;
+    max-width: none;   /* IMPORTANT: lets height control size */
+    display: block;
+  }
+
+  /* ✅ Tabs wrap instead of colliding with logo */
+  .nav-links {
+    padding-bottom: 0;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;        /* key: wraps onto a second line */
+    justify-content: flex-end;
+    max-width: 44vw;        /* reserves room for logo */
+  }
+
+  .nav-links a { font-size: 14px; }
+
+  /* ✅ Container fits inside viewport */
+  .container {
+    width: calc(100% - 24px);
+    max-width: none;
+    margin: 14px auto;
+    padding: 18px;
+  }
+
+  .brand { font-size: 1.9rem; }
+
+  /* Inputs never overflow */
+  input, textarea {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Buttons full width on mobile */
+  button { width: 100%; }
+
+  /* Serve stays premium but full width on mobile */
+  #ideaForm button[type="submit"] {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
