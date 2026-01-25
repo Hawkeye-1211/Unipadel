@@ -1,62 +1,56 @@
 /* ===== Page ===== */
 body {
   font-family: "Poppins", system-ui, sans-serif;
-  background-color: #ffffff;
+  background-color: #0B0F14;
   margin: 0;
   padding: 0;
+  color: #E5E7EB;
+
+  /* subtle space glow */
+  background-image:
+    radial-gradient(900px 600px at 20% 10%, rgba(47,128,237,.25), transparent 60%),
+    radial-gradient(700px 500px at 80% 20%, rgba(182,230,0,.12), transparent 55%);
+  background-repeat: no-repeat;
 }
 
-/* ===== Navbar (logo bottom-left, tabs right) ===== */
+/* ===== Navbar ===== */
 .navbar {
   position: relative;
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
   padding: 12px 24px;
-  background: #0f172a;
   min-height: 110px;
-  box-sizing: border-box;
+  background: #0F1622;
 }
 
 .navbar a {
-  color: #ffffff;
+  color: #E5E7EB;
   text-decoration: none;
   font-weight: 600;
 }
 
-/* Logo pinned to bottom-left */
 .navbar .logo {
   position: absolute;
   left: 24px;
-  bottom: -35px;   /* 🔧 LOWERED from 8px → -14px */
-  display: block;
-  line-height: 0;
+  bottom: -35px;
 }
 
-/* Logo size */
 .navbar .nav-logo {
   height: 170px;
-  width: auto;
-  display: block;
 }
 
-/* Right-side links */
 .nav-links {
   display: flex;
-  align-items: flex-end;
   gap: 16px;
   padding-bottom: 8px;
 }
 
-.nav-links a {
-  opacity: 0.9;
-}
-
 .nav-links a:hover {
-  opacity: 1;
+  color: #2F80ED;
 }
 
-/* ===== Card / Container ===== */
+/* ===== Container ===== */
 .container {
   max-width: 600px;
   margin: 60px auto;
@@ -64,42 +58,53 @@ body {
   border-radius: 10px;
 
   background:
-    linear-gradient(
-      135deg,
-      #9ca3af,
-      #e5e7eb 25%,
-      #bfc3c9 50%,
-      #f9fafb 70%,
-      #9ca3af
-    );
+    linear-gradient(135deg,
+      rgba(255,255,255,.08),
+      rgba(255,255,255,.03) 25%,
+      rgba(47,128,237,.06) 50%,
+      rgba(0,0,0,.2) 100%
+    ),
+    linear-gradient(135deg, #141A22, #0F1622);
 
   box-shadow:
-    0 10px 25px rgba(17, 24, 39, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    0 20px 60px rgba(0,0,0,.65),
+    inset 0 1px 0 rgba(255,255,255,.08);
 
-  border-top: 4px solid #d4af37;
+  border-top: 4px solid #2F80ED;
 }
 
-/* ===== Title ===== */
+/* ===== Header (Chrome + Blue) ===== */
 h1 {
   font-size: 2.4rem;
   margin: 0 0 10px;
   font-weight: 700;
 
-  background: linear-gradient(180deg, #fff3b0, #d4af37, #9a7b1f);
+  background: linear-gradient(
+    90deg,
+    #E6E8EB 0%,
+    #FFFFFF 20%,
+    #C9CCD2 40%,
+    #2F80ED 75%,
+    #2563EB 100%
+  );
+
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+
+  text-shadow:
+    0 0 12px rgba(47,128,237,.35),
+    0 0 2px rgba(255,255,255,.3);
 }
 
 /* ===== Text ===== */
 p {
-  color: #1f2937;
+  color: #D1D5DB;
 }
 
 label {
   font-weight: 600;
-  color: #1f2937;
+  color: #E5E7EB;
 }
 
 /* ===== Inputs ===== */
@@ -108,15 +113,24 @@ textarea {
   width: 95%;
   padding: 10px;
   margin-top: 6px;
-  border: 3px solid #d4af37;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.9);
+
+  background: rgba(15,22,34,.9);
+  color: #E5E7EB;
+  border: 1px solid rgba(201,204,210,.3);
 }
 
-/* ===== Buttons ===== */
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #2F80ED;
+  box-shadow: 0 0 0 3px rgba(47,128,237,.25);
+}
+
+/* ===== Buttons (default / admin / archive safe) ===== */
 button {
-  background-color: #1f2937;
-  color: #f9fafb;
+  background: #1F2937;
+  color: #E5E7EB;
   border: none;
   padding: 12px 18px;
   border-radius: 6px;
@@ -124,7 +138,40 @@ button {
 }
 
 button:hover {
-  background-color: #111827;
+  background: #111827;
+}
+
+/* ===== SERVE BUTTON ONLY ===== */
+#ideaForm button[type="submit"] {
+  display: block;
+  margin: 26px auto 0;
+  position: relative;
+  top: 6px;
+
+  background: linear-gradient(
+    180deg,
+    #D9FF4F 0%,
+    #B6E600 55%,
+    #8FBF00 100%
+  );
+
+  color: #FFFFFF;
+  font-weight: 700;
+  letter-spacing: .3px;
+  border-radius: 12px;
+  padding: 14px 30px;
+
+  box-shadow:
+    0 18px 40px rgba(182,230,0,.35),
+    inset 0 2px 0 rgba(255,255,255,.35),
+    0 0 18px rgba(182,230,0,.25);
+}
+
+#ideaForm button[type="submit"]:hover {
+  box-shadow:
+    0 24px 48px rgba(182,230,0,.45),
+    inset 0 2px 0 rgba(255,255,255,.45),
+    0 0 28px rgba(182,230,0,.4);
 }
 
 /* ===== Message ===== */
@@ -138,24 +185,20 @@ button:hover {
   display: none;
 }
 
-/* ===== Mobile tweaks ===== */
+/* ===== Mobile ===== */
 @media (max-width: 600px) {
   .navbar {
-    padding: 10px 14px;
     min-height: 90px;
+    padding: 10px 14px;
   }
 
   .navbar .logo {
-    left: 14px;
     bottom: -10px;
+    left: 14px;
   }
 
   .navbar .nav-logo {
     height: 120px;
-  }
-
-  .nav-links a {
-    font-size: 14px;
   }
 
   .container {
@@ -171,25 +214,9 @@ button:hover {
   input,
   textarea {
     width: 100%;
-    box-sizing: border-box;
   }
 
   button {
     width: 100%;
   }
 }
-/* TEMP STABILISER: restore default button look */
-button {
-  background-color: #1F2937;
-  color: #F9FAFB;
-}
-button:hover {
-  background-color: #111827;
-}
-
-/* ONLY the Serve button should be green */
-#ideaForm button[type="submit"]{
-  background-color: #B6E600;
-  color: #FFFFFF;
-}
-
