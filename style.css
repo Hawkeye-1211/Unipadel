@@ -45,7 +45,10 @@ body {
 
 /* ===== Navbar (desktop) ===== */
 .navbar {
-  position: relative;
+  position: sticky;          /* ✅ STICKY */
+  top: 0;                    /* ✅ STICKY */
+  z-index: 1000;             /* ✅ stays above content */
+
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
@@ -129,7 +132,7 @@ body {
   pointer-events: none;
 }
 
-/* ===== Brand Header (logo accurate) ===== */
+/* ===== Brand Header ===== */
 .brand {
   font-size: 2.4rem;
   margin: 0 0 10px;
@@ -149,7 +152,6 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 1px 0 rgba(0,0,0,.35), 0 -1px 0 rgba(255,255,255,.65);
 }
 
 .brand-padel {
@@ -163,7 +165,6 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 1px 0 rgba(0,0,0,.35);
 }
 
 /* ===== Text ===== */
@@ -194,105 +195,37 @@ button {
 
 button:hover { background: #111827; }
 
-/* ===== Serve Button ONLY ===== */
-#ideaForm button[type="submit"] {
-  display: block;
-  margin: 26px auto 0;
-  position: relative;
-  top: 6px;
-
-  background: linear-gradient(180deg,#D9FF4F 0%,#B6E600 55%,#8FBF00 100%);
-  color: #FFFFFF;
-  font-weight: 700;
-  letter-spacing: .3px;
-  border-radius: 12px;
-  padding: 14px 30px;
-
-  box-shadow:
-    0 18px 40px rgba(182,230,0,.35),
-    inset 0 2px 0 rgba(255,255,255,.35),
-    0 0 18px rgba(182,230,0,.25);
-}
-
-#ideaForm button[type="submit"]:hover {
-  box-shadow:
-    0 24px 48px rgba(182,230,0,.45),
-    inset 0 2px 0 rgba(255,255,255,.45),
-    0 0 28px rgba(182,230,0,.4);
-}
-
 /* ===== Message / Admin ===== */
 #messageArea { margin-top: 15px; font-weight: bold; }
 .owner-only { display: none; }
 
-/* ========================================================= */
-/* =================== MOBILE FIX ONLY ===================== */
-/* ========================================================= */
-
+/* ===== Mobile ===== */
 @media (max-width: 600px) {
-  /* Prevent overflow on mobile */
-  *, *::before, *::after { box-sizing: border-box; }
-  body { overflow-x: hidden; }
-
-  /* ✅ Mobile navbar: logo left, tabs right, no overlap */
   .navbar {
     min-height: 84px;
     padding: 10px 12px;
-    display: flex;
     justify-content: space-between;
     align-items: center;
   }
 
-  /* Stop absolute positioning on mobile */
   .navbar .logo {
     position: static;
-    left: auto;
-    bottom: auto;
   }
 
-  /* ✅ Bigger logo that is still safe */
   .navbar .nav-logo {
-    height: 92px;      /* tuned bigger */
-    width: auto;
-    max-width: none;   /* IMPORTANT: lets height control size */
-    display: block;
+    height: 92px;
   }
 
-  /* ✅ Tabs wrap instead of colliding with logo */
   .nav-links {
-    padding-bottom: 0;
     align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
-    flex-wrap: wrap;        /* key: wraps onto a second line */
-    justify-content: flex-end;
-    max-width: 44vw;        /* reserves room for logo */
+    max-width: 44vw;
   }
 
-  .nav-links a { font-size: 14px; }
-
-  /* ✅ Container fits inside viewport */
   .container {
     width: calc(100% - 24px);
-    max-width: none;
     margin: 14px auto;
     padding: 18px;
-  }
-
-  .brand { font-size: 1.9rem; }
-
-  /* Inputs never overflow */
-  input, textarea {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  /* Buttons full width on mobile */
-  button { width: 100%; }
-
-  /* Serve stays premium but full width on mobile */
-  #ideaForm button[type="submit"] {
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
   }
 }
