@@ -7,7 +7,7 @@ body {
 
   background-color: #0B0F14;
 
-  /* Nebula glow + premium star field (more stars, not too many) */
+  /* Nebula glow + premium star field (balanced: more stars, not too many) */
   background-image:
     radial-gradient(900px 600px at 20% 10%, rgba(47,128,237,.25), transparent 60%),
     radial-gradient(700px 500px at 80% 20%, rgba(182,230,0,.12), transparent 55%),
@@ -74,9 +74,7 @@ body {
   padding-bottom: 8px;
 }
 
-.nav-links a {
-  opacity: 0.9;
-}
+.nav-links a { opacity: 0.9; }
 
 .nav-links a:hover {
   opacity: 1;
@@ -84,7 +82,7 @@ body {
   text-shadow: 0 0 14px rgba(47, 128, 237, 0.25);
 }
 
-/* Subtle current-tab glow */
+/* Subtle current-tab glow (no layout changes) */
 body[data-page="home"] .nav-links a[href="/"],
 body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
   opacity: 1;
@@ -134,7 +132,7 @@ body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
   opacity: 0.35;
 }
 
-/* ===== Brand Header (match logo: metallic Uni + blue Padel) ===== */
+/* ===== Brand Header (logo-like, with POP) ===== */
 .brand{
   font-size: 2.4rem;
   margin: 0 0 10px;
@@ -143,34 +141,35 @@ body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
   letter-spacing: 0.2px;
 }
 
-/* Metallic "Uni": bevel + dark edge like your logo */
+/* Metallic "Uni" — brighter + specular band + depth */
 .brand-uni{
   background: linear-gradient(
     180deg,
     #FFFFFF 0%,
-    #F6F7F8 20%,
-    #D7DBDF 45%,
-    #FFFFFF 68%,
-    #B3B8BD 100%
+    #FAFBFC 14%,
+    #D7DBDF 32%,
+    #FFFFFF 48%,
+    #C4C9CE 64%,
+    #9FA5AA 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 
   text-shadow:
-    0 1px 0 rgba(0,0,0,0.35),
-    0 -1px 0 rgba(255,255,255,0.55),
-    0 0 12px rgba(255,255,255,0.35);
+    0 1.5px 0 rgba(0,0,0,0.45),
+    0 -1px 0 rgba(255,255,255,0.85),
+    0 0 6px rgba(255,255,255,0.25);
 }
 
-
-/* Blue "Padel": deep-to-light gradient + edge like your logo */
+/* Blue "Padel" — vibrant top highlight + deeper base */
 .brand-padel{
   background: linear-gradient(
     180deg,
-    #9CCCF0 0%,
-    #5FA7D6 40%,
-    #337BAB 70%,
+    #B8DBF4 0%,
+    #7FBDE6 30%,
+    #4A9BD3 52%,
+    #337BAB 72%,
     #2C4D6A 100%
   );
   -webkit-background-clip: text;
@@ -178,14 +177,12 @@ body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
   color: transparent;
 
   text-shadow:
-    0 1px 0 rgba(0,0,0,0.35),
-    0 0 14px rgba(95,167,214,0.45);
+    0 1.5px 0 rgba(0,0,0,0.45),
+    0 0 10px rgba(79,156,211,0.35);
 }
 
 /* ===== Text ===== */
-p {
-  color: #D1D5DB;
-}
+p { color: #D1D5DB; }
 
 label {
   font-weight: 600;
@@ -222,9 +219,7 @@ button {
   cursor: pointer;
 }
 
-button:hover {
-  background: #111827;
-}
+button:hover { background: #111827; }
 
 /* ===== SERVE BUTTON ONLY (premium luminous) ===== */
 #ideaForm button[type="submit"] {
@@ -266,29 +261,14 @@ button:hover {
 }
 
 /* ===== Admin-only ===== */
-.owner-only {
-  display: none;
-}
+.owner-only { display: none; }
 
 /* ===== Mobile ===== */
 @media (max-width: 600px) {
-  .navbar {
-    min-height: 90px;
-    padding: 10px 14px;
-  }
-
-  .navbar .logo {
-    bottom: -10px;
-    left: 14px;
-  }
-
-  .navbar .nav-logo {
-    height: 120px;
-  }
-
-  .nav-links a {
-    font-size: 14px;
-  }
+  .navbar { min-height: 90px; padding: 10px 14px; }
+  .navbar .logo { bottom: -10px; left: 14px; }
+  .navbar .nav-logo { height: 120px; }
+  .nav-links a { font-size: 14px; }
 
   .container {
     width: calc(100% - 32px);
@@ -296,18 +276,9 @@ button:hover {
     padding: 18px;
   }
 
-  .brand {
-    font-size: 1.8rem;
-  }
+  .brand { font-size: 1.8rem; }
 
-  input,
-  textarea {
-    width: 100%;
-    box-sizing: border-box;
-  }
+  input, textarea { width: 100%; box-sizing: border-box; }
 
-  button {
-    width: 100%;
-  }
+  button { width: 100%; }
 }
-
