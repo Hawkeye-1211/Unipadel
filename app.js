@@ -2,12 +2,15 @@
 // Public submits -> Google Sheet + Formspree emails
 // Admin reads from Google Sheet
 // Admin actions: Archive (Status->ARCHIVED) or Delete (remove row)
-// Shows ONLY ACTIVE ideas in admin list (so archived clears from website list)
+// Public view shows ACTIVE ideas + voting (Score) and sorts by Score
 
 document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
   const ADMIN_SESSION_KEY = "Unipadel_admin_session";
   const LAST_SUBMIT_KEY = "Unipadel_last_submit_ts";
+
+  // Local vote key namespace (per-device voting guard)
+  const VOTE_KEY_PREFIX = "Unipadel_vote_";
 
   // ✅ Web App URL
   const SHEET_WEB_APP_URL =
@@ -45,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const ownerSection = document.querySelector(".owner-only");
   const ideasList = document.getElementById("ideasList");
 
-  // Public ideas section (read-only)
+  // Public ideas section (read-only + voting)
   const publicIdeasSection = document.getElementById("publicIdeasSection");
   const publicIdeasList = document.getElementById("publicIdeasList");
 
@@ -73,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ---- FETCH ROWS (shared) ----
+  // ---- SHEET HELPERS ----
   async function fetchRowsFromSheet() {
     const res = await fetch(`${SHEET_WEB_APP_URL}?t=${Date.now()}`);
     const data = await res.json();
@@ -81,7 +84,42 @@ document.addEventListener("DOMContentLoaded", () => {
     return Array.isArray(data.rows) ? data.rows : [];
   }
 
-  // ---- PUBLIC VIEW (READ-ONLY CARDS) ----
+  async function postVote(id, delta) {
+    if (!id || typeof id !== "string" || id.trim() === "") {
+      throw new Error("Missing id");
+    }
+    const d = Number(delta);
+    if (d !== 1 && d !== -1) throw new Error("Bad delta");
+
+    const body = new URLSearchParams({
+      action: "vote",
+      id,
+      delta: String(d),
+    });
+
+    // no-cors: we can't read response, but it will still execute
+    await fetch(SHEET_WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    });
+  }
+
+  function getVoteState(id) {
+    const up = localStorage.getItem(`${VOTE_KEY_PREFIX}${id}_up`) === "1";
+    const down = localStorage.getItem(`${VOTE_KEY_PREFIX}${id}_down`) === "1";
+    return { up, down };
+  }
+
+  function setVoteState(id, dir /* "up" | "down" | "" */) {
+    localStorage.removeItem(`${VOTE_KEY_PREFIX}${id}_up`);
+    localStorage.removeItem(`${VOTE_KEY_PREFIX}${id}_down`);
+    if (dir === "up") localStorage.setItem(`${VOTE_KEY_PREFIX}${id}_up`, "1");
+    if (dir === "down") localStorage.setItem(`${VOTE_KEY_PREFIX}${id}_down`, "1");
+  }
+
+  // ---- PUBLIC VIEW (CARDS + VOTING) ----
   async function renderPublicIdeasFromSheet() {
     if (!publicIdeasList) return;
 
@@ -95,14 +133,17 @@ document.addEventListener("DOMContentLoaded", () => {
         .filter((r) => String(r["Status"] || "").trim() === "ACTIVE")
         .filter((r) => String(r["Timestamp"] || "").trim() !== "");
 
-      // Newest first
+      // Sort: Score desc, then newest
       activeRows.sort((a, b) => {
+        const sa = Number(a["Score"] || 0);
+        const sb = Number(b["Score"] || 0);
+        if (sb !== sa) return sb - sa;
+
         const ta = Date.parse(String(a["Timestamp"] || "")) || 0;
         const tb = Date.parse(String(b["Timestamp"] || "")) || 0;
         return tb - ta;
       });
 
-      // Limit so it stays clean
       const visible = activeRows.slice(0, 12);
 
       if (visible.length === 0) {
@@ -117,27 +158,163 @@ document.addEventListener("DOMContentLoaded", () => {
         const title = String(r["Idea Title"] || "").trim();
         const desc = String(r["Idea Description"] || "").trim();
         const tsIso = String(r["Timestamp"] || "").trim();
+        const score = Number(r["Score"] || 0);
 
         const dateNice = (() => {
           const d = new Date(tsIso);
           return isNaN(d.getTime())
             ? ""
-            : d.toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              });
+            : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
         })();
 
         // Card
         const card = document.createElement("div");
         card.className = "public-idea-card";
 
+        // Header row: title + vote controls
+        const head = document.createElement("div");
+        head.style.display = "flex";
+        head.style.alignItems = "flex-start";
+        head.style.justifyContent = "space-between";
+        head.style.gap = "12px";
+
         const t = document.createElement("div");
         t.className = "public-idea-title";
         t.textContent = title || "Untitled idea";
 
-        card.appendChild(t);
+        // Voting UI
+        const voteWrap = document.createElement("div");
+        voteWrap.style.display = "flex";
+        voteWrap.style.flexDirection = "column";
+        voteWrap.style.alignItems = "flex-end";
+        voteWrap.style.gap = "6px";
+        voteWrap.style.minWidth = "64px";
+
+        const scoreEl = document.createElement("div");
+        scoreEl.className = "public-idea-meta";
+        scoreEl.style.marginTop = "0";
+        scoreEl.style.opacity = "0.9";
+        scoreEl.textContent = `Score: ${score}`;
+
+        const btnRow = document.createElement("div");
+        btnRow.style.display = "flex";
+        btnRow.style.gap = "6px";
+
+        const upBtn = document.createElement("button");
+        upBtn.type = "button";
+        upBtn.textContent = "▲";
+        upBtn.style.padding = "6px 10px";
+        upBtn.style.borderRadius = "10px";
+        upBtn.style.fontWeight = "700";
+        upBtn.style.lineHeight = "1";
+        upBtn.style.width = "42px";
+
+        const downBtn = document.createElement("button");
+        downBtn.type = "button";
+        downBtn.textContent = "▼";
+        downBtn.style.padding = "6px 10px";
+        downBtn.style.borderRadius = "10px";
+        downBtn.style.fontWeight = "700";
+        downBtn.style.lineHeight = "1";
+        downBtn.style.width = "42px";
+
+        // Apply visual state (per-device)
+        const state = getVoteState(tsIso);
+        if (state.up) {
+          upBtn.style.background = "#2F80ED";
+        }
+        if (state.down) {
+          downBtn.style.background = "#1F2937";
+          downBtn.style.border = "1px solid rgba(182,230,0,.35)";
+        }
+
+        // Vote logic:
+        // - allow one active vote per idea per device (up OR down OR none)
+        // - clicking same vote again removes it (delta reverses)
+        async function handleVote(dir) {
+          // prevent vote spam clicking
+          upBtn.disabled = true;
+          downBtn.disabled = true;
+
+          try {
+            const cur = getVoteState(tsIso);
+            let netDelta = 0;
+            let nextState = "";
+
+            if (dir === "up") {
+              if (cur.up) {
+                // remove upvote
+                netDelta = -1;
+                nextState = "";
+              } else if (cur.down) {
+                // switch down -> up
+                netDelta = 2;
+                nextState = "up";
+              } else {
+                // add upvote
+                netDelta = 1;
+                nextState = "up";
+              }
+            }
+
+            if (dir === "down") {
+              if (cur.down) {
+                // remove downvote
+                netDelta = 1;
+                nextState = "";
+              } else if (cur.up) {
+                // switch up -> down
+                netDelta = -2;
+                nextState = "down";
+              } else {
+                // add downvote
+                netDelta = -1;
+                nextState = "down";
+              }
+            }
+
+            if (netDelta === 0) return;
+
+            // optimistic UI
+            const newScore = (Number(scoreEl.textContent.replace("Score:", "").trim()) || score) + netDelta;
+            scoreEl.textContent = `Score: ${newScore}`;
+
+            // save local vote state immediately
+            setVoteState(tsIso, nextState);
+
+            // send to backend
+            await postVote(tsIso, netDelta > 0 ? 1 : -1);
+            // If netDelta is +/-2 we must send twice (because backend accepts +1/-1 only)
+            if (netDelta === 2) {
+              await postVote(tsIso, 1);
+            } else if (netDelta === -2) {
+              await postVote(tsIso, -1);
+            }
+
+            // Re-render after a short delay to resort by new score
+            setTimeout(() => {
+              renderPublicIdeasFromSheet();
+            }, 600);
+          } catch (err) {
+            console.error(err);
+            alert("Vote failed. Please try again.");
+          } finally {
+            upBtn.disabled = false;
+            downBtn.disabled = false;
+          }
+        }
+
+        upBtn.addEventListener("click", () => handleVote("up"));
+        downBtn.addEventListener("click", () => handleVote("down"));
+
+        btnRow.appendChild(upBtn);
+        btnRow.appendChild(downBtn);
+        voteWrap.appendChild(btnRow);
+        voteWrap.appendChild(scoreEl);
+
+        head.appendChild(t);
+        head.appendChild(voteWrap);
+        card.appendChild(head);
 
         if (desc) {
           const d = document.createElement("div");
@@ -171,7 +348,6 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const rows = await fetchRowsFromSheet();
 
-      // ONLY ACTIVE rows
       const activeRows = rows.filter(
         (r) => String(r["Status"] || "").trim() === "ACTIVE"
       );
