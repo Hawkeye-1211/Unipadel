@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ NEW: Admin triage update (no new rows)
+  // ✅ Admin triage update (no new rows)
   async function postTriage(id, category, priority, notes) {
     if (!id || typeof id !== "string" || id.trim() === "") {
       throw new Error("Missing Timestamp id.");
@@ -121,7 +121,6 @@ document.addEventListener("DOMContentLoaded", () => {
       delta: String(d),
     });
 
-    // no-cors: we can't read response, but it will still execute
     await fetch(SHEET_WEB_APP_URL, {
       method: "POST",
       mode: "no-cors",
@@ -164,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (sb !== sa) return sb - sa;
 
         const ta = Date.parse(String(a["Timestamp"] || "")) || 0;
-        const tb = Date.parse(String(a["Timestamp"] || "")) || 0;
+        const tb = Date.parse(String(b["Timestamp"] || "")) || 0; // ✅ FIXED
         return tb - ta;
       });
 
@@ -191,11 +190,9 @@ document.addEventListener("DOMContentLoaded", () => {
             : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
         })();
 
-        // Card
         const card = document.createElement("div");
         card.className = "public-idea-card";
 
-        // Header row: title + vote controls
         const head = document.createElement("div");
         head.style.display = "flex";
         head.style.alignItems = "flex-start";
@@ -206,7 +203,6 @@ document.addEventListener("DOMContentLoaded", () => {
         t.className = "public-idea-title";
         t.textContent = title || "Untitled idea";
 
-        // Voting UI
         const voteWrap = document.createElement("div");
         voteWrap.style.display = "flex";
         voteWrap.style.flexDirection = "column";
@@ -242,7 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
         downBtn.style.lineHeight = "1";
         downBtn.style.width = "42px";
 
-        // Apply visual state (per-device)
         const state = getVoteState(tsIso);
         if (state.up) upBtn.style.background = "#2F80ED";
         if (state.down) {
