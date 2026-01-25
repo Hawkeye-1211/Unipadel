@@ -74,7 +74,9 @@ body {
   padding-bottom: 8px;
 }
 
-.nav-links a { opacity: 0.9; }
+.nav-links a {
+  opacity: 0.9;
+}
 
 .nav-links a:hover {
   opacity: 1;
@@ -82,7 +84,7 @@ body {
   text-shadow: 0 0 14px rgba(47, 128, 237, 0.25);
 }
 
-/* Subtle current-tab glow (no layout changes) */
+/* Subtle current-tab glow */
 body[data-page="home"] .nav-links a[href="/"],
 body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
   opacity: 1;
@@ -132,52 +134,59 @@ body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
   opacity: 0.35;
 }
 
-/* ===== Brand Header EXACT like your image ===== */
-.brand {
+/* ===== Brand Header (match logo: metallic Uni + blue Padel) ===== */
+.brand{
   font-size: 2.4rem;
   margin: 0 0 10px;
-  font-weight: 700;
-  line-height: 1.1;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: 0.2px;
 }
 
-/* Metallic "Uni" — sampled silver range from your logo */
-.brand-uni {
+/* Metallic "Uni": bevel + dark edge like your logo */
+.brand-uni{
   background: linear-gradient(
     180deg,
-    #F3F4F3 0%,   /* highlight */
-    #C7CBCE 22%,  /* bright silver */
-    #8E9499 45%,  /* steel */
-    #F3F4F3 68%,  /* highlight band */
-    #6C7277 100%  /* dark steel edge */
+    #FFFFFF 0%,
+    #EDEFF1 18%,
+    #B9BDC2 45%,
+    #F7F8F9 68%,
+    #8B9096 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 
   text-shadow:
-    0 1px 0 rgba(255,255,255,0.70),
-    0 0 8px rgba(255,255,255,0.30);
+    0 2px 0 rgba(0,0,0,0.45),
+    0 1px 0 rgba(0,0,0,0.55),
+    0 -1px 0 rgba(255,255,255,0.35),
+    0 0 10px rgba(255,255,255,0.22);
 }
 
-/* Blue "Padel" — sampled blues from your logo */
-.brand-padel {
+/* Blue "Padel": deep-to-light gradient + edge like your logo */
+.brand-padel{
   background: linear-gradient(
     180deg,
-    #67A9D2 0%,  /* highlight blue */
-    #337BAB 45%, /* main logo blue */
-    #2C4D6A 100% /* deep blue */
+    #79B8DF 0%,
+    #3C88B7 40%,
+    #2D5E82 70%,
+    #24465F 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 
   text-shadow:
-    0 0 16px rgba(51,123,171,0.65),
-    0 0 2px rgba(255,255,255,0.18);
+    0 2px 0 rgba(0,0,0,0.50),
+    0 1px 0 rgba(0,0,0,0.60),
+    0 0 14px rgba(60,136,183,0.40);
 }
 
 /* ===== Text ===== */
-p { color: #D1D5DB; }
+p {
+  color: #D1D5DB;
+}
 
 label {
   font-weight: 600;
@@ -214,7 +223,9 @@ button {
   cursor: pointer;
 }
 
-button:hover { background: #111827; }
+button:hover {
+  background: #111827;
+}
 
 /* ===== SERVE BUTTON ONLY (premium luminous) ===== */
 #ideaForm button[type="submit"] {
@@ -256,14 +267,29 @@ button:hover { background: #111827; }
 }
 
 /* ===== Admin-only ===== */
-.owner-only { display: none; }
+.owner-only {
+  display: none;
+}
 
 /* ===== Mobile ===== */
 @media (max-width: 600px) {
-  .navbar { min-height: 90px; padding: 10px 14px; }
-  .navbar .logo { bottom: -10px; left: 14px; }
-  .navbar .nav-logo { height: 120px; }
-  .nav-links a { font-size: 14px; }
+  .navbar {
+    min-height: 90px;
+    padding: 10px 14px;
+  }
+
+  .navbar .logo {
+    bottom: -10px;
+    left: 14px;
+  }
+
+  .navbar .nav-logo {
+    height: 120px;
+  }
+
+  .nav-links a {
+    font-size: 14px;
+  }
 
   .container {
     width: calc(100% - 32px);
@@ -271,9 +297,17 @@ button:hover { background: #111827; }
     padding: 18px;
   }
 
-  .brand { font-size: 1.8rem; }
+  .brand {
+    font-size: 1.8rem;
+  }
 
-  input, textarea { width: 100%; box-sizing: border-box; }
+  input,
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
 
-  button { width: 100%; }
+  button {
+    width: 100%;
+  }
 }
