@@ -148,39 +148,38 @@ body[data-page="ideas"] .nav-links a[href="/ideas.html"] {
   background: linear-gradient(
     180deg,
     #FFFFFF 0%,
-    #EDEFF1 18%,
-    #B9BDC2 45%,
-    #F7F8F9 68%,
-    #8B9096 100%
+    #F6F7F8 20%,
+    #D7DBDF 45%,
+    #FFFFFF 68%,
+    #B3B8BD 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 
   text-shadow:
-    0 2px 0 rgba(0,0,0,0.45),
-    0 1px 0 rgba(0,0,0,0.55),
-    0 -1px 0 rgba(255,255,255,0.35),
-    0 0 10px rgba(255,255,255,0.22);
+    0 1px 0 rgba(0,0,0,0.35),
+    0 -1px 0 rgba(255,255,255,0.55),
+    0 0 12px rgba(255,255,255,0.35);
 }
+
 
 /* Blue "Padel": deep-to-light gradient + edge like your logo */
 .brand-padel{
   background: linear-gradient(
     180deg,
-    #79B8DF 0%,
-    #3C88B7 40%,
-    #2D5E82 70%,
-    #24465F 100%
+    #9CCCF0 0%,
+    #5FA7D6 40%,
+    #337BAB 70%,
+    #2C4D6A 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 
   text-shadow:
-    0 2px 0 rgba(0,0,0,0.50),
-    0 1px 0 rgba(0,0,0,0.60),
-    0 0 14px rgba(60,136,183,0.40);
+    0 1px 0 rgba(0,0,0,0.35),
+    0 0 14px rgba(95,167,214,0.45);
 }
 
 /* ===== Text ===== */
@@ -311,3 +310,4 @@ button:hover {
     width: 100%;
   }
 }
+
