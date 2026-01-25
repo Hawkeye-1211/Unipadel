@@ -1,4 +1,7 @@
-/* ===== Page ===== */
+/* =body {
+  outline: 10px solid red !important;
+}
+==== Page ===== */
 body {
   font-family: "Poppins", system-ui, sans-serif;
   margin: 0;
@@ -260,3 +263,4 @@ textarea {
     inset 0 2px 0 rgba(255,255,255,0.4),
     0 0 22px rgba(182,230,0,0.4);
 }
+
