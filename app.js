@@ -5,7 +5,7 @@
 // Public view shows ACTIVE ideas + voting (Score) and sorts by Score
 // Admin triage: Category / Priority / Notes (action=triage) updates existing row
 // Bulk: selection + bulk archive/delete
-// ✅ Speed+reliability: public submission does Apps Script POST non-blocking (but still real fetch), admin/triage/votes are awaited.
+// ✅ Test mode: when you are in admin session, Formspree is skipped to avoid quota burn.
 
 document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
@@ -70,7 +70,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return body.toString();
   }
 
-  // ✅ RELIABLE: awaited (admin actions, triage, voting)
   async function postAppsScriptReliable(paramsObj) {
     const bodyStr = toFormBody(paramsObj);
     await fetch(SHEET_WEB_APP_URL, {
@@ -82,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ FAST (but still a real fetch): not awaited (public submission only)
   function postAppsScriptNonBlocking(paramsObj) {
     const bodyStr = toFormBody(paramsObj);
     fetch(SHEET_WEB_APP_URL, {
@@ -145,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -----------------------------
-  // PUBLIC VIEW (CARDS + VOTING)
+  // PUBLIC VIEW
   // -----------------------------
   function prependOptimisticIdeaCard({ title, desc }) {
     if (!publicIdeasList) return;
@@ -372,7 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -----------------------------
-  // ADMIN VIEW (FULL: BULK + TRIAGE)
+  // ADMIN VIEW (unchanged)
   // -----------------------------
   async function renderIdeasFromSheet() {
     if (!ideasList) return;
@@ -385,7 +383,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       ideasList.innerHTML = "";
 
-      // ✅ BULK SELECTION STATE
       const selectedIds = new Set();
       let bulkBusy = false;
 
@@ -423,12 +420,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       function ensureNotEmptyMessage() {
         const ideaLis = [...ideasList.children].slice(1);
-        if (ideaLis.length === 0) {
-          ideasList.innerHTML = "<li>No ACTIVE submissions.</li>";
-        }
+        if (ideaLis.length === 0) ideasList.innerHTML = "<li>No ACTIVE submissions.</li>";
       }
 
-      // ✅ Bulk header row
       const bulkLi = document.createElement("li");
       bulkLi.style.margin = "0 0 14px";
       bulkLi.style.padding = "10px 12px";
@@ -474,8 +468,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       async function runBulk(action) {
-        if (bulkBusy) return;
-        if (selectedIds.size === 0) return;
+        if (bulkBusy || selectedIds.size === 0) return;
 
         const ids = Array.from(selectedIds);
 
@@ -496,10 +489,8 @@ document.addEventListener("DOMContentLoaded", () => {
             await postAdminAction(action, id);
 
             const rowCb = ideasList.querySelector(`input[data-bulk="row"][data-id="${CSS.escape(id)}"]`);
-            if (rowCb) {
-              const li = rowCb.closest("li");
-              if (li) li.remove();
-            }
+            const li = rowCb ? rowCb.closest("li") : null;
+            if (li) li.remove();
 
             selectedIds.delete(id);
 
@@ -622,7 +613,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const notesEl = li.querySelector('textarea[data-triage="notes"]');
         const savedEl = li.querySelector('span[data-triage="saved"]');
 
-        // bulk checkbox behaviour
         if (bulkCb) {
           bulkCb.addEventListener("change", () => {
             const id = String(bulkCb.getAttribute("data-id") || "").trim();
@@ -640,7 +630,6 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
 
-        // triage tracking
         const initial = {
           category: existingCategory,
           priority: existingPriority,
@@ -852,8 +841,11 @@ document.addEventListener("DOMContentLoaded", () => {
       submitButton.textContent = "Sending...";
     }
 
+    // ✅ TEST MODE: if you are in admin session, don't burn Formspree quota
+    const isTestMode = isAdminMode;
+
     try {
-      // ✅ Apps Script write (non-blocking, but real fetch)
+      // Apps Script write (non-blocking)
       postAppsScriptNonBlocking({
         name: userName,
         email: userEmail,
@@ -864,28 +856,34 @@ document.addEventListener("DOMContentLoaded", () => {
         Source: source,
       });
 
-      // ✅ Instant UI feedback
+      // instant UI feedback
       prependOptimisticIdeaCard({ title, desc: description });
 
-      // ✅ Formspree emails (must remain reliable)
-      const fsRes = await fetch("https://formspree.io/f/mykekkgg", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          name: userName,
-          email: userEmail,
-          ideaTitle: title,
-          ideaDescription: description,
-          source,
-        }),
-      });
+      if (!isTestMode) {
+        // Formspree emails (real users)
+        const fsRes = await fetch("https://formspree.io/f/mykekkgg", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            name: userName,
+            email: userEmail,
+            ideaTitle: title,
+            ideaDescription: description,
+            source,
+          }),
+        });
 
-      if (!fsRes.ok) throw new Error("Formspree HTTP " + fsRes.status);
+        if (!fsRes.ok) throw new Error("Formspree HTTP " + fsRes.status);
+      }
 
       form.reset();
-      if (messageArea) messageArea.textContent = "Sent ✓ Now lets win the set!";
+      if (messageArea) {
+        messageArea.textContent = isTestMode
+          ? "Sent ✓ (Test mode: email skipped)"
+          : "Sent ✓ Now lets win the set!";
+      }
 
-      // Refresh ideas (cold starts can delay sheet write)
+      // Refresh ideas
       setTimeout(() => renderPublicIdeasFromSheet(), 1800);
       setTimeout(() => renderPublicIdeasFromSheet(), 6000);
     } catch (err) {
