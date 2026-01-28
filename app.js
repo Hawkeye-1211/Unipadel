@@ -4,7 +4,8 @@
 // Admin actions: Archive (Status->ARCHIVED) or Delete (remove row)
 // Public view shows ACTIVE ideas + voting (Score) and sorts by Score
 // Admin triage: Category / Priority / Notes (action=triage) updates existing row
-// ✅ Bulk: selection + bulk archive/delete
+// Bulk: selection + bulk archive/delete
+// ✅ SPEED: use sendBeacon for Apps Script POSTs (fallback to fetch), optimistic submit card
 
 document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
@@ -60,19 +61,45 @@ document.addEventListener("DOMContentLoaded", () => {
   const onIdeasPage = !!(form || ownerSection || ideasList || publicIdeasList);
   if (!onIdeasPage) return;
 
+  // -----------------------------
+  // ✅ SPEED HELPERS
+  // -----------------------------
+  function toFormBody(paramsObj) {
+    const body = new URLSearchParams();
+    Object.entries(paramsObj || {}).forEach(([k, v]) => body.set(k, String(v ?? "")));
+    return body.toString();
+  }
+
+  // Try sendBeacon first (instant), fallback to fetch(no-cors) (slower but reliable)
+  async function postToAppsScriptFast(paramsObj) {
+    const bodyStr = toFormBody(paramsObj);
+
+    try {
+      if (navigator.sendBeacon) {
+        const blob = new Blob([bodyStr], { type: "application/x-www-form-urlencoded;charset=UTF-8" });
+        const ok = navigator.sendBeacon(SHEET_WEB_APP_URL, blob);
+        if (ok) return; // sent in background, return immediately
+      }
+    } catch (_) {
+      // ignore and fallback
+    }
+
+    // fallback (slower)
+    await fetch(SHEET_WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: bodyStr,
+      keepalive: true,
+    });
+  }
+
   // ---- ADMIN HELPERS ----
   async function postAdminAction(action, id) {
     if (!id || typeof id !== "string" || id.trim() === "") {
       throw new Error("Missing Timestamp id.");
     }
-    const body = new URLSearchParams({ action, id });
-
-    await fetch(SHEET_WEB_APP_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body.toString(),
-    });
+    await postToAppsScriptFast({ action, id });
   }
 
   async function postTriage(id, category, priority, notes) {
@@ -80,19 +107,12 @@ document.addEventListener("DOMContentLoaded", () => {
       throw new Error("Missing Timestamp id.");
     }
 
-    const body = new URLSearchParams({
+    await postToAppsScriptFast({
       action: "triage",
       id,
       category: String(category || ""),
       priority: String(priority || ""),
       notes: String(notes || ""),
-    });
-
-    await fetch(SHEET_WEB_APP_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body.toString(),
     });
   }
 
@@ -109,14 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const d = Number(delta);
     if (d !== 1 && d !== -1) throw new Error("Bad delta");
 
-    const body = new URLSearchParams({ action: "vote", id, delta: String(d) });
-
-    await fetch(SHEET_WEB_APP_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body.toString(),
-    });
+    await postToAppsScriptFast({ action: "vote", id, delta: String(d) });
   }
 
   function getVoteState(id) {
@@ -132,7 +145,72 @@ document.addEventListener("DOMContentLoaded", () => {
     if (dir === "down") localStorage.setItem(`${VOTE_KEY_PREFIX}${id}_down`, "1");
   }
 
-  // ---- PUBLIC VIEW ----
+  // -----------------------------
+  // ✅ PUBLIC VIEW
+  // -----------------------------
+  function prependOptimisticIdeaCard({ title, desc }) {
+    if (!publicIdeasList) return;
+
+    const card = document.createElement("div");
+    card.className = "public-idea-card";
+    card.style.outline = "2px solid rgba(182,230,0,.55)";
+    card.style.borderRadius = "14px";
+
+    const head = document.createElement("div");
+    head.style.display = "flex";
+    head.style.alignItems = "flex-start";
+    head.style.justifyContent = "space-between";
+    head.style.gap = "12px";
+
+    const t = document.createElement("div");
+    t.className = "public-idea-title";
+    t.textContent = title || "Untitled idea";
+
+    const voteWrap = document.createElement("div");
+    voteWrap.style.display = "flex";
+    voteWrap.style.flexDirection = "column";
+    voteWrap.style.alignItems = "flex-end";
+    voteWrap.style.gap = "6px";
+    voteWrap.style.minWidth = "88px";
+
+    const scoreEl = document.createElement("div");
+    scoreEl.className = "public-idea-meta";
+    scoreEl.style.marginTop = "0";
+    scoreEl.style.opacity = "0.9";
+    scoreEl.textContent = `Score: 0`;
+
+    const badge = document.createElement("div");
+    badge.style.fontSize = "12px";
+    badge.style.opacity = "0.85";
+    badge.style.padding = "4px 8px";
+    badge.style.borderRadius = "999px";
+    badge.style.border = "1px solid rgba(182,230,0,.35)";
+    badge.style.background = "rgba(182,230,0,.10)";
+    badge.textContent = "Added ✓ (syncing…)";
+
+    voteWrap.appendChild(badge);
+    voteWrap.appendChild(scoreEl);
+
+    head.appendChild(t);
+    head.appendChild(voteWrap);
+    card.appendChild(head);
+
+    if (desc) {
+      const d = document.createElement("div");
+      d.className = "public-idea-desc";
+      d.textContent = desc;
+      card.appendChild(d);
+    }
+
+    const meta = document.createElement("div");
+    meta.className = "public-idea-meta";
+    meta.textContent = `Just submitted`;
+    card.appendChild(meta);
+
+    // Put it at the top
+    publicIdeasList.prepend(card);
+  }
+
   async function renderPublicIdeasFromSheet() {
     if (!publicIdeasList) return;
 
@@ -266,7 +344,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (netDelta === 2) await postVote(tsIso, 1);
             else if (netDelta === -2) await postVote(tsIso, -1);
 
-            setTimeout(() => renderPublicIdeasFromSheet(), 600);
+            setTimeout(() => renderPublicIdeasFromSheet(), 900);
           } catch (err) {
             console.error(err);
             alert("Vote failed. Please try again.");
@@ -311,7 +389,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ---- ADMIN VIEW ----
+  // -----------------------------
+  // ✅ ADMIN VIEW (bulk + triage)
+  // -----------------------------
   async function renderIdeasFromSheet() {
     if (!ideasList) return;
 
@@ -323,7 +403,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       ideasList.innerHTML = "";
 
-      // ✅ BULK SELECTION STATE
       const selectedIds = new Set();
       let bulkBusy = false;
 
@@ -366,7 +445,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // ✅ Bulk header row
       const bulkLi = document.createElement("li");
       bulkLi.style.margin = "0 0 14px";
       bulkLi.style.padding = "10px 12px";
@@ -429,12 +507,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let done = 0;
 
-        // process sequentially (safer, less chance of rate limiting)
         for (const id of ids) {
           try {
             await postAdminAction(action, id);
 
-            // remove row from DOM immediately
             const rowCb = ideasList.querySelector(`input[data-bulk="row"][data-id="${CSS.escape(id)}"]`);
             if (rowCb) {
               const li = rowCb.closest("li");
@@ -457,7 +533,6 @@ document.addEventListener("DOMContentLoaded", () => {
         updateBulkHeader();
         ensureNotEmptyMessage();
 
-        // clear status after a moment
         setTimeout(() => {
           const { status } = getBulkEls();
           if (status) status.textContent = "";
@@ -563,7 +638,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const notesEl = li.querySelector('textarea[data-triage="notes"]');
         const savedEl = li.querySelector('span[data-triage="saved"]');
 
-        // bulk checkbox behaviour
         if (bulkCb) {
           bulkCb.addEventListener("change", () => {
             const id = String(bulkCb.getAttribute("data-id") || "").trim();
@@ -581,7 +655,6 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
 
-        // triage tracking
         const initial = {
           category: existingCategory,
           priority: existingPriority,
@@ -691,31 +764,32 @@ document.addEventListener("DOMContentLoaded", () => {
             const priority = prioritySel ? prioritySel.value : "";
             const notes = notesEl ? notesEl.value : "";
 
-            if (savedEl) savedEl.textContent = "";
+            // ✅ instant feedback: show saved immediately (Apps Script syncs in background)
+            if (savedEl) savedEl.textContent = "Saved ✓";
+            initial.category = String(category || "").trim();
+            initial.priority = String(priority || "").trim();
+            initial.notes = String(notes || "").trim();
+            setSaveBtnDirty(false);
 
             saveBtn.disabled = true;
             setSaveBtnSaving(true);
 
             try {
               await postTriage(tsIso, category, priority, notes);
-
-              initial.category = String(category || "").trim();
-              initial.priority = String(priority || "").trim();
-              initial.notes = String(notes || "");
-
-              setSaveBtnDirty(false);
-
-              if (savedEl) savedEl.textContent = "Saved ✓";
-              setTimeout(() => {
-                if (savedEl) savedEl.textContent = "";
-              }, 1500);
+              // keep "Saved ✓" (already shown)
             } catch (err) {
               console.error(err);
               alert("Save failed. Please try again.");
+              // revert dirty state so you don’t lose track
               setSaveBtnDirty(true);
+              if (savedEl) savedEl.textContent = "";
             } finally {
               setSaveBtnSaving(false);
               saveBtn.disabled = false;
+
+              setTimeout(() => {
+                if (savedEl) savedEl.textContent = "";
+              }, 1500);
             }
           });
         }
@@ -792,7 +866,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      const body = new URLSearchParams({
+      // ✅ Send to Apps Script in background (fast) – do not block UX on this
+      postToAppsScriptFast({
         name: userName,
         email: userEmail,
         ideaTitle: title,
@@ -800,15 +875,12 @@ document.addEventListener("DOMContentLoaded", () => {
         source,
         ideaSource: source,
         Source: source,
-      });
+      }).catch(console.error);
 
-      await fetch(SHEET_WEB_APP_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString(),
-      });
+      // ✅ Optimistic UI: show card immediately
+      prependOptimisticIdeaCard({ title, desc: description });
 
+      // ✅ Formspree is the reliable “sent” confirmation
       const fsRes = await fetch("https://formspree.io/f/mykekkgg", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -824,14 +896,18 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!fsRes.ok) throw new Error("Formspree HTTP " + fsRes.status);
 
       form.reset();
-      if (messageArea) messageArea.textContent = "Great point!! Now lets win the set!";
+      if (messageArea) messageArea.textContent = "Sent ✓ Now lets win the set!";
 
+      // Refresh ideas shortly after, to sync from Sheet
       setTimeout(() => {
         renderPublicIdeasFromSheet();
-      }, 1200);
+      }, 1500);
     } catch (err) {
       console.error(err);
       if (messageArea) messageArea.textContent = "Submission failed.";
+
+      // Optional: if Formspree fails, let user retry without confusion
+      alert("Email send failed (Formspree). Please try again.");
     } finally {
       if (submitButton) {
         submitButton.disabled = false;
