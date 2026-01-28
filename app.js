@@ -5,7 +5,7 @@
 // Public view shows ACTIVE ideas + voting (Score) and sorts by Score
 // Admin triage: Category / Priority / Notes (action=triage) updates existing row
 // Bulk: selection + bulk archive/delete
-// ✅ Speed + reliability: submissions are non-blocking, admin/triage/votes are reliable (awaited)
+// ✅ Speed+reliability: public submission does Apps Script POST non-blocking (but still real fetch), admin/triage/votes are awaited.
 
 document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!onIdeasPage) return;
 
   // -----------------------------
-  // HELPERS (reliable vs fast)
+  // SPEED/RELIABILITY HELPERS
   // -----------------------------
   function toFormBody(paramsObj) {
     const body = new URLSearchParams();
@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return body.toString();
   }
 
-  // ✅ RELIABLE: await completion (used for admin actions, triage, voting)
+  // ✅ RELIABLE: awaited (admin actions, triage, voting)
   async function postAppsScriptReliable(paramsObj) {
     const bodyStr = toFormBody(paramsObj);
     await fetch(SHEET_WEB_APP_URL, {
@@ -82,13 +82,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ FAST + RELIABLE ENOUGH: do NOT block UI, but still send a real fetch
-  // (used for public submission)
+  // ✅ FAST (but still a real fetch): not awaited (public submission only)
   function postAppsScriptNonBlocking(paramsObj) {
     const bodyStr = toFormBody(paramsObj);
-
-    // Fire a fetch that will actually reach Apps Script.
-    // We intentionally do NOT await it, so UX stays snappy.
     fetch(SHEET_WEB_APP_URL, {
       method: "POST",
       mode: "no-cors",
@@ -96,14 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
       body: bodyStr,
       keepalive: true,
     }).catch((err) => console.error("Apps Script non-blocking POST failed:", err));
-  }
-
-  // ---- SHEET HELPERS ----
-  async function fetchRowsFromSheet() {
-    const res = await fetch(`${SHEET_WEB_APP_URL}?t=${Date.now()}`);
-    const data = await res.json();
-    if (!data || data.success !== true) throw new Error("Bad response from sheet");
-    return Array.isArray(data.rows) ? data.rows : [];
   }
 
   // ---- ADMIN HELPERS ----
@@ -125,6 +113,14 @@ document.addEventListener("DOMContentLoaded", () => {
       priority: String(priority || ""),
       notes: String(notes || ""),
     });
+  }
+
+  // ---- SHEET HELPERS ----
+  async function fetchRowsFromSheet() {
+    const res = await fetch(`${SHEET_WEB_APP_URL}?t=${Date.now()}`);
+    const data = await res.json();
+    if (!data || data.success !== true) throw new Error("Bad response from sheet");
+    return Array.isArray(data.rows) ? data.rows : [];
   }
 
   async function postVote(id, delta) {
@@ -149,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -----------------------------
-  // PUBLIC VIEW
+  // PUBLIC VIEW (CARDS + VOTING)
   // -----------------------------
   function prependOptimisticIdeaCard({ title, desc }) {
     if (!publicIdeasList) return;
@@ -376,7 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -----------------------------
-  // ADMIN VIEW (bulk + triage)
+  // ADMIN VIEW (FULL: BULK + TRIAGE)
   // -----------------------------
   async function renderIdeasFromSheet() {
     if (!ideasList) return;
@@ -389,6 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       ideasList.innerHTML = "";
 
+      // ✅ BULK SELECTION STATE
       const selectedIds = new Set();
       let bulkBusy = false;
 
@@ -413,6 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       function updateBulkHeader() {
         const { count, selectAll, archive, del } = getBulkEls();
+
         if (count) count.textContent = String(selectedIds.size);
 
         const allRowCbs = ideasList.querySelectorAll('input[data-bulk="row"]');
@@ -425,9 +423,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       function ensureNotEmptyMessage() {
         const ideaLis = [...ideasList.children].slice(1);
-        if (ideaLis.length === 0) ideasList.innerHTML = "<li>No ACTIVE submissions.</li>";
+        if (ideaLis.length === 0) {
+          ideasList.innerHTML = "<li>No ACTIVE submissions.</li>";
+        }
       }
 
+      // ✅ Bulk header row
       const bulkLi = document.createElement("li");
       bulkLi.style.margin = "0 0 14px";
       bulkLi.style.padding = "10px 12px";
@@ -473,7 +474,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       async function runBulk(action) {
-        if (bulkBusy || selectedIds.size === 0) return;
+        if (bulkBusy) return;
+        if (selectedIds.size === 0) return;
 
         const ids = Array.from(selectedIds);
 
@@ -494,8 +496,10 @@ document.addEventListener("DOMContentLoaded", () => {
             await postAdminAction(action, id);
 
             const rowCb = ideasList.querySelector(`input[data-bulk="row"][data-id="${CSS.escape(id)}"]`);
-            const li = rowCb ? rowCb.closest("li") : null;
-            if (li) li.remove();
+            if (rowCb) {
+              const li = rowCb.closest("li");
+              if (li) li.remove();
+            }
 
             selectedIds.delete(id);
 
@@ -527,33 +531,255 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Keep your existing admin card UI (unchanged beyond what we already built)
-      // To keep this message short and safe, we’ll reuse the existing working render
-      // by reloading after actions (bulk already removes DOM rows).
-      // We’ll keep triage + single archive/delete stable by leaving as-is.
-      //
-      // NOTE: Your existing admin card renderer is already working;
-      // bulk + triage + no-scroll is already implemented in your current file.
-      //
-      // ✅ Instead of duplicating the whole admin renderer here (very long),
-      // we call your existing render again:
-      //
-      // BUT: we need the full renderer; so we’ll keep it simple:
-      // -> Re-render using your existing working file version.
-      //
-      // Since you already had it working, if you want me to re-embed the full
-      // admin UI renderer inside this file, say "embed admin ui" and I’ll paste it.
-      //
-      // For now, we do a simple fallback:
-      await (async () => {
-        // Minimal list: show timestamps/titles so admin page still works even if trimmed
-        for (const r of activeRows) {
-          const li = document.createElement("li");
-          li.style.marginBottom = "10px";
-          li.innerHTML = `<strong>${r["Idea Title"] || ""}</strong><br/><small>${r["Timestamp"] || ""}</small>`;
-          ideasList.appendChild(li);
+      const categoryOptions = ["", "Bug", "UX", "Feature", "Performance", "Pricing"];
+      const priorityOptions = ["", "Next", "Soon", "Later", "Won’t"];
+
+      for (const r of activeRows) {
+        const tsIso = String(r["Timestamp"] || "").trim();
+        if (!tsIso) continue;
+
+        const li = document.createElement("li");
+        li.style.marginBottom = "14px";
+
+        const tsNice = new Date(tsIso).toLocaleString();
+        const name = r["Name"] || "";
+        const email = r["Email"] || "";
+        const title = r["Idea Title"] || "";
+        const desc = r["Idea Description"] || "";
+
+        const existingCategory = String(r["Category"] || "").trim();
+        const existingPriority = String(r["Priority"] || "").trim();
+        const existingNotes = String(r["Notes"] || "").trim();
+
+        li.innerHTML = `
+          <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
+            <div style="display:flex; gap:10px; align-items:flex-start; padding-top:2px;">
+              <input type="checkbox" data-bulk="row" data-id="${tsIso}" style="margin-top:4px;" />
+            </div>
+
+            <div style="flex:1;">
+              <strong>${title}</strong><br/>
+              ${desc}<br/><br/>
+              <small>${tsNice}${name ? " · " + name : ""}${email ? " · " + email : ""}</small>
+              <div style="margin-top:6px; font-size:12px;">
+                Status: <strong>ACTIVE</strong>
+              </div>
+
+              <div style="margin-top:10px; padding:10px; border:1px solid rgba(201,204,210,.18); border-radius:10px; background:rgba(15,22,34,.55);">
+                <div style="font-size:12px; font-weight:700; opacity:.9; margin-bottom:8px;">Triage</div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                  <label style="font-size:12px; opacity:.85;">Category</label>
+                  <select data-triage="category" style="padding:8px 10px; border-radius:8px; background:rgba(15,22,34,.9); color:#E5E7EB; border:1px solid rgba(201,204,210,.3);">
+                    ${categoryOptions.map(opt => {
+                      const sel = (opt === existingCategory) ? "selected" : "";
+                      const label = opt === "" ? "—" : opt;
+                      return `<option value="${opt}" ${sel}>${label}</option>`;
+                    }).join("")}
+                  </select>
+
+                  <label style="font-size:12px; opacity:.85;">Priority</label>
+                  <select data-triage="priority" style="padding:8px 10px; border-radius:8px; background:rgba(15,22,34,.9); color:#E5E7EB; border:1px solid rgba(201,204,210,.3);">
+                    ${priorityOptions.map(opt => {
+                      const sel = (opt === existingPriority) ? "selected" : "";
+                      const label = opt === "" ? "—" : opt;
+                      return `<option value="${opt}" ${sel}>${label}</option>`;
+                    }).join("")}
+                  </select>
+                </div>
+
+                <div style="margin-top:10px;">
+                  <label style="font-size:12px; opacity:.85;">Notes</label><br/>
+                  <textarea data-triage="notes" rows="3" style="width:100%; margin-top:6px; padding:10px; border-radius:10px; background:rgba(15,22,34,.9); color:#E5E7EB; border:1px solid rgba(201,204,210,.3);">${existingNotes}</textarea>
+                  <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                    <button type="button" data-action="save-triage" style="padding:8px 12px; font-size:14px;">
+                      Save triage
+                    </button>
+                    <span data-triage="saved" style="font-size:12px; opacity:.75; align-self:center;"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+              <button type="button" data-action="archive" style="padding:8px 12px; font-size:14px;">
+                Archive
+              </button>
+              <button type="button" data-action="delete" style="padding:8px 12px; font-size:14px;">
+                Delete
+              </button>
+            </div>
+          </div>
+        `;
+
+        const bulkCb = li.querySelector('input[data-bulk="row"]');
+        const archiveBtn = li.querySelector('button[data-action="archive"]');
+        const deleteBtn = li.querySelector('button[data-action="delete"]');
+        const saveBtn = li.querySelector('button[data-action="save-triage"]');
+
+        const categorySel = li.querySelector('select[data-triage="category"]');
+        const prioritySel = li.querySelector('select[data-triage="priority"]');
+        const notesEl = li.querySelector('textarea[data-triage="notes"]');
+        const savedEl = li.querySelector('span[data-triage="saved"]');
+
+        // bulk checkbox behaviour
+        if (bulkCb) {
+          bulkCb.addEventListener("change", () => {
+            const id = String(bulkCb.getAttribute("data-id") || "").trim();
+            if (!id) return;
+
+            if (bulkCb.checked) {
+              selectedIds.add(id);
+              li.style.outline = "2px solid rgba(182,230,0,.75)";
+              li.style.borderRadius = "12px";
+            } else {
+              selectedIds.delete(id);
+              li.style.outline = "none";
+            }
+            updateBulkHeader();
+          });
         }
-      })();
+
+        // triage tracking
+        const initial = {
+          category: existingCategory,
+          priority: existingPriority,
+          notes: existingNotes,
+        };
+
+        function setSaveBtnDirty(isDirty) {
+          if (!saveBtn) return;
+          if (isDirty) {
+            saveBtn.style.background = "linear-gradient(180deg,#D9FF4F,#B6E600 55%,#8FBF00)";
+            saveBtn.style.color = "#0B0F14";
+            saveBtn.style.boxShadow = "0 14px 30px rgba(182,230,0,.25), inset 0 2px 0 rgba(255,255,255,.25)";
+            saveBtn.style.borderRadius = "12px";
+          } else {
+            saveBtn.style.background = "#1F2937";
+            saveBtn.style.color = "#E5E7EB";
+            saveBtn.style.boxShadow = "none";
+            saveBtn.style.borderRadius = "6px";
+          }
+        }
+
+        function setSaveBtnSaving(isSaving) {
+          if (!saveBtn) return;
+          if (isSaving) {
+            saveBtn.textContent = "Saving…";
+            saveBtn.style.transform = "translateY(1px)";
+            saveBtn.style.boxShadow = "inset 0 3px 10px rgba(0,0,0,.35)";
+            saveBtn.style.opacity = "0.9";
+            saveBtn.style.cursor = "wait";
+          } else {
+            saveBtn.textContent = "Save triage";
+            saveBtn.style.transform = "";
+            saveBtn.style.opacity = "";
+            saveBtn.style.cursor = "";
+          }
+        }
+
+        function computeDirty() {
+          const c = categorySel ? String(categorySel.value || "").trim() : "";
+          const p = prioritySel ? String(prioritySel.value || "").trim() : "";
+          const n = notesEl ? String(notesEl.value || "") : "";
+          return c !== initial.category || p !== initial.priority || n !== initial.notes;
+        }
+
+        function onTriageChanged() {
+          setSaveBtnDirty(computeDirty());
+          if (savedEl) savedEl.textContent = "";
+        }
+
+        if (categorySel) categorySel.addEventListener("change", onTriageChanged);
+        if (prioritySel) prioritySel.addEventListener("change", onTriageChanged);
+        if (notesEl) notesEl.addEventListener("input", onTriageChanged);
+        setSaveBtnDirty(false);
+
+        function setRowBusy(isBusy) {
+          if (archiveBtn) archiveBtn.disabled = isBusy;
+          if (deleteBtn) deleteBtn.disabled = isBusy;
+          if (saveBtn) saveBtn.disabled = isBusy;
+          if (bulkCb) bulkCb.disabled = isBusy;
+        }
+
+        archiveBtn.addEventListener("click", async () => {
+          const ok = window.confirm(
+            "Archive this idea?\n\nThis removes it from the website list but keeps it in the Google Sheet."
+          );
+          if (!ok) return;
+
+          setRowBusy(true);
+
+          try {
+            await postAdminAction("archive", tsIso);
+            if (selectedIds.has(tsIso)) selectedIds.delete(tsIso);
+            li.remove();
+            updateBulkHeader();
+            ensureNotEmptyMessage();
+          } catch (err) {
+            console.error(err);
+            alert("Archive failed. Please try again.");
+            setRowBusy(false);
+          }
+        });
+
+        deleteBtn.addEventListener("click", async () => {
+          const ok = window.confirm(
+            "Delete this idea?\n\nThis removes it from BOTH the website list and the Google Sheet.\nThis cannot be undone."
+          );
+          if (!ok) return;
+
+          setRowBusy(true);
+
+          try {
+            await postAdminAction("delete", tsIso);
+            if (selectedIds.has(tsIso)) selectedIds.delete(tsIso);
+            li.remove();
+            updateBulkHeader();
+            ensureNotEmptyMessage();
+          } catch (err) {
+            console.error(err);
+            alert("Delete failed. Please try again.");
+            setRowBusy(false);
+          }
+        });
+
+        if (saveBtn) {
+          saveBtn.addEventListener("click", async () => {
+            const category = categorySel ? categorySel.value : "";
+            const priority = prioritySel ? prioritySel.value : "";
+            const notes = notesEl ? notesEl.value : "";
+
+            if (savedEl) savedEl.textContent = "";
+            saveBtn.disabled = true;
+            setSaveBtnSaving(true);
+
+            try {
+              await postTriage(tsIso, category, priority, notes);
+
+              initial.category = String(category || "").trim();
+              initial.priority = String(priority || "").trim();
+              initial.notes = String(notes || "");
+
+              setSaveBtnDirty(false);
+
+              if (savedEl) savedEl.textContent = "Saved ✓";
+              setTimeout(() => {
+                if (savedEl) savedEl.textContent = "";
+              }, 1500);
+            } catch (err) {
+              console.error(err);
+              alert("Save failed. Please try again.");
+              setSaveBtnDirty(true);
+            } finally {
+              setSaveBtnSaving(false);
+              saveBtn.disabled = false;
+            }
+          });
+        }
+
+        ideasList.appendChild(li);
+      }
 
       updateBulkHeader();
       setBulkBusy(false, "");
@@ -569,8 +795,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (messageArea) messageArea.style.display = "none";
     if (publicIdeasSection) publicIdeasSection.style.display = "none";
     if (ownerSection) ownerSection.style.display = "block";
-    // IMPORTANT: your current working admin UI renderer was long;
-    // if your admin UI looks simplified, tell me and I will paste the full admin renderer.
     renderIdeasFromSheet();
     return;
   }
@@ -590,17 +814,20 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    // Honeypot
     const gotcha = document.getElementById("website");
     if (gotcha && gotcha.value.trim() !== "") {
       if (messageArea) messageArea.textContent = "Submission blocked.";
       return;
     }
 
+    // Time check
     if (Date.now() - pageLoadedAt < 2000) {
       if (messageArea) messageArea.textContent = "Please wait a moment.";
       return;
     }
 
+    // Rate limit
     const lastSubmit = Number(localStorage.getItem(LAST_SUBMIT_KEY) || 0);
     if (Date.now() - lastSubmit < 30000) {
       if (messageArea) messageArea.textContent = "Please wait before submitting again.";
@@ -626,7 +853,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // ✅ Non-blocking Apps Script write (still real + reliable enough)
+      // ✅ Apps Script write (non-blocking, but real fetch)
       postAppsScriptNonBlocking({
         name: userName,
         email: userEmail,
@@ -640,7 +867,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // ✅ Instant UI feedback
       prependOptimisticIdeaCard({ title, desc: description });
 
-      // ✅ Formspree remains the true "sent" confirmation
+      // ✅ Formspree emails (must remain reliable)
       const fsRes = await fetch("https://formspree.io/f/mykekkgg", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -658,14 +885,12 @@ document.addEventListener("DOMContentLoaded", () => {
       form.reset();
       if (messageArea) messageArea.textContent = "Sent ✓ Now lets win the set!";
 
-      // ✅ Refresh ideas after a short delay (gives Apps Script time to write)
+      // Refresh ideas (cold starts can delay sheet write)
       setTimeout(() => renderPublicIdeasFromSheet(), 1800);
-      // and again as a safety net (cold starts)
       setTimeout(() => renderPublicIdeasFromSheet(), 6000);
     } catch (err) {
       console.error(err);
       if (messageArea) messageArea.textContent = "Submission failed.";
-      alert("Email send failed (Formspree). Please try again.");
     } finally {
       if (submitButton) {
         submitButton.disabled = false;
