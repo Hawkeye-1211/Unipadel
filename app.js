@@ -5,7 +5,7 @@
 // Public view shows ACTIVE ideas + voting (Score) and sorts by Score
 // Admin triage: Category / Priority / Notes (action=triage) updates existing row
 // Bulk: selection + bulk archive/delete
-// ✅ Test mode: when you are in admin session, Formspree is skipped to avoid quota burn.
+// ✅ Test mode: add ?test=1 on ideas.html to SKIP Formspree (prevents quota burn)
 
 document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
@@ -17,9 +17,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const SHEET_WEB_APP_URL =
     "https://script.google.com/macros/s/AKfycbx_SbZlBKAPFOyAb_mbllCytQEKTpzn-bafaZ7RloDTXsRLmsXB9Bngjp_Dv_h-I2tGHA/exec";
 
+  // ---- URL FLAGS ----
+  const urlParams = new URLSearchParams(window.location.search);
+  const isTestMode = urlParams.get("test") === "1"; // ✅ NEW: skip Formspree when testing
+
   // ---- ADMIN MODE ----
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("admin") === ADMIN_KEY) {
+  if (urlParams.get("admin") === ADMIN_KEY) {
     sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
     if (window.history && window.history.replaceState) {
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -70,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return body.toString();
   }
 
+  // ✅ RELIABLE: awaited (admin actions, triage, voting)
   async function postAppsScriptReliable(paramsObj) {
     const bodyStr = toFormBody(paramsObj);
     await fetch(SHEET_WEB_APP_URL, {
@@ -81,6 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ✅ FAST (but still real fetch): not awaited (public submission only)
   function postAppsScriptNonBlocking(paramsObj) {
     const bodyStr = toFormBody(paramsObj);
     fetch(SHEET_WEB_APP_URL, {
@@ -800,6 +805,11 @@ document.addEventListener("DOMContentLoaded", () => {
     form.querySelector('button[type="submit"]') || form.querySelector("button");
   const pageLoadedAt = Date.now();
 
+  // Optional little hint in test mode (no layout changes)
+  if (isTestMode && messageArea) {
+    messageArea.textContent = "Test mode enabled: email notifications are OFF.";
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -841,9 +851,6 @@ document.addEventListener("DOMContentLoaded", () => {
       submitButton.textContent = "Sending...";
     }
 
-    // ✅ TEST MODE: if you are in admin session, don't burn Formspree quota
-    const isTestMode = isAdminMode;
-
     try {
       // Apps Script write (non-blocking)
       postAppsScriptNonBlocking({
@@ -859,8 +866,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // instant UI feedback
       prependOptimisticIdeaCard({ title, desc: description });
 
+      // ✅ Formspree (skipped in test mode)
       if (!isTestMode) {
-        // Formspree emails (real users)
         const fsRes = await fetch("https://formspree.io/f/mykekkgg", {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -883,7 +890,6 @@ document.addEventListener("DOMContentLoaded", () => {
           : "Sent ✓ Now lets win the set!";
       }
 
-      // Refresh ideas
       setTimeout(() => renderPublicIdeasFromSheet(), 1800);
       setTimeout(() => renderPublicIdeasFromSheet(), 6000);
     } catch (err) {
