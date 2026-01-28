@@ -1,40 +1,31 @@
 // UniPadel app.js
-// Public submits -> Google Sheet + Formspree emails
-// Admin reads from Google Sheet
-// Admin actions: Archive (Status->ARCHIVED) or Delete (remove row)
-// Public view shows ACTIVE ideas + voting (Score) and sorts by Score
-// Admin triage: Category / Priority / Notes (action=triage) updates existing row
-// Bulk: selection + bulk archive/delete
-// ✅ Test mode: add ?test=1 on ideas.html to SKIP Formspree (prevents quota burn)
+// ✅ Test mode: add ?test=1 to ideas.html to skip Formspree (prevents quota burn)
 
 document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
   const ADMIN_SESSION_KEY = "Unipadel_admin_session";
   const LAST_SUBMIT_KEY = "Unipadel_last_submit_ts";
-
   const VOTE_KEY_PREFIX = "Unipadel_vote_";
 
   const SHEET_WEB_APP_URL =
     "https://script.google.com/macros/s/AKfycbx_SbZlBKAPFOyAb_mbllCytQEKTpzn-bafaZ7RloDTXsRLmsXB9Bngjp_Dv_h-I2tGHA/exec";
 
-  // ---- URL FLAGS ----
+  // URL flags
   const urlParams = new URLSearchParams(window.location.search);
-  const isTestMode = urlParams.get("test") === "1"; // ✅ NEW: skip Formspree when testing
+  const isTestMode = urlParams.get("test") === "1"; // ✅ NEW
 
-  // ---- ADMIN MODE ----
+  // Admin mode
   if (urlParams.get("admin") === ADMIN_KEY) {
     sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
     if (window.history && window.history.replaceState) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }
-
   const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
 
   // Navbar links
   const adminNavLink = document.getElementById("adminNavLink");
   const exitAdminLink = document.getElementById("exitAdminLink");
-
   if (adminNavLink) adminNavLink.hidden = !isAdminMode;
   if (exitAdminLink) exitAdminLink.hidden = !isAdminMode;
 
@@ -46,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ---- PAGE ELEMENTS ----
+  // Page elements
   const form = document.getElementById("ideaForm");
   const messageArea = document.getElementById("messageArea");
   const ownerSection = document.querySelector(".owner-only");
@@ -64,16 +55,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const onIdeasPage = !!(form || ownerSection || ideasList || publicIdeasList);
   if (!onIdeasPage) return;
 
-  // -----------------------------
-  // SPEED/RELIABILITY HELPERS
-  // -----------------------------
+  // Helpers
   function toFormBody(paramsObj) {
     const body = new URLSearchParams();
     Object.entries(paramsObj || {}).forEach(([k, v]) => body.set(k, String(v ?? "")));
     return body.toString();
   }
 
-  // ✅ RELIABLE: awaited (admin actions, triage, voting)
   async function postAppsScriptReliable(paramsObj) {
     const bodyStr = toFormBody(paramsObj);
     await fetch(SHEET_WEB_APP_URL, {
@@ -85,7 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ FAST (but still real fetch): not awaited (public submission only)
   function postAppsScriptNonBlocking(paramsObj) {
     const bodyStr = toFormBody(paramsObj);
     fetch(SHEET_WEB_APP_URL, {
@@ -97,18 +84,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }).catch((err) => console.error("Apps Script non-blocking POST failed:", err));
   }
 
-  // ---- ADMIN HELPERS ----
+  async function fetchRowsFromSheet() {
+    const res = await fetch(`${SHEET_WEB_APP_URL}?t=${Date.now()}`);
+    const data = await res.json();
+    if (!data || data.success !== true) throw new Error("Bad response from sheet");
+    return Array.isArray(data.rows) ? data.rows : [];
+  }
+
   async function postAdminAction(action, id) {
-    if (!id || typeof id !== "string" || id.trim() === "") {
-      throw new Error("Missing Timestamp id.");
-    }
     await postAppsScriptReliable({ action, id });
   }
 
   async function postTriage(id, category, priority, notes) {
-    if (!id || typeof id !== "string" || id.trim() === "") {
-      throw new Error("Missing Timestamp id.");
-    }
     await postAppsScriptReliable({
       action: "triage",
       id,
@@ -118,20 +105,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ---- SHEET HELPERS ----
-  async function fetchRowsFromSheet() {
-    const res = await fetch(`${SHEET_WEB_APP_URL}?t=${Date.now()}`);
-    const data = await res.json();
-    if (!data || data.success !== true) throw new Error("Bad response from sheet");
-    return Array.isArray(data.rows) ? data.rows : [];
-  }
-
   async function postVote(id, delta) {
-    if (!id || typeof id !== "string" || id.trim() === "") throw new Error("Missing id");
-    const d = Number(delta);
-    if (d !== 1 && d !== -1) throw new Error("Bad delta");
-
-    await postAppsScriptReliable({ action: "vote", id, delta: String(d) });
+    await postAppsScriptReliable({ action: "vote", id, delta: String(delta) });
   }
 
   function getVoteState(id) {
@@ -147,12 +122,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (dir === "down") localStorage.setItem(`${VOTE_KEY_PREFIX}${id}_down`, "1");
   }
 
-  // -----------------------------
-  // PUBLIC VIEW
-  // -----------------------------
   function prependOptimisticIdeaCard({ title, desc }) {
     if (!publicIdeasList) return;
-
     const card = document.createElement("div");
     card.className = "public-idea-card";
     card.style.outline = "2px solid rgba(182,230,0,.55)";
@@ -198,13 +169,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function renderPublicIdeasFromSheet() {
     if (!publicIdeasList) return;
-
-    publicIdeasList.innerHTML =
-      '<div style="opacity:.75; font-size:14px;">Loading ideas...</div>';
+    publicIdeasList.innerHTML = '<div style="opacity:.75; font-size:14px;">Loading ideas...</div>';
 
     try {
       const rows = await fetchRowsFromSheet();
-
       const activeRows = rows
         .filter((r) => String(r["Status"] || "").trim() === "ACTIVE")
         .filter((r) => String(r["Timestamp"] || "").trim() !== "");
@@ -213,14 +181,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const sa = Number(a["Score"] || 0);
         const sb = Number(b["Score"] || 0);
         if (sb !== sa) return sb - sa;
-
         const ta = Date.parse(String(a["Timestamp"] || "")) || 0;
         const tb = Date.parse(String(b["Timestamp"] || "")) || 0;
         return tb - ta;
       });
 
       const visible = activeRows.slice(0, 12);
-
       if (visible.length === 0) {
         publicIdeasList.innerHTML =
           '<div style="opacity:.75; font-size:14px;">No ideas yet — be the first to serve one 🎾</div>';
@@ -300,7 +266,6 @@ document.addEventListener("DOMContentLoaded", () => {
         async function handleVote(dir) {
           upBtn.disabled = true;
           downBtn.disabled = true;
-
           try {
             const cur = getVoteState(tsIso);
             let netDelta = 0;
@@ -374,12 +339,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // -----------------------------
-  // ADMIN VIEW (unchanged)
-  // -----------------------------
+  // ---- ADMIN VIEW ----
   async function renderIdeasFromSheet() {
     if (!ideasList) return;
-
     ideasList.innerHTML = "<li>Loading submissions...</li>";
 
     try {
@@ -387,7 +349,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const activeRows = rows.filter((r) => String(r["Status"] || "").trim() === "ACTIVE");
 
       ideasList.innerHTML = "";
-
       const selectedIds = new Set();
       let bulkBusy = false;
 
@@ -412,13 +373,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       function updateBulkHeader() {
         const { count, selectAll, archive, del } = getBulkEls();
-
         if (count) count.textContent = String(selectedIds.size);
-
         const allRowCbs = ideasList.querySelectorAll('input[data-bulk="row"]');
         const allChecked = allRowCbs.length > 0 && [...allRowCbs].every(cb => cb.checked);
         if (selectAll) selectAll.checked = allChecked;
-
         if (archive) archive.disabled = bulkBusy || selectedIds.size === 0;
         if (del) del.disabled = bulkBusy || selectedIds.size === 0;
       }
@@ -476,35 +434,30 @@ document.addEventListener("DOMContentLoaded", () => {
         if (bulkBusy || selectedIds.size === 0) return;
 
         const ids = Array.from(selectedIds);
-
         const confirmText =
           action === "archive"
-            ? `Archive ${ids.length} idea(s)?\n\nThey will disappear from the admin list but remain in the Google Sheet.`
-            : `Delete ${ids.length} idea(s)?\n\nThis removes them from BOTH the admin list and the Google Sheet.\nThis cannot be undone.`;
+            ? `Archive ${ids.length} idea(s)?`
+            : `Delete ${ids.length} idea(s)?\n\nThis cannot be undone.`;
 
         const ok = window.confirm(confirmText);
         if (!ok) return;
 
         setBulkBusy(true, `Working… 0 / ${ids.length}`);
-
         let done = 0;
 
         for (const id of ids) {
           try {
             await postAdminAction(action, id);
-
             const rowCb = ideasList.querySelector(`input[data-bulk="row"][data-id="${CSS.escape(id)}"]`);
             const li = rowCb ? rowCb.closest("li") : null;
             if (li) li.remove();
-
             selectedIds.delete(id);
-
             done++;
             setBulkBusy(true, `Working… ${done} / ${ids.length}`);
             updateBulkHeader();
           } catch (err) {
             console.error(err);
-            alert(`Bulk ${action} failed on one item.\n\nStopped at ${done} / ${ids.length}.`);
+            alert(`Bulk ${action} failed. Stopped at ${done}/${ids.length}`);
             break;
           }
         }
@@ -516,7 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => {
           const { status } = getBulkEls();
           if (status) status.textContent = "";
-        }, 1400);
+        }, 1200);
       }
 
       if (archive) archive.addEventListener("click", () => runBulk("archive"));
@@ -557,9 +510,6 @@ document.addEventListener("DOMContentLoaded", () => {
               <strong>${title}</strong><br/>
               ${desc}<br/><br/>
               <small>${tsNice}${name ? " · " + name : ""}${email ? " · " + email : ""}</small>
-              <div style="margin-top:6px; font-size:12px;">
-                Status: <strong>ACTIVE</strong>
-              </div>
 
               <div style="margin-top:10px; padding:10px; border:1px solid rgba(201,204,210,.18); border-radius:10px; background:rgba(15,22,34,.55);">
                 <div style="font-size:12px; font-weight:700; opacity:.9; margin-bottom:8px;">Triage</div>
@@ -588,9 +538,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   <label style="font-size:12px; opacity:.85;">Notes</label><br/>
                   <textarea data-triage="notes" rows="3" style="width:100%; margin-top:6px; padding:10px; border-radius:10px; background:rgba(15,22,34,.9); color:#E5E7EB; border:1px solid rgba(201,204,210,.3);">${existingNotes}</textarea>
                   <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
-                    <button type="button" data-action="save-triage" style="padding:8px 12px; font-size:14px;">
-                      Save triage
-                    </button>
+                    <button type="button" data-action="save-triage" style="padding:8px 12px; font-size:14px;">Save triage</button>
                     <span data-triage="saved" style="font-size:12px; opacity:.75; align-self:center;"></span>
                   </div>
                 </div>
@@ -598,12 +546,8 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
 
             <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
-              <button type="button" data-action="archive" style="padding:8px 12px; font-size:14px;">
-                Archive
-              </button>
-              <button type="button" data-action="delete" style="padding:8px 12px; font-size:14px;">
-                Delete
-              </button>
+              <button type="button" data-action="archive" style="padding:8px 12px; font-size:14px;">Archive</button>
+              <button type="button" data-action="delete" style="padding:8px 12px; font-size:14px;">Delete</button>
             </div>
           </div>
         `;
@@ -612,7 +556,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const archiveBtn = li.querySelector('button[data-action="archive"]');
         const deleteBtn = li.querySelector('button[data-action="delete"]');
         const saveBtn = li.querySelector('button[data-action="save-triage"]');
-
         const categorySel = li.querySelector('select[data-triage="category"]');
         const prioritySel = li.querySelector('select[data-triage="priority"]');
         const notesEl = li.querySelector('textarea[data-triage="notes"]');
@@ -622,151 +565,63 @@ document.addEventListener("DOMContentLoaded", () => {
           bulkCb.addEventListener("change", () => {
             const id = String(bulkCb.getAttribute("data-id") || "").trim();
             if (!id) return;
-
-            if (bulkCb.checked) {
-              selectedIds.add(id);
-              li.style.outline = "2px solid rgba(182,230,0,.75)";
-              li.style.borderRadius = "12px";
-            } else {
-              selectedIds.delete(id);
-              li.style.outline = "none";
-            }
+            if (bulkCb.checked) selectedIds.add(id);
+            else selectedIds.delete(id);
             updateBulkHeader();
           });
         }
 
-        const initial = {
-          category: existingCategory,
-          priority: existingPriority,
-          notes: existingNotes,
-        };
-
-        function setSaveBtnDirty(isDirty) {
-          if (!saveBtn) return;
-          if (isDirty) {
-            saveBtn.style.background = "linear-gradient(180deg,#D9FF4F,#B6E600 55%,#8FBF00)";
-            saveBtn.style.color = "#0B0F14";
-            saveBtn.style.boxShadow = "0 14px 30px rgba(182,230,0,.25), inset 0 2px 0 rgba(255,255,255,.25)";
-            saveBtn.style.borderRadius = "12px";
-          } else {
-            saveBtn.style.background = "#1F2937";
-            saveBtn.style.color = "#E5E7EB";
-            saveBtn.style.boxShadow = "none";
-            saveBtn.style.borderRadius = "6px";
-          }
-        }
-
-        function setSaveBtnSaving(isSaving) {
-          if (!saveBtn) return;
-          if (isSaving) {
-            saveBtn.textContent = "Saving…";
-            saveBtn.style.transform = "translateY(1px)";
-            saveBtn.style.boxShadow = "inset 0 3px 10px rgba(0,0,0,.35)";
-            saveBtn.style.opacity = "0.9";
-            saveBtn.style.cursor = "wait";
-          } else {
-            saveBtn.textContent = "Save triage";
-            saveBtn.style.transform = "";
-            saveBtn.style.opacity = "";
-            saveBtn.style.cursor = "";
-          }
-        }
-
-        function computeDirty() {
-          const c = categorySel ? String(categorySel.value || "").trim() : "";
-          const p = prioritySel ? String(prioritySel.value || "").trim() : "";
-          const n = notesEl ? String(notesEl.value || "") : "";
-          return c !== initial.category || p !== initial.priority || n !== initial.notes;
-        }
-
-        function onTriageChanged() {
-          setSaveBtnDirty(computeDirty());
-          if (savedEl) savedEl.textContent = "";
-        }
-
-        if (categorySel) categorySel.addEventListener("change", onTriageChanged);
-        if (prioritySel) prioritySel.addEventListener("change", onTriageChanged);
-        if (notesEl) notesEl.addEventListener("input", onTriageChanged);
-        setSaveBtnDirty(false);
-
-        function setRowBusy(isBusy) {
-          if (archiveBtn) archiveBtn.disabled = isBusy;
-          if (deleteBtn) deleteBtn.disabled = isBusy;
-          if (saveBtn) saveBtn.disabled = isBusy;
-          if (bulkCb) bulkCb.disabled = isBusy;
-        }
-
         archiveBtn.addEventListener("click", async () => {
-          const ok = window.confirm(
-            "Archive this idea?\n\nThis removes it from the website list but keeps it in the Google Sheet."
-          );
+          const ok = window.confirm("Archive this idea?");
           if (!ok) return;
-
-          setRowBusy(true);
-
+          archiveBtn.disabled = true;
+          deleteBtn.disabled = true;
           try {
             await postAdminAction("archive", tsIso);
-            if (selectedIds.has(tsIso)) selectedIds.delete(tsIso);
             li.remove();
+            if (selectedIds.has(tsIso)) selectedIds.delete(tsIso);
             updateBulkHeader();
             ensureNotEmptyMessage();
-          } catch (err) {
-            console.error(err);
-            alert("Archive failed. Please try again.");
-            setRowBusy(false);
+          } catch (e) {
+            console.error(e);
+            alert("Archive failed.");
+            archiveBtn.disabled = false;
+            deleteBtn.disabled = false;
           }
         });
 
         deleteBtn.addEventListener("click", async () => {
-          const ok = window.confirm(
-            "Delete this idea?\n\nThis removes it from BOTH the website list and the Google Sheet.\nThis cannot be undone."
-          );
+          const ok = window.confirm("Delete this idea? This cannot be undone.");
           if (!ok) return;
-
-          setRowBusy(true);
-
+          archiveBtn.disabled = true;
+          deleteBtn.disabled = true;
           try {
             await postAdminAction("delete", tsIso);
-            if (selectedIds.has(tsIso)) selectedIds.delete(tsIso);
             li.remove();
+            if (selectedIds.has(tsIso)) selectedIds.delete(tsIso);
             updateBulkHeader();
             ensureNotEmptyMessage();
-          } catch (err) {
-            console.error(err);
-            alert("Delete failed. Please try again.");
-            setRowBusy(false);
+          } catch (e) {
+            console.error(e);
+            alert("Delete failed.");
+            archiveBtn.disabled = false;
+            deleteBtn.disabled = false;
           }
         });
 
         if (saveBtn) {
           saveBtn.addEventListener("click", async () => {
-            const category = categorySel ? categorySel.value : "";
-            const priority = prioritySel ? prioritySel.value : "";
-            const notes = notesEl ? notesEl.value : "";
-
-            if (savedEl) savedEl.textContent = "";
             saveBtn.disabled = true;
-            setSaveBtnSaving(true);
-
+            saveBtn.textContent = "Saving…";
             try {
-              await postTriage(tsIso, category, priority, notes);
-
-              initial.category = String(category || "").trim();
-              initial.priority = String(priority || "").trim();
-              initial.notes = String(notes || "");
-
-              setSaveBtnDirty(false);
-
+              await postTriage(tsIso, categorySel?.value || "", prioritySel?.value || "", notesEl?.value || "");
               if (savedEl) savedEl.textContent = "Saved ✓";
-              setTimeout(() => {
-                if (savedEl) savedEl.textContent = "";
-              }, 1500);
-            } catch (err) {
-              console.error(err);
-              alert("Save failed. Please try again.");
-              setSaveBtnDirty(true);
+              setTimeout(() => { if (savedEl) savedEl.textContent = ""; }, 1200);
+            } catch (e) {
+              console.error(e);
+              alert("Save failed.");
             } finally {
-              setSaveBtnSaving(false);
+              saveBtn.textContent = "Save triage";
               saveBtn.disabled = false;
             }
           });
@@ -783,7 +638,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ---- MODE SWITCH ----
+  // Mode switch
   if (isAdminMode) {
     if (form) form.style.display = "none";
     if (messageArea) messageArea.style.display = "none";
@@ -793,19 +648,17 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // ---- PUBLIC MODE ----
+  // Public mode
   if (ownerSection) ownerSection.style.display = "none";
   if (publicIdeasSection) publicIdeasSection.style.display = "block";
   renderPublicIdeasFromSheet();
 
-  // ---- PUBLIC SUBMIT ----
   if (!form) return;
 
   const submitButton =
     form.querySelector('button[type="submit"]') || form.querySelector("button");
   const pageLoadedAt = Date.now();
 
-  // Optional little hint in test mode (no layout changes)
   if (isTestMode && messageArea) {
     messageArea.textContent = "Test mode enabled: email notifications are OFF.";
   }
@@ -813,20 +666,17 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Honeypot
     const gotcha = document.getElementById("website");
     if (gotcha && gotcha.value.trim() !== "") {
       if (messageArea) messageArea.textContent = "Submission blocked.";
       return;
     }
 
-    // Time check
     if (Date.now() - pageLoadedAt < 2000) {
       if (messageArea) messageArea.textContent = "Please wait a moment.";
       return;
     }
 
-    // Rate limit
     const lastSubmit = Number(localStorage.getItem(LAST_SUBMIT_KEY) || 0);
     if (Date.now() - lastSubmit < 30000) {
       if (messageArea) messageArea.textContent = "Please wait before submitting again.";
@@ -852,7 +702,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // Apps Script write (non-blocking)
       postAppsScriptNonBlocking({
         name: userName,
         email: userEmail,
@@ -863,10 +712,9 @@ document.addEventListener("DOMContentLoaded", () => {
         Source: source,
       });
 
-      // instant UI feedback
       prependOptimisticIdeaCard({ title, desc: description });
 
-      // ✅ Formspree (skipped in test mode)
+      // ✅ Skip Formspree in test mode
       if (!isTestMode) {
         const fsRes = await fetch("https://formspree.io/f/mykekkgg", {
           method: "POST",
@@ -879,7 +727,6 @@ document.addEventListener("DOMContentLoaded", () => {
             source,
           }),
         });
-
         if (!fsRes.ok) throw new Error("Formspree HTTP " + fsRes.status);
       }
 
