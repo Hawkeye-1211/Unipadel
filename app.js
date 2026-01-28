@@ -4,17 +4,15 @@
 // Admin actions: Archive (Status->ARCHIVED) or Delete (remove row)
 // Public view shows ACTIVE ideas + voting (Score) and sorts by Score
 // Admin triage: Category / Priority / Notes (action=triage) updates existing row
-// ✅ Bulk selection (Step 1): checkboxes + select all + count (no bulk actions yet)
+// ✅ Bulk: selection + bulk archive/delete
 
 document.addEventListener("DOMContentLoaded", () => {
   const ADMIN_KEY = "unipadelgold";
   const ADMIN_SESSION_KEY = "Unipadel_admin_session";
   const LAST_SUBMIT_KEY = "Unipadel_last_submit_ts";
 
-  // Local vote key namespace (per-device voting guard)
   const VOTE_KEY_PREFIX = "Unipadel_vote_";
 
-  // ✅ Live Web App URL (your current deployment)
   const SHEET_WEB_APP_URL =
     "https://script.google.com/macros/s/AKfycbx_SbZlBKAPFOyAb_mbllCytQEKTpzn-bafaZ7RloDTXsRLmsXB9Bngjp_Dv_h-I2tGHA/exec";
 
@@ -50,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const ownerSection = document.querySelector(".owner-only");
   const ideasList = document.getElementById("ideasList");
 
-  // Public ideas section (read-only + voting)
   const publicIdeasSection = document.getElementById("publicIdeasSection");
   const publicIdeasList = document.getElementById("publicIdeasList");
 
@@ -68,7 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!id || typeof id !== "string" || id.trim() === "") {
       throw new Error("Missing Timestamp id.");
     }
-
     const body = new URLSearchParams({ action, id });
 
     await fetch(SHEET_WEB_APP_URL, {
@@ -79,7 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ Admin triage update (no new rows)
   async function postTriage(id, category, priority, notes) {
     if (!id || typeof id !== "string" || id.trim() === "") {
       throw new Error("Missing Timestamp id.");
@@ -110,17 +105,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function postVote(id, delta) {
-    if (!id || typeof id !== "string" || id.trim() === "") {
-      throw new Error("Missing id");
-    }
+    if (!id || typeof id !== "string" || id.trim() === "") throw new Error("Missing id");
     const d = Number(delta);
     if (d !== 1 && d !== -1) throw new Error("Bad delta");
 
-    const body = new URLSearchParams({
-      action: "vote",
-      id,
-      delta: String(d),
-    });
+    const body = new URLSearchParams({ action: "vote", id, delta: String(d) });
 
     await fetch(SHEET_WEB_APP_URL, {
       method: "POST",
@@ -136,14 +125,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return { up, down };
   }
 
-  function setVoteState(id, dir /* "up" | "down" | "" */) {
+  function setVoteState(id, dir) {
     localStorage.removeItem(`${VOTE_KEY_PREFIX}${id}_up`);
     localStorage.removeItem(`${VOTE_KEY_PREFIX}${id}_down`);
     if (dir === "up") localStorage.setItem(`${VOTE_KEY_PREFIX}${id}_up`, "1");
     if (dir === "down") localStorage.setItem(`${VOTE_KEY_PREFIX}${id}_down`, "1");
   }
 
-  // ---- PUBLIC VIEW (CARDS + VOTING) ----
+  // ---- PUBLIC VIEW ----
   async function renderPublicIdeasFromSheet() {
     if (!publicIdeasList) return;
 
@@ -157,7 +146,6 @@ document.addEventListener("DOMContentLoaded", () => {
         .filter((r) => String(r["Status"] || "").trim() === "ACTIVE")
         .filter((r) => String(r["Timestamp"] || "").trim() !== "");
 
-      // Sort: Score desc, then newest
       activeRows.sort((a, b) => {
         const sa = Number(a["Score"] || 0);
         const sb = Number(b["Score"] || 0);
@@ -278,9 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (netDelta === 2) await postVote(tsIso, 1);
             else if (netDelta === -2) await postVote(tsIso, -1);
 
-            setTimeout(() => {
-              renderPublicIdeasFromSheet();
-            }, 600);
+            setTimeout(() => renderPublicIdeasFromSheet(), 600);
           } catch (err) {
             console.error(err);
             alert("Vote failed. Please try again.");
@@ -337,28 +323,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
       ideasList.innerHTML = "";
 
-      // ✅ BULK SELECTION STATE (admin only)
+      // ✅ BULK SELECTION STATE
       const selectedIds = new Set();
+      let bulkBusy = false;
+
+      function getBulkEls() {
+        return {
+          selectAll: document.getElementById("bulkSelectAll"),
+          count: document.getElementById("bulkSelectedCount"),
+          archive: document.getElementById("bulkArchiveBtn"),
+          del: document.getElementById("bulkDeleteBtn"),
+          status: document.getElementById("bulkStatus"),
+        };
+      }
+
+      function setBulkBusy(isBusy, msg) {
+        bulkBusy = isBusy;
+        const { archive, del, status, selectAll } = getBulkEls();
+        if (archive) archive.disabled = isBusy || selectedIds.size === 0;
+        if (del) del.disabled = isBusy || selectedIds.size === 0;
+        if (selectAll) selectAll.disabled = isBusy;
+        if (status) status.textContent = msg || "";
+      }
 
       function updateBulkHeader() {
-        const countEl = document.getElementById("bulkSelectedCount");
-        if (countEl) countEl.textContent = String(selectedIds.size);
+        const { count, selectAll, archive, del } = getBulkEls();
+
+        if (count) count.textContent = String(selectedIds.size);
 
         const allRowCbs = ideasList.querySelectorAll('input[data-bulk="row"]');
         const allChecked = allRowCbs.length > 0 && [...allRowCbs].every(cb => cb.checked);
-        const selectAll = document.getElementById("bulkSelectAll");
         if (selectAll) selectAll.checked = allChecked;
+
+        if (archive) archive.disabled = bulkBusy || selectedIds.size === 0;
+        if (del) del.disabled = bulkBusy || selectedIds.size === 0;
       }
 
       function ensureNotEmptyMessage() {
-        // skip the bulk header li (index 0)
         const ideaLis = [...ideasList.children].slice(1);
         if (ideaLis.length === 0) {
           ideasList.innerHTML = "<li>No ACTIVE submissions.</li>";
         }
       }
 
-      // ✅ Bulk header row (selection only for now)
+      // ✅ Bulk header row
       const bulkLi = document.createElement("li");
       bulkLi.style.margin = "0 0 14px";
       bulkLi.style.padding = "10px 12px";
@@ -371,23 +379,93 @@ document.addEventListener("DOMContentLoaded", () => {
             <input type="checkbox" id="bulkSelectAll" />
             Select all
           </label>
-          <div style="font-size:13px; opacity:.85;">
-            Selected: <strong id="bulkSelectedCount">0</strong>
+
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div style="font-size:13px; opacity:.85;">
+              Selected: <strong id="bulkSelectedCount">0</strong>
+            </div>
+
+            <button type="button" id="bulkArchiveBtn" style="padding:8px 12px; font-size:14px;" disabled>
+              Archive selected
+            </button>
+
+            <button type="button" id="bulkDeleteBtn" style="padding:8px 12px; font-size:14px;" disabled>
+              Delete selected
+            </button>
+
+            <span id="bulkStatus" style="font-size:12px; opacity:.75;"></span>
           </div>
         </div>
       `;
       ideasList.appendChild(bulkLi);
 
-      const selectAllCb = bulkLi.querySelector("#bulkSelectAll");
-      if (selectAllCb) {
-        selectAllCb.addEventListener("change", () => {
-          const checked = selectAllCb.checked;
+      const { selectAll, archive, del } = getBulkEls();
+
+      if (selectAll) {
+        selectAll.addEventListener("change", () => {
+          const checked = selectAll.checked;
           ideasList.querySelectorAll('input[data-bulk="row"]').forEach((cb) => {
             cb.checked = checked;
             cb.dispatchEvent(new Event("change"));
           });
         });
       }
+
+      async function runBulk(action) {
+        if (bulkBusy) return;
+        if (selectedIds.size === 0) return;
+
+        const ids = Array.from(selectedIds);
+
+        const confirmText =
+          action === "archive"
+            ? `Archive ${ids.length} idea(s)?\n\nThey will disappear from the admin list but remain in the Google Sheet.`
+            : `Delete ${ids.length} idea(s)?\n\nThis removes them from BOTH the admin list and the Google Sheet.\nThis cannot be undone.`;
+
+        const ok = window.confirm(confirmText);
+        if (!ok) return;
+
+        setBulkBusy(true, `Working… 0 / ${ids.length}`);
+
+        let done = 0;
+
+        // process sequentially (safer, less chance of rate limiting)
+        for (const id of ids) {
+          try {
+            await postAdminAction(action, id);
+
+            // remove row from DOM immediately
+            const rowCb = ideasList.querySelector(`input[data-bulk="row"][data-id="${CSS.escape(id)}"]`);
+            if (rowCb) {
+              const li = rowCb.closest("li");
+              if (li) li.remove();
+            }
+
+            selectedIds.delete(id);
+
+            done++;
+            setBulkBusy(true, `Working… ${done} / ${ids.length}`);
+            updateBulkHeader();
+          } catch (err) {
+            console.error(err);
+            alert(`Bulk ${action} failed on one item.\n\nStopped at ${done} / ${ids.length}.`);
+            break;
+          }
+        }
+
+        setBulkBusy(false, done === ids.length ? "Done ✓" : "");
+        updateBulkHeader();
+        ensureNotEmptyMessage();
+
+        // clear status after a moment
+        setTimeout(() => {
+          const { status } = getBulkEls();
+          if (status) status.textContent = "";
+        }, 1400);
+      }
+
+      if (archive) archive.addEventListener("click", () => runBulk("archive"));
+      if (del) del.addEventListener("click", () => runBulk("delete"));
 
       if (activeRows.length === 0) {
         ideasList.innerHTML = "<li>No ACTIVE submissions.</li>";
@@ -475,8 +553,17 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         `;
 
-        // ✅ bulk checkbox wiring
         const bulkCb = li.querySelector('input[data-bulk="row"]');
+        const archiveBtn = li.querySelector('button[data-action="archive"]');
+        const deleteBtn = li.querySelector('button[data-action="delete"]');
+        const saveBtn = li.querySelector('button[data-action="save-triage"]');
+
+        const categorySel = li.querySelector('select[data-triage="category"]');
+        const prioritySel = li.querySelector('select[data-triage="priority"]');
+        const notesEl = li.querySelector('textarea[data-triage="notes"]');
+        const savedEl = li.querySelector('span[data-triage="saved"]');
+
+        // bulk checkbox behaviour
         if (bulkCb) {
           bulkCb.addEventListener("change", () => {
             const id = String(bulkCb.getAttribute("data-id") || "").trim();
@@ -494,16 +581,7 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
 
-        const archiveBtn = li.querySelector('button[data-action="archive"]');
-        const deleteBtn = li.querySelector('button[data-action="delete"]');
-        const saveBtn = li.querySelector('button[data-action="save-triage"]');
-
-        const categorySel = li.querySelector('select[data-triage="category"]');
-        const prioritySel = li.querySelector('select[data-triage="priority"]');
-        const notesEl = li.querySelector('textarea[data-triage="notes"]');
-        const savedEl = li.querySelector('span[data-triage="saved"]');
-
-        // --- triage "dirty" (unsaved changes) detection ---
+        // triage tracking
         const initial = {
           category: existingCategory,
           priority: existingPriority,
@@ -556,7 +634,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (categorySel) categorySel.addEventListener("change", onTriageChanged);
         if (prioritySel) prioritySel.addEventListener("change", onTriageChanged);
         if (notesEl) notesEl.addEventListener("input", onTriageChanged);
-
         setSaveBtnDirty(false);
 
         function setRowBusy(isBusy) {
@@ -576,8 +653,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
           try {
             await postAdminAction("archive", tsIso);
-
-            // remove from bulk selection if selected
             if (selectedIds.has(tsIso)) selectedIds.delete(tsIso);
             li.remove();
             updateBulkHeader();
@@ -599,7 +674,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
           try {
             await postAdminAction("delete", tsIso);
-
             if (selectedIds.has(tsIso)) selectedIds.delete(tsIso);
             li.remove();
             updateBulkHeader();
@@ -650,6 +724,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       updateBulkHeader();
+      setBulkBusy(false, "");
     } catch (err) {
       console.error(err);
       ideasList.innerHTML = "<li>Failed to load submissions from Google Sheet.</li>";
@@ -681,20 +756,17 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Honeypot
     const gotcha = document.getElementById("website");
     if (gotcha && gotcha.value.trim() !== "") {
       if (messageArea) messageArea.textContent = "Submission blocked.";
       return;
     }
 
-    // Time check
     if (Date.now() - pageLoadedAt < 2000) {
       if (messageArea) messageArea.textContent = "Please wait a moment.";
       return;
     }
 
-    // Rate limit
     const lastSubmit = Number(localStorage.getItem(LAST_SUBMIT_KEY) || 0);
     if (Date.now() - lastSubmit < 30000) {
       if (messageArea) messageArea.textContent = "Please wait before submitting again.";
@@ -704,11 +776,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const userName = userNameEl?.value.trim() || "";
     const userEmail = userEmailEl?.value.trim() || "";
-    const source = ideaSourceEl?.value.trim() || ""; // optional (depends on your HTML)
+    const source = ideaSourceEl?.value.trim() || "";
     const title = ideaTitleEl?.value.trim() || "";
     const description = ideaDescriptionEl?.value.trim() || "";
 
-    // Keep your existing required fields (source may not exist on page)
     if (!userName || !userEmail || !title || !description) {
       if (messageArea) messageArea.textContent = "Please fill out all fields.";
       return;
@@ -721,14 +792,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // 1) Google Sheet
       const body = new URLSearchParams({
         name: userName,
         email: userEmail,
         ideaTitle: title,
         ideaDescription: description,
-
-        // source keys (compatible)
         source,
         ideaSource: source,
         Source: source,
@@ -741,7 +809,6 @@ document.addEventListener("DOMContentLoaded", () => {
         body: body.toString(),
       });
 
-      // 2) Formspree emails
       const fsRes = await fetch("https://formspree.io/f/mykekkgg", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
