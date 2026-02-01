@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>UniPadel</title>
+  <title>UniPadel — Learn</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 
-<body data-page="ideas">
+<body data-page="learn">
   <nav class="navbar">
     <a href="/" class="logo">
       <img src="/Images/UniPadel-logo.png" alt="UniPadel logo" class="nav-logo" />
@@ -37,65 +37,56 @@
       <span class="brand-uni">Uni</span><span class="brand-padel">Padel</span>
     </h1>
 
-    <p>Submit ideas for the future UniPadel site.</p>
+    <p style="max-width: 720px; margin-left:auto; margin-right:auto;">
+      UniPadel is being built player-first. This page exists so the site is worth visiting
+      even if you never submit anything.
+    </p>
 
-    <section id="ideasSection">
-      <form id="ideaForm">
-        <input type="hidden" id="submissionTs" name="_submission_ts" value="" />
+    <section style="margin-top: 22px; text-align:left; max-width: 760px; margin-left:auto; margin-right:auto;">
+      <h2 style="margin-top: 0;">Why padel apps feel frustrating</h2>
+      <p>
+        Most padel platforms weren’t designed around how people actually play. They’re designed around
+        transactions (bookings) — not player experience. Here are the big pain points UniPadel will solve.
+      </p>
 
-        <!-- Spam protection: honeypot -->
-        <div style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
-          <label for="website">Website</label>
-          <input type="text" id="website" name="_gotcha" tabindex="-1" autocomplete="off" />
-        </div>
+      <h3>1) Booking friction</h3>
+      <p>
+        Finding the right time, court, and group often takes too many taps, too many screens, and too much
+        uncertainty. Simple flows should feel effortless.
+      </p>
 
-        <label for="userName">Your name</label><br />
-        <input type="text" id="userName" name="userName" required /><br /><br />
+      <h3>2) Matchmaking & levels</h3>
+      <p>
+        “Levels” can feel unfair or unclear. Matchmaking should be transparent: why you’re matched,
+        what to expect, and how to improve.
+      </p>
 
-        <label for="userEmail">Your email</label><br />
-        <input type="email" id="userEmail" name="userEmail" required /><br /><br />
+      <h3>3) Club discovery</h3>
+      <p>
+        Clubs, courts, pricing, peak times — discovery is messy. Players should be able to compare options
+        quickly and confidently.
+      </p>
 
-        <!-- ✅ Source (required by app.js) -->
-        <label for="ideaSource">Which platform is this about?</label><br />
-        <select id="ideaSource" name="ideaSource" required style="width:95%; padding:10px; border-radius:6px;">
-          <option value="" selected disabled>Choose one…</option>
-          <option value="Playtomic">Playtomic</option>
-          <option value="Other booking app">Other booking app</option>
-          <option value="unipadel.online">UniPadel</option>
-          <option value="Other">Other</option>
-        </select>
-        <br /><br />
+      <h3>4) Trust & clarity</h3>
+      <p>
+        Players want clarity: rules, cancellations, pricing, and what happens next. If an app makes you feel
+        unsure, you leave.
+      </p>
 
-        <label for="ideaTitle">What's your idea</label><br />
-        <input type="text" id="ideaTitle" name="ideaTitle" required /><br /><br />
-
-        <label for="ideaDescription">Tell us more</label><br />
-        <textarea id="ideaDescription" name="ideaDescription" rows="5" required></textarea><br /><br />
-
-        <button type="submit">Serve idea</button>
-      </form>
-
-      <p id="messageArea"></p>
-    </section>
-
-    <!-- ✅ PUBLIC IDEAS (read-only) - app.js will fill this for non-admin users -->
-    <section id="publicIdeasSection" aria-label="Recent ideas" style="margin-top:28px;">
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-        <div style="height:1px; background: rgba(201,204,210,.18); flex:1;"></div>
-        <h2 style="margin:0; font-size:16px; letter-spacing:.3px; opacity:.85;">Recent Ideas</h2>
-        <div style="height:1px; background: rgba(201,204,210,.18); flex:1;"></div>
+      <div style="margin-top: 22px; padding: 14px; border-radius: 10px; background: rgba(255,255,255,0.04);">
+        <h3 style="margin-top: 0;">Where ideas fit in</h3>
+        <p style="margin-bottom: 10px;">
+          UniPadel isn’t an “idea site”. It’s a padel product in the making — and suggestions are optional.
+          If something ever feels broken, confusing, or missing, you can share it.
+        </p>
+        <a href="/ideas.html" style="display:inline-block; padding:10px 14px; border-radius: 8px; text-decoration:none;">
+          Share a suggestion (optional)
+        </a>
       </div>
-
-      <div id="publicIdeasList"></div>
     </section>
-
-    <!-- Admin list -->
-    <div class="owner-only">
-      <h2>Submitted Ideas</h2>
-      <ul id="ideasList"></ul>
-    </div>
   </div>
 
+  <!-- Keep app.js so admin session navbar logic stays consistent across pages -->
   <script src="/app.js?v=20260128-TESTMODE-FAST" defer></script>
 </body>
 </html>
