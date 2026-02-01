@@ -116,23 +116,9 @@
       }
     });
 
-    // ✅ Your published CSV (more compatible format)
+    // ✅ Live CSV export (published)
     const PRICING_CSV_URL =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vScd-zwQsGJvYPwU4f_Avfy5xUhaSrSAZFrO4iVWLbHipkhRym1iRBOcnLqRqCeCQrcP6BTABkPEqxf/pub?single=true&gid=0&output=csv";
-
-    // Minimal fallback so page never looks broken
-    const FALLBACK_DATA = [
-      {
-        Venue: "Slazenger Padel Club Leeds",
-        City: "Leeds",
-        Area: "North Leeds",
-        BookingPlatform: "Playtomic",
-        BookingURL: "https://playtomic.com/",
-        PriceRange: "£—",
-        PriceUnit: "per hour",
-        SourceURL: "https://www.google.com"
-      }
-    ];
 
     const els = {
       cards: document.getElementById("cards"),
@@ -163,9 +149,7 @@
     }
 
     async function parseCsvToRows(csvText) {
-      // Handle BOM if present
       const text = csvText.replace(/^\uFEFF/, "");
-
       const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
       const nonEmpty = lines.filter(l => l.trim() !== "");
       if (!nonEmpty.length) return [];
@@ -205,9 +189,7 @@
     }
 
     function mapRow(r) {
-      // Accept header variations
       const get = (k) => norm(r[k] || "");
-
       return {
         Venue: get("venue"),
         City: get("city"),
@@ -226,7 +208,7 @@
       if (!rows.length) {
         els.cards.innerHTML = `
           <div style="padding:16px;border-radius:14px;border:1px dashed rgba(201,204,210,.25);text-align:center;opacity:.9;">
-            No clubs to show yet.
+            No clubs match your filters.
           </div>
         `;
         return;
@@ -336,7 +318,6 @@
         const rawRows = await parseCsvToRows(csv);
         const mapped = rawRows.map(mapRow);
 
-        // Strict required fields
         const cleaned = mapped.filter(r =>
           norm(r.Venue) &&
           norm(r.City) &&
@@ -371,8 +352,14 @@
       const rows = await loadData();
 
       fillFilters(rows);
-      els.count.textContent = `${rows.length} club${rows.length === 1 ? "" : "s"} shown`;
-      renderCards(rows);
+
+      // ✅ A) Default City to Leeds if it exists
+      if (els.city && [...els.city.options].some(o => o.value === "Leeds")) {
+        els.city.value = "Leeds";
+      }
+
+      // Render initial view using filters (so Leeds default applies)
+      applyFilters(rows);
 
       els.search.addEventListener("input", () => applyFilters(rows));
       els.city.addEventListener("change", () => applyFilters(rows));
@@ -381,6 +368,12 @@
         els.search.value = "";
         els.city.value = "";
         els.area.value = "";
+
+        // Re-apply Leeds default on reset if available
+        if (els.city && [...els.city.options].some(o => o.value === "Leeds")) {
+          els.city.value = "Leeds";
+        }
+
         applyFilters(rows);
       });
     })();
