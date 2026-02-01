@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>UniPadel — Learn</title>
+  <title>UniPadel — Vision</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,6 +11,7 @@
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
     rel="stylesheet"
   />
+
   <link rel="stylesheet" href="/style.css" />
 </head>
 
@@ -22,10 +23,11 @@
 
     <div class="nav-links">
       <a href="/">About</a>
-      <a href="/learn.html">Learn</a>
+      <a href="/learn.html">Vision</a>
       <a href="/clubs.html">Clubs</a>
       <a href="/ideas.html">Ideas</a>
 
+      <!-- Hidden by default; shown only during an admin session -->
       <a href="/ideas.html?admin=unipadelgold" id="adminNavLink" hidden>Admin</a>
       <a href="/ideas.html" id="exitAdminLink" hidden>Exit Admin</a>
     </div>
@@ -36,24 +38,23 @@
       <span class="brand-uni">Uni</span><span class="brand-padel">Padel</span>
     </h1>
 
-    <p style="max-width:820px;margin:0 auto;font-size:15px;line-height:1.75;opacity:.92;">
-      <strong style="font-weight:700;">By the player, for the player.</strong>
-      UniPadel exists to fix the parts of padel platforms that consistently feel clunky, unclear, or unfair —
-      without overcomplicating things.
+    <p style="max-width: 820px; margin: 0 auto; font-size: 15px; line-height: 1.75; opacity: .92;">
+      <strong style="font-weight:700;">Vision (not padel coaching).</strong>
+      This page explains what UniPadel is building and why — focused on scoring, rankings, leagues, and player trust.
     </p>
 
-    <!-- Core hook (repositioned) -->
-    <section style="margin-top:22px;text-align:left;max-width:820px;margin-left:auto;margin-right:auto;">
-      <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.6;margin-bottom:6px;">
+    <!-- Big hook (adds contrast) -->
+    <section style="margin-top: 18px; text-align:left; max-width: 820px; margin-left:auto; margin-right:auto;">
+      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6; margin-bottom:6px;">
         The biggest gap
       </div>
-      <div style="font-size:22px;font-weight:700;line-height:1.35;">
+      <div style="font-size:22px; font-weight:700; line-height:1.35;">
         Players care about <span style="color:#9FD0F0;">results</span> — not just bookings.<br />
         Scoring, rankings, and “who’s actually improving?” should feel <span style="opacity:.9;">clear and fair</span>.
       </div>
     </section>
 
-    <!-- Useful now CTA (unchanged intent) -->
+    <!-- Useful now CTA -->
     <section
       style="
         margin-top:20px;
@@ -86,7 +87,7 @@
       </a>
     </section>
 
-    <!-- Roadmap cue (doesn't promise release dates) -->
+    <!-- Roadmap cue -->
     <section
       style="
         margin-top:14px;
@@ -111,55 +112,55 @@
       </div>
     </section>
 
-    <!-- TOC -->
+    <!-- TOC / jump pills -->
     <section
       style="
-        margin-top:20px;
-        padding:14px;
-        border-radius:12px;
-        border:1px solid rgba(201,204,210,.18);
-        background:rgba(15,22,34,.35);
-        text-align:left;
-        max-width:820px;
-        margin-left:auto;
-        margin-right:auto;
+        margin-top: 18px;
+        padding: 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(201,204,210,.18);
+        background: rgba(15,22,34,.35);
+        text-align: left;
+        max-width: 820px;
+        margin-left: auto;
+        margin-right: auto;
       "
       aria-label="On this page"
     >
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <h2 style="margin:0;font-size:16px;">On this page</h2>
-        <span style="font-size:12px;opacity:.75;">Skim in ~60 seconds</span>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <h2 style="margin:0; font-size:16px; letter-spacing:.2px;">On this page</h2>
+        <span style="font-size:12px; opacity:.75;">Skim in ~60 seconds</span>
       </div>
 
-      <div style="height:1px;background:rgba(201,204,210,.14);margin:10px 0;"></div>
+      <div style="height:1px; background: rgba(201,204,210,.14); margin: 10px 0;"></div>
 
-      <div style="display:flex;flex-wrap:wrap;gap:10px;">
-        <a href="#why" style="padding:8px 10px;border-radius:999px;background:rgba(255,255,255,0.04);text-decoration:none;border:1px solid rgba(201,204,210,.12);">Why it’s frustrating</a>
-        <a href="#scoring" style="padding:8px 10px;border-radius:999px;background:rgba(255,255,255,0.04);text-decoration:none;border:1px solid rgba(201,204,210,.12);">Scoring & rankings</a>
-        <a href="#levels" style="padding:8px 10px;border-radius:999px;background:rgba(255,255,255,0.04);text-decoration:none;border:1px solid rgba(201,204,210,.12);">Matchmaking</a>
-        <a href="#discovery" style="padding:8px 10px;border-radius:999px;background:rgba(255,255,255,0.04);text-decoration:none;border:1px solid rgba(201,204,210,.12);">Discovery</a>
-        <a href="#booking" style="padding:8px 10px;border-radius:999px;background:rgba(255,255,255,0.04);text-decoration:none;border:1px solid rgba(201,204,210,.12);">Booking friction</a>
-        <a href="#trust" style="padding:8px 10px;border-radius:999px;background:rgba(255,255,255,0.04);text-decoration:none;border:1px solid rgba(201,204,210,.12);">Trust & clarity</a>
-        <a href="#ideas-fit" style="padding:8px 10px;border-radius:999px;background:rgba(255,255,255,0.04);text-decoration:none;border:1px solid rgba(201,204,210,.12);">Where ideas fit</a>
+      <div style="display:flex; flex-wrap:wrap; gap:10px;">
+        <a href="#why" style="padding:8px 10px; border-radius:999px; background: rgba(255,255,255,0.04); text-decoration:none; border:1px solid rgba(201,204,210,.12);">Why it’s frustrating</a>
+        <a href="#scoring" style="padding:8px 10px; border-radius:999px; background: rgba(255,255,255,0.04); text-decoration:none; border:1px solid rgba(201,204,210,.12);">Scoring & rankings</a>
+        <a href="#levels" style="padding:8px 10px; border-radius:999px; background: rgba(255,255,255,0.04); text-decoration:none; border:1px solid rgba(201,204,210,.12);">Matchmaking</a>
+        <a href="#discovery" style="padding:8px 10px; border-radius:999px; background: rgba(255,255,255,0.04); text-decoration:none; border:1px solid rgba(201,204,210,.12);">Discovery</a>
+        <a href="#booking" style="padding:8px 10px; border-radius:999px; background: rgba(255,255,255,0.04); text-decoration:none; border:1px solid rgba(201,204,210,.12);">Booking friction</a>
+        <a href="#trust" style="padding:8px 10px; border-radius:999px; background: rgba(255,255,255,0.04); text-decoration:none; border:1px solid rgba(201,204,210,.12);">Trust & clarity</a>
+        <a href="#ideas-fit" style="padding:8px 10px; border-radius:999px; background: rgba(255,255,255,0.04); text-decoration:none; border:1px solid rgba(201,204,210,.12);">Where ideas fit</a>
       </div>
     </section>
 
     <!-- WHY -->
-    <section id="why" style="margin-top:28px;text-align:left;max-width:820px;margin-left:auto;margin-right:auto;">
-      <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.6;margin-bottom:6px;">
+    <section id="why" style="margin-top: 18px; text-align:left; max-width: 820px; margin-left:auto; margin-right:auto;">
+      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6; margin-bottom:6px;">
         Why this page exists
       </div>
 
-      <h2 style="margin:0;font-size:20px;">Why padel apps feel frustrating</h2>
+      <h2 style="margin:0; font-size:20px;">Why padel apps feel frustrating</h2>
 
-      <p style="margin-top:10px;font-size:15px;line-height:1.75;opacity:.9;">
-        Across clubs and platforms, the same problems appear again and again.
+      <p style="margin-top:10px; font-size:15px; line-height:1.75; opacity:.9;">
+        Across clubs and platforms, the same problems show up again and again.
         Players aren’t asking for “more features” — they’re asking for less ambiguity.
       </p>
 
-      <div style="margin-top:14px;padding:14px;border-radius:12px;background:rgba(47,128,237,.10);border:1px solid rgba(47,128,237,.25);">
-        <div style="font-weight:700;margin-bottom:6px;">The recurring pain points</div>
-        <ul style="margin:0;padding-left:18px;line-height:1.7;font-size:14px;opacity:.95;">
+      <div style="margin-top: 12px; padding: 14px; border-radius: 12px; background: rgba(47,128,237,.10); border: 1px solid rgba(47,128,237,.25);">
+        <div style="font-weight:700; margin-bottom:6px;">The recurring pain points</div>
+        <ul style="margin:0; padding-left:18px; line-height:1.7; font-size:14px; opacity:.95;">
           <li><strong>Scoring & rankings</strong> — inconsistent, unclear, or too much effort</li>
           <li><strong>Matchmaking</strong> — level gaps and “why am I in this game?”</li>
           <li><strong>Discovery</strong> — clubs/courts/pricing are hard to compare</li>
@@ -167,9 +168,11 @@
           <li><strong>Trust & clarity</strong> — what happens next isn’t obvious</li>
         </ul>
       </div>
+
+      <div style="height:1px; background: rgba(201,204,210,.14); margin: 16px 0;"></div>
     </section>
 
-    <!-- Scoring & rankings (new top problem) -->
+    <!-- Scoring -->
     <section
       id="scoring"
       style="
@@ -302,7 +305,7 @@
       </div>
     </section>
 
-    <!-- Booking (now demoted) -->
+    <!-- Booking (demoted) -->
     <section
       id="booking"
       style="
@@ -442,8 +445,10 @@
   </div>
 
   <script>
+    // Minimal admin navbar handling for learn.html (keeps app.js off this page)
     document.addEventListener("DOMContentLoaded", () => {
       const ADMIN_SESSION_KEY = "Unipadel_admin_session";
+
       const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
 
       const adminNavLink = document.getElementById("adminNavLink");
