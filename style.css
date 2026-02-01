@@ -62,180 +62,18 @@ a:focus-visible {
 
 /* ===== Navbar ===== */
 .navbar {
-  position: relative;
+  /* ✅ Sticky navbar: stays visible while scrolling, without removing it from normal flow */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  /* Keep absolute-positioned logo working */
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
   padding: 12px 24px;
   min-height: 110px;
+
   background: linear-gradient(180deg, #0F1622, #0B111B);
   border-bottom: 1px solid rgba(201,204,210,.14);
   box-shadow: 0 10px 30px rgba(0,0,0,.35);
-}
-
-.navbar a {
-  color: #E5E7EB;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.navbar .logo {
-  position: absolute;
-  left: 24px;
-  bottom: -35px;
-}
-
-.navbar .nav-logo {
-  height: 170px;
-}
-
-/* ===== Nav Links ===== */
-.nav-links {
-  display: flex;
-  gap: 16px;
-  padding-bottom: 8px;
-}
-
-.nav-links a:hover {
-  color: #2F80ED;
-  text-shadow: 0 0 12px rgba(47,128,237,.25);
-}
-
-/* ===== Container (UNCHANGED) ===== */
-.container {
-  max-width: 600px;
-  margin: 60px auto;
-  padding: 30px;
-  border-radius: 10px;
-
-  background:
-    linear-gradient(135deg,
-      rgba(255,255,255,.08),
-      rgba(255,255,255,.03) 25%,
-      rgba(47,128,237,.06) 50%,
-      rgba(0,0,0,.20) 100%
-    ),
-    linear-gradient(135deg, #141A22, #0F1622);
-
-  box-shadow:
-    0 20px 60px rgba(0,0,0,.65),
-    inset 0 1px 0 rgba(255,255,255,.08);
-
-  border-top: 4px solid #2F80ED;
-  position: relative;
-  overflow: hidden;
-}
-
-/* ===== Brand Header ===== */
-.brand {
-  font-size: 2.4rem;
-  margin: 0 0 10px;
-  font-weight: 700;
-}
-
-.brand-uni {
-  background: linear-gradient(180deg,#FFFFFF,#F2F3F4 22%,#C9CCD1 45%,#FFFFFF 62%,#B6BBC1);
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-.brand-padel {
-  background: linear-gradient(180deg,#9FD0F0,#5FA9DA 35%,#2F80ED 65%,#2C4D6A);
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-/* ===== Inputs ===== */
-input,
-textarea,
-select {
-  width: 95%;
-  padding: 10px;
-  background: rgba(15,22,34,.9);
-  color: #E5E7EB;
-  border: 1px solid rgba(201,204,210,.3);
-  border-radius: 6px;
-}
-
-/* ===== Buttons ===== */
-button {
-  background: #1F2937;
-  color: #E5E7EB;
-  padding: 12px 18px;
-  border-radius: 6px;
-  border: none;
-}
-
-/* Serve button */
-#ideaForm button[type="submit"] {
-  display: block;
-  margin: 26px auto 0;
-  background: linear-gradient(180deg,#D9FF4F,#B6E600 55%,#8FBF00);
-  color: #FFFFFF;
-  border-radius: 12px;
-  padding: 14px 30px;
-  box-shadow: 0 18px 40px rgba(182,230,0,.35), inset 0 2px 0 rgba(255,255,255,.35);
-}
-
-/* ===== Admin-only ===== */
-.owner-only { display: none; }
-
-/* ========================================================= */
-/* =================== MOBILE ONLY ========================= */
-/* ========================================================= */
-
-@media (max-width: 600px) {
-
-  *, *::before, *::after { box-sizing: border-box; }
-  body {
-    overflow-x: hidden;
-
-    /* ✅ Mobile page background is white */
-    background: #FFFFFF;
-  }
-
-  /* Remove stars on mobile so white is clean */
-  body {
-    background-image: none;
-  }
-
-  /* NEW: ensure link color still looks good on white background */
-  a {
-    color: #2F80ED;
-  }
-
-  .navbar {
-    min-height: 84px;
-    padding: 10px 12px;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .navbar .logo { position: static; }
-  .navbar .nav-logo { height: 92px; }
-
-  .nav-links {
-    flex-wrap: wrap;
-    max-width: 44vw;
-    gap: 12px;
-  }
-
-  /* Container stays dark & premium */
-  .container {
-    width: calc(100% - 24px);
-    margin: 14px auto;
-    padding: 18px;
-  }
-
-  input,
-  textarea,
-  select {
-    width: 100%;
-  }
-
-  button { width: 100%; }
-
-  #ideaForm button[type="submit"] {
-    width: 100%;
-  }
-}
