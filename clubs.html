@@ -55,7 +55,7 @@
 
     <div class="nav-links">
       <a href="/">About</a>
-      <a href="/learn.html">Learn</a>
+      <a href="/learn.html">Vision</a>
       <a href="/clubs.html">Clubs</a>
       <a href="/ideas.html">Ideas</a>
 
@@ -73,25 +73,6 @@
       Compare <strong>published price ranges</strong> for padel clubs across the UK.
       Each card includes a booking link and a source link.
     </p>
-
-    <!-- B3: Coverage messaging (ADDED) -->
-    <div
-      id="coverageNote"
-      style="
-        margin-top: 12px;
-        padding: 12px 14px;
-        border-radius: 12px;
-        background: rgba(15,22,34,.35);
-        border: 1px solid rgba(201,204,210,.18);
-        font-size: 13px;
-        line-height: 1.6;
-        opacity: .92;
-        text-align: left;
-      "
-    >
-      <strong>Coverage view:</strong> Switch to <strong>Map</strong> to see where clubs are clustered.
-      Pricing comes from published sources — tap <strong>Source</strong> to verify.
-    </div>
 
     <section style="margin-top: 18px; text-align:left;">
       <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6; margin-bottom:8px;">
@@ -168,25 +149,6 @@
 
     <section id="mapView" hidden style="margin-top: 14px;">
       <div id="clubsMap"></div>
-
-      <!-- B3: Map tip + live count (ADDED) -->
-      <div
-        id="mapTip"
-        style="
-          margin-top: 10px;
-          padding: 12px 14px;
-          border-radius: 12px;
-          background: rgba(15,22,34,.35);
-          border: 1px solid rgba(201,204,210,.18);
-          font-size: 13px;
-          line-height: 1.6;
-          opacity: .92;
-        "
-      >
-        <strong>Tip:</strong> Zoom in to break clusters into individual clubs.
-        <span id="mapCount" style="opacity:.85;"></span>
-      </div>
-
       <div
         id="mapHint"
         hidden
@@ -241,9 +203,12 @@
     const PRICING_CSV_URL =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vScd-zwQsGJvYPwU4f_Avfy5xUhaSrSAZFrO4iVWLbHipkhRym1iRBOcnLqRqCeCQrcP6BTABkPEqxf/pub?single=true&gid=0&output=csv";
 
-    const REMEMBER_KEY = "unipadel_remember_location_v2";
-    const DEFAULT_KEY  = "unipadel_default_location_v2";
-    const VIEW_KEY = "unipadel_clubs_view_v1";
+    // Default location storage
+    const REMEMBER_KEY = "unipadel_remember_location_v2"; // "1" or "0"
+    const DEFAULT_KEY  = "unipadel_default_location_v2";  // JSON: {region, county, city, area}
+
+    // View mode storage
+    const VIEW_KEY = "unipadel_clubs_view_v1"; // "list" | "map"
 
     const els = {
       cards: document.getElementById("cards"),
@@ -261,14 +226,12 @@
       savedLabel: document.getElementById("savedLabel"),
       clearDefault: document.getElementById("clearDefaultBtn"),
 
+      // Map toggle + containers
       listBtn: document.getElementById("listViewBtn"),
       mapBtn: document.getElementById("mapViewBtn"),
       mapView: document.getElementById("mapView"),
       mapEl: document.getElementById("clubsMap"),
       mapHint: document.getElementById("mapHint"),
-
-      // B3: map count line
-      mapCount: document.getElementById("mapCount"),
     };
 
     function norm(s) { return String(s || "").trim(); }
@@ -295,7 +258,7 @@
 
     function isTruthyActive(v) {
       const t = norm(v).toLowerCase();
-      if (!t) return true;
+      if (!t) return true; // if column missing/blank, treat as active
       return ["true","1","yes","y"].includes(t);
     }
 
@@ -355,11 +318,14 @@
         PriceUnit: get("priceunit"),
         SourceURL: get("sourceurl"),
         Active: get("active"),
+
+        // Optional columns for map markers: Latitude / Longitude
         Latitude: toNum(r["latitude"]),
         Longitude: toNum(r["longitude"]),
       };
     }
 
+    // NORMALISE messy rows
     function normaliseRow(r) {
       let city = norm(r.City);
       let area = norm(r.Area);
@@ -377,6 +343,7 @@
       return { ...r, City: city, Area: area };
     }
 
+    // REGION / COUNTY / CITY mapping
     const CITY_TO_COUNTY_REGION = [
       { match: ["Leeds","Wetherby"], county: "West Yorkshire", region: "Yorkshire and the Humber" },
       { match: ["Manchester","Salford","Stockport","Cheadle"], county: "Greater Manchester", region: "North West" },
@@ -482,158 +449,6 @@
       els.area.innerHTML = `<option value="">All areas</option>` + areas.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
     }
 
-    async function loadData() {
-      try {
-        els.status.textContent = "Loading clubs…";
-        const res = await fetch(PRICING_CSV_URL + "&t=" + Date.now(), { cache: "no-store" });
-        if (!res.ok) throw new Error("CSV HTTP " + res.status);
-
-        const csv = await res.text();
-        const rawRows = await parseCsvToRows(csv);
-        const mapped = rawRows.map(mapRow);
-
-        const cleaned = mapped
-          .filter(r =>
-            norm(r.Venue) &&
-            norm(r.City) &&
-            norm(r.Area) &&
-            norm(r.BookingPlatform) &&
-            safeLink(r.BookingURL) &&
-            norm(r.PriceRange) &&
-            norm(r.PriceUnit) &&
-            safeLink(r.SourceURL)
-          )
-          .map(enrichRow);
-
-        if (!cleaned.length) {
-          els.status.innerHTML =
-            `No rows matched the expected headers/fields.<br/>
-             Make sure your header row includes:<br/>
-             <code>Venue, City, Area, BookingPlatform, BookingURL, PriceRange, PriceUnit, SourceURL</code>`;
-          return [];
-        }
-
-        els.status.textContent = "Showing published price ranges — tap “Source” to verify.";
-        return cleaned;
-      } catch (err) {
-        console.error(err);
-        els.status.innerHTML =
-          `Could not load clubs right now.<br/>
-           <span style="opacity:.85;">Reason: ${escapeHtml(String(err.message || err))}</span>`;
-        return [];
-      }
-    }
-
-    // ----------------------------
-    // MAP
-    // ----------------------------
-    let map = null;
-    let clusterLayer = null;
-    let lastFilteredForMap = [];
-
-    function ensureMap() {
-      if (map) return;
-
-      map = L.map(els.mapEl, { scrollWheelZoom: true }).setView([54.5, -3.0], 6);
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
-
-      clusterLayer = L.markerClusterGroup({
-        showCoverageOnHover: false,
-        spiderfyOnMaxZoom: true,
-        disableClusteringAtZoom: 15
-      });
-
-      map.addLayer(clusterLayer);
-    }
-
-    function updateMapCount(filteredRows) {
-      const total = (filteredRows || []).length;
-      const withCoords = (filteredRows || []).filter(r => Number.isFinite(r.Latitude) && Number.isFinite(r.Longitude)).length;
-      els.mapCount.textContent = ` (${withCoords}/${total} have coordinates)`;
-    }
-
-    function updateMapMarkers(filteredRows, opts = {}) {
-      lastFilteredForMap = filteredRows || [];
-      updateMapCount(lastFilteredForMap);
-
-      if (!map || !clusterLayer) return;
-
-      clusterLayer.clearLayers();
-
-      const withCoords = (filteredRows || []).filter(r =>
-        Number.isFinite(r.Latitude) && Number.isFinite(r.Longitude)
-      );
-
-      if (!withCoords.length) {
-        els.mapHint.hidden = false;
-        els.mapHint.innerHTML = `
-          <strong>Map needs coordinates.</strong><br/>
-          Make sure your clubs sheet includes <code>Latitude</code> and <code>Longitude</code> values.<br/>
-          List view still shows all filtered clubs.
-        `;
-        map.setView([54.5, -3.0], 6);
-        return;
-      }
-
-      els.mapHint.hidden = true;
-      els.mapHint.textContent = "";
-
-      const bounds = [];
-
-      for (const r of withCoords) {
-        const title = r.Venue || "Club";
-        const subtitle = [r.Area, r.City].filter(Boolean).join(" · ");
-        const bookingUrl = safeLink(r.BookingURL);
-        const sourceUrl = safeLink(r.SourceURL);
-
-        const popup = `
-          <div style="font-family: Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial; font-size: 13px; line-height: 1.5;">
-            <div style="font-weight:700; font-size:14px; margin-bottom:4px;">${escapeHtml(title)}</div>
-            <div style="opacity:.85; margin-bottom:6px;">${escapeHtml(subtitle)}</div>
-            <div style="opacity:.85; margin-bottom:8px;">
-              <strong>${escapeHtml(r.PriceRange || "—")}</strong> ${escapeHtml(r.PriceUnit || "")}
-            </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              ${bookingUrl ? `<a href="${escapeHtml(bookingUrl)}" target="_blank" rel="noopener noreferrer">Book</a>` : ""}
-              ${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Source</a>` : ""}
-            </div>
-          </div>
-        `;
-
-        const marker = L.marker([r.Latitude, r.Longitude]).bindPopup(popup);
-        clusterLayer.addLayer(marker);
-        bounds.push([r.Latitude, r.Longitude]);
-      }
-
-      if (opts.fit) {
-        try { map.fitBounds(bounds, { padding: [24, 24] }); } catch {}
-      }
-    }
-
-    function setViewMode(mode) {
-      const m = (mode === "map") ? "map" : "list";
-      localStorage.setItem(VIEW_KEY, m);
-
-      const isMap = m === "map";
-      els.mapView.hidden = !isMap;
-      els.cardsSection.hidden = isMap;
-
-      els.listBtn.setAttribute("aria-pressed", isMap ? "false" : "true");
-      els.mapBtn.setAttribute("aria-pressed", isMap ? "true" : "false");
-
-      if (isMap) {
-        ensureMap();
-        setTimeout(() => {
-          try { map.invalidateSize(); } catch {}
-          updateMapMarkers(lastFilteredForMap, { fit: true });
-        }, 50);
-      }
-    }
-
     function applyFilters(rows) {
       const q = norm(els.search.value).toLowerCase();
       const region = norm(els.region.value);
@@ -653,6 +468,7 @@
           const hay = `${r.Venue} ${r.Area} ${r.City} ${r.County} ${r.Region} ${r.BookingPlatform} ${r.PriceRange}`.toLowerCase();
           if (!hay.includes(q)) return false;
         }
+
         return true;
       });
 
@@ -662,10 +478,6 @@
       if (map && clusterLayer) {
         const isMapView = !els.mapView.hidden;
         updateMapMarkers(filtered, { fit: isMapView });
-      } else {
-        // keep map count fresh even before map is created (B3)
-        updateMapCount(filtered);
-        lastFilteredForMap = filtered;
       }
 
       lastFilteredForMap = filtered;
@@ -747,17 +559,161 @@
       }
     }
 
+    async function loadData() {
+      try {
+        els.status.textContent = "Loading clubs…";
+        const res = await fetch(PRICING_CSV_URL + "&t=" + Date.now(), { cache: "no-store" });
+        if (!res.ok) throw new Error("CSV HTTP " + res.status);
+
+        const csv = await res.text();
+        const rawRows = await parseCsvToRows(csv);
+        const mapped = rawRows.map(mapRow);
+
+        const cleaned = mapped
+          .filter(r =>
+            norm(r.Venue) &&
+            norm(r.City) &&
+            norm(r.Area) &&
+            norm(r.BookingPlatform) &&
+            safeLink(r.BookingURL) &&
+            norm(r.PriceRange) &&
+            norm(r.PriceUnit) &&
+            safeLink(r.SourceURL)
+          )
+          .map(enrichRow);
+
+        if (!cleaned.length) {
+          els.status.innerHTML =
+            `No rows matched the expected headers/fields.<br/>
+             Make sure your header row includes:<br/>
+             <code>Venue, City, Area, BookingPlatform, BookingURL, PriceRange, PriceUnit, SourceURL</code>`;
+          return [];
+        }
+
+        els.status.textContent = "Showing published price ranges — tap “Source” to verify.";
+        return cleaned;
+      } catch (err) {
+        console.error(err);
+        els.status.innerHTML =
+          `Could not load clubs right now.<br/>
+           <span style="opacity:.85;">Reason: ${escapeHtml(String(err.message || err))}</span>`;
+        return [];
+      }
+    }
+
+    // MAP: Leaflet + MarkerCluster
+    let map = null;
+    let clusterLayer = null;
+    let lastFilteredForMap = [];
+
+    function ensureMap() {
+      if (map) return;
+
+      map = L.map(els.mapEl, { scrollWheelZoom: true }).setView([54.5, -3.0], 6);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      clusterLayer = L.markerClusterGroup({
+        showCoverageOnHover: false,
+        spiderfyOnMaxZoom: true,
+        disableClusteringAtZoom: 15
+      });
+
+      map.addLayer(clusterLayer);
+    }
+
+    function updateMapMarkers(filteredRows, opts = {}) {
+      lastFilteredForMap = filteredRows || [];
+      if (!map || !clusterLayer) return;
+
+      clusterLayer.clearLayers();
+
+      const withCoords = (filteredRows || []).filter(r =>
+        Number.isFinite(r.Latitude) && Number.isFinite(r.Longitude)
+      );
+
+      if (!withCoords.length) {
+        els.mapHint.hidden = false;
+        els.mapHint.innerHTML = `
+          <strong>Map needs coordinates.</strong><br/>
+          Make sure your clubs sheet includes <code>Latitude</code> and <code>Longitude</code> values.<br/>
+          List view still shows all filtered clubs.
+        `;
+        map.setView([54.5, -3.0], 6);
+        return;
+      }
+
+      els.mapHint.hidden = true;
+      els.mapHint.textContent = "";
+
+      const bounds = [];
+
+      for (const r of withCoords) {
+        const title = r.Venue || "Club";
+        const subtitle = [r.Area, r.City].filter(Boolean).join(" · ");
+        const bookingUrl = safeLink(r.BookingURL);
+        const sourceUrl = safeLink(r.SourceURL);
+
+        const popup = `
+          <div style="font-family: Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial; font-size: 13px; line-height: 1.5;">
+            <div style="font-weight:700; font-size:14px; margin-bottom:4px;">${escapeHtml(title)}</div>
+            <div style="opacity:.85; margin-bottom:6px;">${escapeHtml(subtitle)}</div>
+            <div style="opacity:.85; margin-bottom:8px;">
+              <strong>${escapeHtml(r.PriceRange || "—")}</strong> ${escapeHtml(r.PriceUnit || "")}
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              ${bookingUrl ? `<a href="${escapeHtml(bookingUrl)}" target="_blank" rel="noopener noreferrer">Book</a>` : ""}
+              ${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Source</a>` : ""}
+            </div>
+          </div>
+        `;
+
+        const marker = L.marker([r.Latitude, r.Longitude]).bindPopup(popup);
+        clusterLayer.addLayer(marker);
+        bounds.push([r.Latitude, r.Longitude]);
+      }
+
+      if (opts.fit) {
+        try { map.fitBounds(bounds, { padding: [24, 24] }); } catch {}
+      }
+    }
+
+    function setViewMode(mode) {
+      const m = (mode === "map") ? "map" : "list";
+      localStorage.setItem(VIEW_KEY, m);
+
+      const isMap = m === "map";
+      els.mapView.hidden = !isMap;
+      els.cardsSection.hidden = isMap;
+
+      els.listBtn.setAttribute("aria-pressed", isMap ? "false" : "true");
+      els.mapBtn.setAttribute("aria-pressed", isMap ? "true" : "false");
+
+      if (isMap) {
+        ensureMap();
+        setTimeout(() => {
+          try { map.invalidateSize(); } catch {}
+          updateMapMarkers(lastFilteredForMap, { fit: true });
+        }, 50);
+      }
+    }
+
     (async function init() {
       const rows = await loadData();
 
       if (!localStorage.getItem(REMEMBER_KEY)) localStorage.setItem(REMEMBER_KEY, "0");
       setSavedUI();
 
+      // Fill cascading dropdowns
       fillRegion(rows);
       fillCounty(rows);
       fillCity(rows);
       fillArea(rows);
 
+      // Apply saved default if remember is ON
       const rememberOn = localStorage.getItem(REMEMBER_KEY) === "1";
       const savedRaw = localStorage.getItem(DEFAULT_KEY);
       const saved = (rememberOn && savedRaw) ? (() => { try { return JSON.parse(savedRaw); } catch { return null; } })() : null;
@@ -777,11 +733,14 @@
 
       applyFilters(rows);
 
+      // Restore view mode (default list)
       setViewMode(localStorage.getItem(VIEW_KEY) || "list");
 
+      // Toggle events
       els.listBtn.addEventListener("click", () => setViewMode("list"));
       els.mapBtn.addEventListener("click", () => setViewMode("map"));
 
+      // Events (cascade down)
       els.region.addEventListener("change", () => {
         els.county.value = "";
         els.city.value = "";
@@ -818,8 +777,11 @@
 
       els.remember.addEventListener("change", () => {
         localStorage.setItem(REMEMBER_KEY, els.remember.checked ? "1" : "0");
-        if (!els.remember.checked) localStorage.removeItem(DEFAULT_KEY);
-        else saveDefaultFromCurrent();
+        if (!els.remember.checked) {
+          localStorage.removeItem(DEFAULT_KEY);
+        } else {
+          saveDefaultFromCurrent();
+        }
         setSavedUI();
       });
 
