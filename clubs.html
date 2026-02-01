@@ -1,1 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UniPadel — Clubs & Pricing</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body data-page="clubs">
+  <nav class="navbar">
+    <a href="/" class="logo">
+      <img src="/Images/UniPadel-logo.png" alt="UniPadel logo" class="nav-logo" />
+    </a>
+
+    <div class="nav-links">
+      <a href="/">About</a>
+      <a href="/learn.html">Learn</a>
+      <a href="/clubs.html">Clubs</a>
+      <a href="/ideas.html">Ideas</a>
+
+      <!-- Hidden by default; shown only during an admin session -->
+      <a href="/ideas.html?admin=unipadelgold" id="adminNavLink" hidden>Admin</a>
+      <a href="/ideas.html" id="exitAdminLink" hidden>Exit Admin</a>
+    </div>
+  </nav>
+
+  <div class="container" style="max-width: 860px;">
+    <h1 class="brand">
+      <span class="brand-uni">Clubs</span><span class="brand-padel">Pricing</span>
+    </h1>
+
+    <p style="max-width: 820px; margin: 0 auto; font-size: 15px; line-height: 1.75; opacity: .9;">
+      A quick way to compare <strong>published price ranges</strong> for padel clubs around Leeds.
+      Each card includes a booking link and a source link.
+    </p>
+
+    <!-- Controls -->
+    <section style="margin-top: 18px; text-align:left;">
+      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6; margin-bottom:8px;">
+        Search & filter
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Search venue / area / city…"
+          style="flex:1; min-width: 220px;"
+        />
+
+        <select id="cityFilter" style="width:auto; min-width: 180px;">
+          <option value="">All cities</option>
+        </select>
+
+        <select id="areaFilter" style="width:auto; min-width: 200px;">
+          <option value="">All areas</option>
+        </select>
+      </div>
+
+      <div style="margin-top: 10px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div id="resultCount" style="font-size: 13px; opacity: .8;"></div>
+        <button id="resetBtn" type="button" style="padding:10px 12px; font-size:14px;">
+          Reset
+        </button>
+      </div>
+
+      <div style="height:1px; background: rgba(201,204,210,.14); margin: 16px 0;"></div>
+    </section>
+
+    <!-- Status / source info -->
+    <section style="text-align:left;">
+      <div
+        id="dataStatus"
+        style="
+          padding: 12px 14px;
+          border-radius: 12px;
+          background: rgba(15,22,34,.35);
+          border: 1px solid rgba(201,204,210,.18);
+          font-size: 13px;
+          line-height: 1.6;
+          opacity: .9;
+        "
+      >
+        Loading clubs…
+      </div>
+    </section>
+
+    <!-- Cards -->
+    <section style="margin-top: 16px;">
+      <div id="cards" style="display:grid; grid-template-columns: 1fr; gap: 12px;"></div>
+    </section>
+
+    <section style="margin-top: 18px; text-align:center;">
+      <p style="font-size: 14px; opacity: .8; margin: 0;">
+        Found something wrong or missing? <a href="/ideas.html">Share a suggestion</a>.
+      </p>
+    </section>
+  </div>
+
+  <script>
+    // ----------------------------
+    // Admin navbar handling (same behavior as other pages)
+    // ----------------------------
+    document.addEventListener("DOMContentLoaded", () => {
+      const ADMIN_SESSION_KEY = "Unipadel_admin_session";
+      const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
+
+      const adminNavLink = document.getElementById("adminNavLink");
+      const exitAdminLink = document.getElementById("exitAdminLink");
+
+      if (adminNavLink) adminNavLink.hidden = !isAdminMode;
+      if (exitAdminLink) exitAdminLink.hidden = !isAdminMode;
+
+      if (exitAdminLink) {
+        exitAdminLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          sessionStorage.removeItem(ADMIN_SESSION_KEY);
+          window.location.href = "/ideas.html";
+        });
+      }
+    });
+
+    // ----------------------------
+    // Clubs pricing data loader
+    // ----------------------------
+    // Optional: if you later publish your Google Sheet as CSV, paste the URL here:
+    // Example (Google Sheets "Publish to web" CSV): https://docs.google.com/spreadsheets/d/e/.../pub?output=csv
+    const PRICING_CSV_URL = ""; // <-- leave blank for now; page will use fallback dataset below
+
+    // Fallback dataset (works immediately, and matches your current columns)
+    // Columns: Venue, City, Area, BookingPlatform, BookingURL, PriceRange, PriceUnit, SourceURL
+    const FALLBACK_DATA = [
+      {
+        Venue: "Slazenger Padel Club Leeds",
+        City: "Leeds",
+        Area: "North Leeds",
+        BookingPlatform: "Playtomic",
+        BookingURL: "https://playtomic.com/clubs/slazenger-padel-clubs-leeds",
+        PriceRange: "£28–£79.2",
+        PriceUnit: "per hour",
+        SourceURL: "https://www.playskan.com/clubs/leeds/slazenger-padel-club-leeds"
+      },
+      {
+        Venue: "Pure Padel North Leeds",
+        City: "Leeds",
+        Area: "Moor Allerton",
+        BookingPlatform: "Playtomic",
+        BookingURL: "https://playtomic.com/clubs/pure-padel-north-leeds",
+        PriceRange: "£20–£32",
+        PriceUnit: "per hour",
+        SourceURL: "https://www.playskan.com/clubs/leeds/pure-padel-north-leeds"
+      },
+      {
+        Venue: "Last Sun Dance Padel Club",
+        City: "Leeds",
+        Area: "East Leeds",
+        BookingPlatform: "Playtomic",
+        BookingURL: "https://playtomic.com/clubs/last-sun-dance-padel-club",
+        PriceRange: "£28–£55.83",
+        PriceUnit: "per hour",
+        SourceURL: "https://www.playskan.com/clubs/leeds/last-sun-dance-padel-club"
+      },
+      {
+        Venue: "Wetherby Padel Club",
+        City: "Wetherby",
+        Area: "Wetherby",
+        BookingPlatform: "Playtomic",
+        BookingURL: "https://playtomic.com/clubs/wetherby-padel-club",
+        PriceRange: "£16–£24",
+        PriceUnit: "per hour",
+        SourceURL: "https://www.playskan.com/clubs/leeds/wetherby-padel-club"
+      },
+      {
+        Venue: "Surge Padel Harrogate",
+        City: "Harrogate",
+        Area: "Harrogate",
+        BookingPlatform: "Playtomic",
+        BookingURL: "https://playtomic.com/clubs/surge-padel-harrogate",
+        PriceRange: "£24–£48",
+        PriceUnit: "per hour",
+        SourceURL: "https://www.playskan.com/clubs/leeds/surge-padel-harrogate"
+      }
+    ];
+
+    const els = {
+      cards: document.getElementById("cards"),
+      status: document.getElementById("dataStatus"),
+      search: document.getElementById("searchInput"),
+      city: document.getElementById("cityFilter"),
+      area: document.getElementById("areaFilter"),
+      reset: document.getElementById("resetBtn"),
+      count: document.getElementById("resultCount"),
+    };
+
+    function norm(s) {
+      return String(s || "").trim();
+    }
+
+    function uniqSorted(values) {
+      return [...new Set(values.map(norm).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    }
+
+    function safeLink(url) {
+      const u = norm(url);
+      if (!u) return "";
+      if (u.startsWith("http://") || u.startsWith("https://")) return u;
+      return "";
+    }
+
+    function renderCards(rows) {
+      els.cards.innerHTML = "";
+
+      if (!rows.length) {
+        els.cards.innerHTML = `
+          <div style="padding:16px;border-radius:14px;border:1px dashed rgba(201,204,210,.25);text-align:center;opacity:.9;">
+            No clubs match your filters.
+          </div>
+        `;
+        return;
+      }
+
+      for (const r of rows) {
+        const venue = norm(r.Venue);
+        const city = norm(r.City);
+        const area = norm(r.Area);
+        const platform = norm(r.BookingPlatform);
+        const bookingUrl = safeLink(r.BookingURL);
+        const sourceUrl = safeLink(r.SourceURL);
+
+        const priceRange = norm(r.PriceRange);
+        const priceUnit = norm(r.PriceUnit);
+
+        const card = document.createElement("div");
+        card.style.padding = "14px";
+        card.style.borderRadius = "14px";
+        card.style.border = "1px solid rgba(201,204,210,.18)";
+        card.style.background = "rgba(15,22,34,.35)";
+        card.style.textAlign = "left";
+
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+            <div style="min-width: 240px; flex: 1;">
+              <div style="font-weight:700; font-size:16px; line-height:1.35;">${venue || "Unnamed venue"}</div>
+              <div style="margin-top:6px; font-size:13px; opacity:.85;">
+                ${[area, city].filter(Boolean).join(" · ")}
+              </div>
+              <div style="margin-top:6px; font-size:12px; opacity:.75;">
+                Booking: ${platform || "—"}
+              </div>
+            </div>
+
+            <div style="min-width: 180px; text-align:right;">
+              <div style="font-size:12px; letter-spacing:.12em; text-transform:uppercase; opacity:.65;">Published range</div>
+              <div style="margin-top:6px; font-size:20px; font-weight:700; line-height:1.2;">
+                ${priceRange || "—"}
+              </div>
+              <div style="margin-top:4px; font-size:12px; opacity:.8;">
+                ${priceUnit || ""}
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            ${
+              bookingUrl
+                ? `<a href="${bookingUrl}" target="_blank" rel="noopener noreferrer"
+                     style="display:inline-block; padding:10px 12px; border-radius:10px; text-decoration:none;
+                            background: rgba(182,230,0,.14); border: 1px solid rgba(182,230,0,.30);">
+                     Book
+                   </a>`
+                : ""
+            }
+
+            ${
+              sourceUrl
+                ? `<a href="${sourceUrl}" target="_blank" rel="noopener noreferrer"
+                     style="display:inline-block; padding:10px 12px; border-radius:10px; text-decoration:none;
+                            background: rgba(47,128,237,.12); border: 1px solid rgba(47,128,237,.30);">
+                     Source
+                   </a>`
+                : ""
+            }
+          </div>
+        `;
+
+        els.cards.appendChild(card);
+      }
+    }
+
+    function applyFilters(allRows) {
+      const q = norm(els.search.value).toLowerCase();
+      const city = norm(els.city.value);
+      const area = norm(els.area.value);
+
+      const filtered = allRows.filter((r) => {
+        const hay = `${norm(r.Venue)} ${norm(r.City)} ${norm(r.Area)} ${norm(r.BookingPlatform)} ${norm(r.PriceRange)}`
+          .toLowerCase();
+
+        if (q && !hay.includes(q)) return false;
+        if (city && norm(r.City) !== city) return false;
+        if (area && norm(r.Area) !== area) return false;
+        return true;
+      });
+
+      els.count.textContent = `${filtered.length} club${filtered.length === 1 ? "" : "s"} shown`;
+      renderCards(filtered);
+    }
+
+    function fillFilters(rows) {
+      const cities = uniqSorted(rows.map(r => r.City));
+      const areas = uniqSorted(rows.map(r => r.Area));
+
+      els.city.innerHTML = `<option value="">All cities</option>` + cities.map(c => `<option value="${c}">${c}</option>`).join("");
+      els.area.innerHTML = `<option value="">All areas</option>` + areas.map(a => `<option value="${a}">${a}</option>`).join("");
+    }
+
+    async function parseCsvToRows(csvText) {
+      // Minimal CSV parser (handles quoted fields)
+      const rows = [];
+      const lines = csvText.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").filter(Boolean);
+      if (!lines.length) return rows;
+
+      function splitCsvLine(line) {
+        const out = [];
+        let cur = "";
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"' ) {
+            if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; }
+            else { inQuotes = !inQuotes; }
+          } else if (ch === "," && !inQuotes) {
+            out.push(cur);
+            cur = "";
+          } else {
+            cur += ch;
+          }
+        }
+        out.push(cur);
+        return out.map(s => s.trim());
+      }
+
+      const headers = splitCsvLine(lines[0]).map(h => h.trim());
+      for (let i = 1; i < lines.length; i++) {
+        const cols = splitCsvLine(lines[i]);
+        const obj = {};
+        headers.forEach((h, idx) => obj[h] = cols[idx] ?? "");
+        rows.push(obj);
+      }
+      return rows;
+    }
+
+    async function loadData() {
+      try {
+        if (PRICING_CSV_URL) {
+          els.status.innerHTML = `Loading from your Google Sheet…`;
+          const res = await fetch(PRICING_CSV_URL, { cache: "no-store" });
+          if (!res.ok) throw new Error("CSV HTTP " + res.status);
+          const csv = await res.text();
+          const rows = await parseCsvToRows(csv);
+
+          // Expecting your columns: Venue, City, Area, BookingPlatform, BookingURL, PriceRange, PriceUnit, SourceURL
+          const cleaned = rows
+            .map(r => ({
+              Venue: r.Venue || r["Venue"] || "",
+              City: r.City || r["City"] || "",
+              Area: r.Area || r["Area"] || "",
+              BookingPlatform: r.BookingPlatform || r["BookingPlatform"] || "",
+              BookingURL: r.BookingURL || r["BookingURL"] || "",
+              PriceRange: r.PriceRange || r["PriceRange"] || "",
+              PriceUnit: r.PriceUnit || r["PriceUnit"] || "",
+              SourceURL: r.SourceURL || r["SourceURL"] || ""
+            }))
+            .filter(r => norm(r.Venue) !== "" && norm(r.PriceRange) !== "");
+
+          els.status.innerHTML = `Showing published price ranges.`;
+          return cleaned;
+        }
+
+        // Fallback mode
+        els.status.innerHTML =
+          `Showing starter data (embedded). If you want this to pull from Google Sheets automatically, tell me and I’ll give you the 1-link setup.`;
+        return FALLBACK_DATA;
+      } catch (err) {
+        console.error(err);
+        els.status.innerHTML =
+          `Could not load pricing data. Showing starter data instead.`;
+        return FALLBACK_DATA;
+      }
+    }
+
+    (async function init() {
+      const allRows = await loadData();
+
+      // Remove any empty rows (defensive)
+      const rows = allRows.filter(r =>
+        norm(r.Venue) && norm(r.City) && norm(r.Area) && norm(r.PriceRange) && norm(r.PriceUnit) && norm(r.BookingURL) && norm(r.SourceURL)
+      );
+
+      fillFilters(rows);
+      els.count.textContent = `${rows.length} club${rows.length === 1 ? "" : "s"} shown`;
+      renderCards(rows);
+
+      els.search.addEventListener("input", () => applyFilters(rows));
+      els.city.addEventListener("change", () => applyFilters(rows));
+      els.area.addEventListener("change", () => applyFilters(rows));
+      els.reset.addEventListener("click", () => {
+        els.search.value = "";
+        els.city.value = "";
+        els.area.value = "";
+        applyFilters(rows);
+      });
+    })();
+  </script>
+</body>
+</html>
 
