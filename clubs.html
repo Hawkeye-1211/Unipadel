@@ -9,6 +9,63 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
+
+  <!-- Leaflet (lightweight map) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    /* Clubs Map View (kept local to this page to avoid touching style.css) */
+    .view-toggle {
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .toggle-btn {
+      appearance: none;
+      border: 1px solid rgba(201,204,210,.20);
+      background: rgba(15,22,34,.35);
+      color: inherit;
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .toggle-btn[aria-pressed="true"] {
+      border-color: rgba(182,230,0,.35);
+      background: rgba(182,230,0,.10);
+    }
+    #mapView {
+      margin-top: 12px;
+    }
+    #clubsMap {
+      width: 100%;
+      height: 420px;
+      border-radius: 14px;
+      border: 1px solid rgba(201,204,210,.18);
+      background: rgba(15,22,34,.35);
+      overflow: hidden;
+    }
+    @media (max-width: 640px) {
+      #clubsMap { height: 360px; }
+    }
+    #mapHint {
+      margin-top: 10px;
+      font-size: 13px;
+      opacity: .85;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(15,22,34,.35);
+      border: 1px solid rgba(201,204,210,.18);
+      line-height: 1.6;
+    }
+  </style>
 </head>
 
 <body data-page="clubs">
@@ -77,7 +134,15 @@
           </button>
         </div>
 
-        <div id="resultCount" style="font-size: 13px; opacity: .8;"></div>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <div id="resultCount" style="font-size: 13px; opacity: .8;"></div>
+
+          <!-- List / Map toggle -->
+          <div class="view-toggle" aria-label="View mode toggle">
+            <button id="listViewBtn" type="button" class="toggle-btn" aria-pressed="true">List</button>
+            <button id="mapViewBtn" type="button" class="toggle-btn" aria-pressed="false">Map</button>
+          </div>
+        </div>
       </div>
 
       <div style="margin-top:10px; display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;">
@@ -104,6 +169,12 @@
       </div>
     </section>
 
+    <!-- Map view (hidden until Map toggle) -->
+    <section id="mapView" hidden>
+      <div id="clubsMap" aria-label="UK clubs map"></div>
+      <div id="mapHint" hidden></div>
+    </section>
+
     <section style="margin-top: 16px;">
       <div id="cards" style="display:grid; grid-template-columns: 1fr; gap: 12px;"></div>
     </section>
@@ -114,6 +185,12 @@
       </p>
     </section>
   </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
 
   <script>
     // Admin navbar handling (keeps Admin / Exit Admin visible site-wide when session exists)
@@ -143,6 +220,9 @@
     const REMEMBER_KEY = "unipadel_remember_location_v2"; // "1" or "0"
     const DEFAULT_KEY  = "unipadel_default_location_v2";  // JSON: {region, county, city, area}
 
+    // View mode (per-device)
+    const VIEW_KEY = "unipadel_clubs_view_v1"; // "list" | "map"
+
     const els = {
       cards: document.getElementById("cards"),
       status: document.getElementById("dataStatus"),
@@ -157,6 +237,12 @@
       remember: document.getElementById("rememberToggle"),
       savedLabel: document.getElementById("savedLabel"),
       clearDefault: document.getElementById("clearDefaultBtn"),
+
+      listBtn: document.getElementById("listViewBtn"),
+      mapBtn: document.getElementById("mapViewBtn"),
+      mapView: document.getElementById("mapView"),
+      mapEl: document.getElementById("clubsMap"),
+      mapHint: document.getElementById("mapHint"),
     };
 
     function norm(s) { return String(s || "").trim(); }
@@ -226,6 +312,11 @@
       return rows;
     }
 
+    function toNum(v) {
+      const n = parseFloat(String(v || "").replace(",", "."));
+      return Number.isFinite(n) ? n : null;
+    }
+
     function mapRow(r) {
       const get = (k) => norm(r[k] || "");
       return {
@@ -238,6 +329,10 @@
         PriceUnit: get("priceunit"),
         SourceURL: get("sourceurl"),
         Active: get("active"),
+
+        // Optional (for Map mode): add these columns to your CSV when ready
+        Latitude: toNum(r["latitude"]),
+        Longitude: toNum(r["longitude"]),
       };
     }
 
@@ -259,9 +354,6 @@
         city = "Newcastle upon Tyne";
         area = norm(r.City); // keep the combined area label
       }
-
-      // If city is literally "Northumberland" but area/city indicates a town, keep as city-level grouping later.
-      // (We do region/county mapping separately.)
 
       return { ...r, City: city, Area: area };
     }
@@ -387,6 +479,114 @@
       els.area.innerHTML = `<option value="">All areas</option>` + areas.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
     }
 
+    // ----------------------------
+    // MAP (Leaflet)
+    // ----------------------------
+    let map = null;
+    let markersLayer = null;
+    let lastFilteredForMap = [];
+
+    function setViewMode(mode) {
+      const m = (mode === "map") ? "map" : "list";
+      localStorage.setItem(VIEW_KEY, m);
+
+      const isMap = m === "map";
+      els.mapView.hidden = !isMap;
+      els.cards.parentElement.hidden = isMap; // hide the entire cards section wrapper
+
+      els.listBtn.setAttribute("aria-pressed", isMap ? "false" : "true");
+      els.mapBtn.setAttribute("aria-pressed", isMap ? "true" : "false");
+
+      if (isMap) {
+        ensureMap();
+        // Leaflet needs a size invalidate after becoming visible
+        setTimeout(() => {
+          try { map.invalidateSize(); } catch {}
+          updateMapMarkers(lastFilteredForMap, { fit: true });
+        }, 50);
+      }
+    }
+
+    function ensureMap() {
+      if (map) return;
+
+      // Default UK-ish view (only used if no markers to fit)
+      map = L.map(els.mapEl, { scrollWheelZoom: true }).setView([54.5, -3.0], 6);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      markersLayer = L.layerGroup().addTo(map);
+    }
+
+    function updateMapMarkers(filteredRows, opts = {}) {
+      lastFilteredForMap = filteredRows || [];
+      if (!map || !markersLayer) return;
+
+      markersLayer.clearLayers();
+
+      const withCoords = (filteredRows || []).filter(r =>
+        Number.isFinite(r.Latitude) && Number.isFinite(r.Longitude)
+      );
+
+      // Helpful message if data has no coords yet
+      if (!withCoords.length) {
+        els.mapHint.hidden = false;
+        els.mapHint.innerHTML = `
+          <strong>Map needs coordinates.</strong><br/>
+          To enable markers, add <code>Latitude</code> and <code>Longitude</code> columns to the clubs sheet (published CSV).<br/>
+          List view still shows all filtered clubs.
+        `;
+        // Keep a sensible UK default view
+        map.setView([54.5, -3.0], 6);
+        return;
+      }
+
+      els.mapHint.hidden = true;
+      els.mapHint.textContent = "";
+
+      const bounds = [];
+
+      for (const r of withCoords) {
+        const title = r.Venue || "Club";
+        const subtitle = [r.Area, r.City].filter(Boolean).join(" · ");
+        const bookingUrl = safeLink(r.BookingURL);
+        const sourceUrl = safeLink(r.SourceURL);
+
+        const popup = `
+          <div style="font-family: Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial; font-size: 13px; line-height: 1.5;">
+            <div style="font-weight:700; font-size:14px; margin-bottom:4px;">${escapeHtml(title)}</div>
+            <div style="opacity:.85; margin-bottom:6px;">${escapeHtml(subtitle)}</div>
+            <div style="opacity:.85; margin-bottom:8px;">
+              <strong>${escapeHtml(r.PriceRange || "—")}</strong> ${escapeHtml(r.PriceUnit || "")}
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              ${bookingUrl ? `<a href="${escapeHtml(bookingUrl)}" target="_blank" rel="noopener noreferrer">Book</a>` : ""}
+              ${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Source</a>` : ""}
+            </div>
+          </div>
+        `;
+
+        const marker = L.marker([r.Latitude, r.Longitude]);
+        marker.bindPopup(popup);
+        marker.addTo(markersLayer);
+        bounds.push([r.Latitude, r.Longitude]);
+      }
+
+      if (opts.fit) {
+        try {
+          map.fitBounds(bounds, { padding: [24, 24] });
+        } catch {
+          // ignore fit errors
+        }
+      }
+    }
+
+    // ----------------------------
+    // FILTERING + RENDER
+    // ----------------------------
     function applyFilters(rows) {
       const q = norm(els.search.value).toLowerCase();
       const region = norm(els.region.value);
@@ -411,7 +611,11 @@
       });
 
       els.count.textContent = `${filtered.length} club${filtered.length === 1 ? "" : "s"} shown`;
+
+      // Always update both representations so map is instantly correct when toggled
       renderCards(filtered);
+      if (map) updateMapMarkers(filtered, { fit: false });
+      lastFilteredForMap = filtered;
     }
 
     function renderCards(rows) {
@@ -563,6 +767,14 @@
       }
 
       applyFilters(rows);
+
+      // Restore view mode (default list)
+      const savedView = localStorage.getItem(VIEW_KEY) || "list";
+      setViewMode(savedView);
+
+      // Toggle events
+      els.listBtn.addEventListener("click", () => setViewMode("list"));
+      els.mapBtn.addEventListener("click", () => setViewMode("map"));
 
       // Events (cascade down)
       els.region.addEventListener("change", () => {
