@@ -19,6 +19,9 @@ body {
   color: #E5E7EB;
   background-color: #0B0F14;
 
+  /* ✅ Required for fixed navbar so content doesn't sit underneath */
+  padding-top: 110px;
+
   /* Desktop star background */
   background-image:
     radial-gradient(900px 600px at 20% 10%, rgba(47,128,237,.25), transparent 60%),
@@ -62,9 +65,11 @@ a:focus-visible {
 
 /* ===== Navbar ===== */
 .navbar {
-  /* ✅ ONLY change: make it sticky while preserving the existing layout */
-  position: sticky;
+  /* ✅ Guaranteed "sticky": fixed to viewport */
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
 
   display: flex;
@@ -196,6 +201,9 @@ button {
 
     /* ✅ Mobile page background is white */
     background: #FFFFFF;
+
+    /* ✅ Match mobile navbar height so content doesn't sit under it */
+    padding-top: 84px;
   }
 
   /* Remove stars on mobile so white is clean */
