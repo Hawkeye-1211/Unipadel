@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UniPadel — Rules</title>
   <link rel="stylesheet" href="style.css" />
@@ -48,23 +48,26 @@
       aspect-ratio: 16 / 10;
       border-radius: 14px;
       border: 1px solid rgba(201,204,210,.18);
-      background:
-        radial-gradient(700px 300px at 20% 10%, rgba(47,128,237,.18), transparent 60%),
-        radial-gradient(700px 300px at 80% 10%, rgba(182,230,0,.10), transparent 60%),
-        linear-gradient(180deg, rgba(20,26,34,.95), rgba(11,15,20,.95));
       position: relative;
       overflow: hidden;
+
+      /* subtle backdrop */
+      background:
+        radial-gradient(800px 340px at 20% 10%, rgba(47,128,237,.16), transparent 60%),
+        radial-gradient(800px 340px at 80% 10%, rgba(182,230,0,.10), transparent 60%),
+        linear-gradient(180deg, rgba(20,26,34,.96), rgba(11,15,20,.96));
     }
 
-    /* Court lines (simple, readable) */
+    /* Court diagram SVG as an actual crisp "image" */
     .court svg { position:absolute; inset: 0; width:100%; height:100%; }
+
     .court .hint {
       position: absolute;
       left: 12px;
       bottom: 12px;
       right: 12px;
       font-size: .92rem;
-      opacity: .88;
+      opacity: .9;
       background: rgba(0,0,0,.35);
       border: 1px solid rgba(201,204,210,.16);
       border-radius: 10px;
@@ -93,19 +96,19 @@
       border-color: rgba(182,230,0,.55);
     }
 
-    /* Layout of zones (approximate top-down court) */
+    /* Hotspot layout (top-down court) */
     /* Left half */
-    .hs-serve-left  { left: 6%;  top: 18%; width: 40%; height: 30%; }
-    .hs-kitchen-left{ left: 6%;  top: 50%; width: 40%; height: 18%; }
-    .hs-glass-left  { left: 6%;  top: 70%; width: 40%; height: 22%; }
+    .hs-serve-left   { left: 7%;  top: 22%; width: 40%; height: 24%; }
+    .hs-kitchen-left { left: 7%;  top: 48%; width: 40%; height: 18%; }
+    .hs-glass-left   { left: 7%;  top: 68%; width: 40%; height: 22%; }
 
     /* Right half */
-    .hs-serve-right  { left: 54%; top: 18%; width: 40%; height: 30%; }
-    .hs-kitchen-right{ left: 54%; top: 50%; width: 40%; height: 18%; }
-    .hs-glass-right  { left: 54%; top: 70%; width: 40%; height: 22%; }
+    .hs-serve-right   { left: 53%; top: 22%; width: 40%; height: 24%; }
+    .hs-kitchen-right { left: 53%; top: 48%; width: 40%; height: 18%; }
+    .hs-glass-right   { left: 53%; top: 68%; width: 40%; height: 22%; }
 
     /* Center / net */
-    .hs-net { left: 47.5%; top: 14%; width: 5%; height: 78%; border-radius: 999px; background: rgba(255,255,255,.05); }
+    .hs-net { left: 48.2%; top: 16%; width: 3.6%; height: 78%; border-radius: 999px; background: rgba(255,255,255,.04); }
 
     /* Right-hand panel */
     .panel { padding: 14px 16px; }
@@ -172,10 +175,10 @@
 </head>
 
 <body>
-  <!-- Navbar (matches your existing classes/styles) -->
+  <!-- Navbar (matches your existing classes/styles).
+       IMPORTANT: If your real logo path isn't logo.png, change ONLY the src value. -->
   <div class="navbar">
     <a class="logo" href="index.html" aria-label="UniPadel home">
-      <!-- Keep your existing logo file path as-is if different -->
       <img class="nav-logo" src="logo.png" alt="UniPadel" />
     </a>
 
@@ -199,26 +202,59 @@
 
         <div class="court-wrap">
           <div class="court" role="group" aria-label="Interactive padel court">
-            <!-- Court lines -->
-            <svg viewBox="0 0 1000 625" aria-hidden="true">
-              <!-- outer boundary -->
-              <rect x="40" y="40" width="920" height="545" rx="18" fill="none" stroke="rgba(229,231,235,.35)" stroke-width="3"/>
-              <!-- center line (net) -->
-              <line x1="500" y1="70" x2="500" y2="555" stroke="rgba(229,231,235,.22)" stroke-width="4"/>
-              <!-- service lines -->
-              <line x1="80" y1="220" x2="920" y2="220" stroke="rgba(229,231,235,.18)" stroke-width="3"/>
-              <line x1="80" y1="360" x2="920" y2="360" stroke="rgba(229,231,235,.18)" stroke-width="3"/>
-              <!-- mid service box split -->
-              <line x1="290" y1="220" x2="290" y2="360" stroke="rgba(229,231,235,.16)" stroke-width="3"/>
-              <line x1="710" y1="220" x2="710" y2="360" stroke="rgba(229,231,235,.16)" stroke-width="3"/>
+            <!-- Higher-quality court diagram (SVG image) -->
+            <svg viewBox="0 0 1600 1000" aria-hidden="true">
+              <!-- Outer glass frame -->
+              <defs>
+                <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="rgba(159,208,240,.22)"/>
+                  <stop offset="1" stop-color="rgba(255,255,255,.08)"/>
+                </linearGradient>
+                <linearGradient id="courtFloor" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="rgba(47,128,237,.10)"/>
+                  <stop offset="1" stop-color="rgba(0,0,0,.12)"/>
+                </linearGradient>
+              </defs>
+
+              <!-- Court floor area -->
+              <rect x="140" y="120" width="1320" height="760" rx="26" fill="url(#courtFloor)" stroke="rgba(229,231,235,.20)" stroke-width="4"/>
+
+              <!-- Glass bands (suggestive) -->
+              <rect x="120" y="100" width="1360" height="30" rx="14" fill="url(#glass)" opacity=".75"/>
+              <rect x="120" y="870" width="1360" height="30" rx="14" fill="url(#glass)" opacity=".75"/>
+              <rect x="110" y="120" width="30" height="760" rx="14" fill="url(#glass)" opacity=".75"/>
+              <rect x="1460" y="120" width="30" height="760" rx="14" fill="url(#glass)" opacity=".75"/>
+
+              <!-- Net -->
+              <line x1="800" y1="145" x2="800" y2="855" stroke="rgba(229,231,235,.28)" stroke-width="8"/>
+              <rect x="792" y="145" width="16" height="710" fill="rgba(229,231,235,.06)"/>
+
+              <!-- Service lines (padel proportions: service line ~3m from net, overall 10m width, 20m length) -->
+              <!-- We’re drawing a clean diagram rather than exact mm scaling -->
+              <line x1="200" y1="380" x2="1400" y2="380" stroke="rgba(229,231,235,.18)" stroke-width="5"/>
+              <line x1="200" y1="620" x2="1400" y2="620" stroke="rgba(229,231,235,.18)" stroke-width="5"/>
+
+              <!-- Center service box dividers -->
+              <line x1="500" y1="380" x2="500" y2="620" stroke="rgba(229,231,235,.14)" stroke-width="5"/>
+              <line x1="1100" y1="380" x2="1100" y2="620" stroke="rgba(229,231,235,.14)" stroke-width="5"/>
+
+              <!-- Back box markers -->
+              <line x1="200" y1="760" x2="1400" y2="760" stroke="rgba(229,231,235,.10)" stroke-width="4"/>
+              <line x1="200" y1="240" x2="1400" y2="240" stroke="rgba(229,231,235,.10)" stroke-width="4"/>
+
+              <!-- Subtle mesh hint -->
+              <g opacity=".18">
+                <path d="M140 120 H1460" stroke="rgba(229,231,235,.16)" stroke-width="2"/>
+                <path d="M140 880 H1460" stroke="rgba(229,231,235,.16)" stroke-width="2"/>
+              </g>
             </svg>
 
             <!-- Hotspots -->
             <button class="hotspot hs-serve-left"  data-topic="serve"   aria-label="Serve rules: left half"></button>
             <button class="hotspot hs-serve-right" data-topic="serve"   aria-label="Serve rules: right half"></button>
 
-            <button class="hotspot hs-kitchen-left"  data-topic="nvz"   aria-label="No-volley zone / net play basics: left"></button>
-            <button class="hotspot hs-kitchen-right" data-topic="nvz"   aria-label="No-volley zone / net play basics: right"></button>
+            <button class="hotspot hs-kitchen-left"  data-topic="nvz"   aria-label="Net play basics: left"></button>
+            <button class="hotspot hs-kitchen-right" data-topic="nvz"   aria-label="Net play basics: right"></button>
 
             <button class="hotspot hs-glass-left"  data-topic="walls"   aria-label="Walls and glass: left"></button>
             <button class="hotspot hs-glass-right" data-topic="walls"   aria-label="Walls and glass: right"></button>
@@ -226,8 +262,7 @@
             <button class="hotspot hs-net" data-topic="net" aria-label="Net and scoring basics"></button>
 
             <div class="hint">
-              <strong>How padel feels:</strong> the walls are in, the serve is underarm, and points often reset with a smart use of glass.
-              Click a zone to see the rule + the “why it matters”.
+              <strong>Tap a zone:</strong> serve, net play, or walls. You’ll get the rule plus the “why it matters”.
             </div>
           </div>
         </div>
@@ -253,14 +288,13 @@
 
           <h2 style="margin-top:14px;">What this page is (and isn’t)</h2>
           <p>
-            This is a quick rules reference for padel in a “learn-by-tapping” format.
-            It’s not technique coaching — just the rules you need to enjoy games and avoid arguments.
+            This is a quick rules reference in a “learn-by-tapping” format.
+            It’s not technique coaching — just the rules to enjoy games and avoid arguments.
           </p>
 
-          <h2>Want more?</h2>
+          <h2>Want it more interactive?</h2>
           <p>
-            If you want, next we can add a “mini quiz” mode (5 random scenarios) and a “ref mode”
-            that helps settle common disputes with one tap.
+            Next we can add a “quiz mode” (5 random scenarios) and a “ref mode” to settle common disputes fast.
           </p>
         </div>
       </div>
@@ -283,73 +317,63 @@
 
   <!-- Page-only JS (no impact elsewhere) -->
   <script>
-    // Minimal content set (practical + dispute-proof). We can expand later.
     const TOPICS = {
       scoring: {
         title: "Scoring",
         body: `
-          <p><strong>Padel scoring matches tennis:</strong> 15, 30, 40, game. Usually best of 3 sets.</p>
-          <p><strong>Deuce:</strong> at 40–40, you typically play “golden point” (next point wins) or advantage scoring depending on local rules.</p>
-          <p><strong>Why it matters:</strong> many clubs use golden point to keep matches moving — ask before you start.</p>
+          <p><strong>Scoring matches tennis:</strong> 15, 30, 40, game. Usually best of 3 sets.</p>
+          <p><strong>Deuce:</strong> at 40–40, many clubs use <strong>golden point</strong> (next point wins) to keep matches moving.</p>
+          <p><strong>Tip:</strong> agree “golden point vs advantage” before you start.</p>
         `
       },
       serve: {
         title: "Serve (underarm, after a bounce)",
         body: `
-          <p><strong>Underarm only.</strong> You must <strong>bounce</strong> the ball behind the service line, then hit it <strong>below waist height</strong>.</p>
+          <p><strong>Underarm only.</strong> Bounce the ball behind the service line, then hit it <strong>below waist height</strong>.</p>
           <p><strong>Direction:</strong> serve diagonally into the opponent’s service box.</p>
-          <p><strong>Wall rule:</strong> the served ball must <strong>bounce in the box</strong> first. If it hits the glass/wall <em>before</em> bouncing, it’s a fault.</p>
-          <p><strong>Why it matters:</strong> the serve starts the point but isn’t meant to be a weapon — placement and follow-up matter more.</p>
+          <p><strong>Wall rule:</strong> the serve must <strong>bounce in the box first</strong>. If it hits the wall/glass before the bounce, it’s a fault.</p>
         `
       },
       doublebounce: {
-        title: "The double-bounce rule",
+        title: "Double-bounce rule",
         body: `
-          <p>In padel, you can play the ball off the walls <strong>after it bounces</strong>.</p>
-          <p><strong>But:</strong> if the ball bounces <strong>twice</strong> on the ground on your side before you hit it, you lose the point.</p>
-          <p><strong>Why it matters:</strong> you often let the ball travel to the glass after the first bounce to gain time and a better angle.</p>
+          <p>You can use the walls <strong>after</strong> the ball bounces.</p>
+          <p>If the ball bounces <strong>twice</strong> on the ground on your side before you hit it, you lose the point.</p>
         `
       },
       walls: {
         title: "Walls / glass: what’s in",
         body: `
-          <p><strong>Walls are in.</strong> During a rally, the ball can hit your back/side glass and you can still return it (as long as it hasn’t bounced twice).</p>
-          <p><strong>On your side:</strong> ball may bounce on the ground, then glass/wall, then you hit it.</p>
-          <p><strong>On opponent’s side:</strong> your shot is good if it bounces on their court first — if it hits their wall/glass after that, play continues.</p>
-          <p><strong>Why it matters:</strong> using glass is a core padel skill, but the rule is simple: <em>ground bounce first</em> on the opponent’s side.</p>
+          <p><strong>Walls are in.</strong> The ball can hit your glass/wall and you can still return it (as long as it hasn’t bounced twice).</p>
+          <p><strong>Opponent’s side:</strong> your shot is good if it <strong>bounces on their court first</strong>. If it then hits their wall/glass, play continues.</p>
         `
       },
       net: {
-        title: "Net zone basics (and why net play matters)",
+        title: "Net basics",
         body: `
-          <p>Unlike pickleball, padel doesn’t have a strict “no-volley zone”. You can volley close to the net.</p>
-          <p><strong>Key rule:</strong> you can’t reach over the net and hit the ball on the opponent’s side unless your swing starts on your side and you don’t touch the net.</p>
-          <p><strong>Why it matters:</strong> winning padel usually means controlling the net, then using lobs and glass to reset when needed.</p>
+          <p>Padel has no pickleball-style “kitchen”. You can volley close to the net.</p>
+          <p><strong>Key constraints:</strong> don’t touch the net, and don’t strike the ball on the opponent’s side.</p>
         `
       },
       out: {
         title: "Ball out of court",
         body: `
-          <p>If the ball goes out of the playing area <strong>without bouncing</strong> on the opponent’s side first, it’s out.</p>
-          <p>If it <strong>bounces in</strong> and then flies out, the point is still live — in some venues you can chase it and play it back (if safe and allowed).</p>
-          <p><strong>Why it matters:</strong> “bounced-in then out” is often a winning shot, but rules vary by court setup. Agree house rules quickly.</p>
+          <p>If the ball goes out <strong>without bouncing</strong> on the opponent’s side first, it’s out.</p>
+          <p>If it <strong>bounces in</strong> and then flies out, it can be live depending on court/house rules (and safety).</p>
         `
       },
       etiquette: {
         title: "Safety & etiquette (quick)",
         body: `
-          <p><strong>Call “mine” early</strong> to avoid clashes. Most injuries are partner collisions.</p>
-          <p><strong>Don’t swing near the glass</strong> when your partner is behind you.</p>
-          <p><strong>Net touches:</strong> if you touch the net with your body/racket during the point, you lose the point.</p>
-          <p><strong>Why it matters:</strong> padel is social — clear calls and safe spacing keeps it fun.</p>
+          <p><strong>Call “mine” early</strong> to avoid collisions — most injuries are partner clashes.</p>
+          <p><strong>Net touch:</strong> if you touch the net during the point, you lose the point.</p>
         `
       },
       nvz: {
         title: "Near the net (simple reality)",
         body: `
-          <p>Padel does <strong>not</strong> have a pickleball-style “kitchen”. You can volley near the net.</p>
+          <p>Padel does <strong>not</strong> have a strict “no-volley zone”. You can volley near the net.</p>
           <p><strong>Main constraints:</strong> don’t touch the net, and don’t hit the ball on the opponent’s side.</p>
-          <p><strong>Why it matters:</strong> net pressure is strong — the counter is a good lob to the back glass.</p>
         `
       }
     };
@@ -364,7 +388,6 @@
       const t = TOPICS[topicKey];
       if (!t) return;
 
-      // Set active highlight on hotspots that match
       document.querySelectorAll(".hotspot").forEach(h => {
         h.dataset.active = (h.dataset.topic === topicKey) ? "1" : "0";
       });
@@ -382,8 +405,8 @@
     }
 
     document.addEventListener("click", (e) => {
-      const hs = e.target.closest("[data-topic]");
-      if (hs) openTopic(hs.dataset.topic);
+      const btn = e.target.closest("[data-topic]");
+      if (btn) openTopic(btn.dataset.topic);
     });
 
     closeBtn.addEventListener("click", closeModal);
