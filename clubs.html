@@ -7,11 +7,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
-    rel="stylesheet"
-  />
-
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
 </head>
 
@@ -48,26 +44,33 @@
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-        <input
-          id="searchInput"
-          type="text"
-          placeholder="Search venue / area / city…"
-          style="flex:1; min-width: 220px;"
-        />
+        <input id="searchInput" type="text" placeholder="Search venue…" style="flex:1; min-width: 220px;" />
 
-        <select id="locationFilter" style="width:auto; min-width: 320px;">
-          <option value="">All locations</option>
+        <select id="regionFilter" style="width:auto; min-width: 220px;">
+          <option value="">All regions</option>
+        </select>
+
+        <select id="countyFilter" style="width:auto; min-width: 240px;">
+          <option value="">All counties / city-regions</option>
+        </select>
+
+        <select id="cityFilter" style="width:auto; min-width: 220px;">
+          <option value="">All cities</option>
+        </select>
+
+        <select id="areaFilter" style="width:auto; min-width: 220px;">
+          <option value="">All areas</option>
         </select>
       </div>
 
       <div style="margin-top: 10px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;">
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
           <label style="display:flex; align-items:center; gap:10px; font-size:13px; opacity:.9;">
-            <input type="checkbox" id="rememberLocToggle" />
+            <input type="checkbox" id="rememberToggle" />
             Remember my default location
           </label>
 
-          <span id="savedLocLabel" style="font-size:13px; opacity:.8;"></span>
+          <span id="savedLabel" style="font-size:13px; opacity:.8;"></span>
 
           <button id="clearDefaultBtn" type="button" style="padding:8px 10px; font-size:13px;" hidden>
             Clear default
@@ -77,10 +80,8 @@
         <div id="resultCount" style="font-size: 13px; opacity: .8;"></div>
       </div>
 
-      <div style="margin-top:10px; display:flex; justify-content:flex-end;">
-        <button id="resetBtn" type="button" style="padding:10px 12px; font-size:14px;">
-          Reset filters
-        </button>
+      <div style="margin-top:10px; display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;">
+        <button id="resetBtn" type="button" style="padding:10px 12px; font-size:14px;">Reset filters</button>
       </div>
 
       <div style="height:1px; background: rgba(201,204,210,.14); margin: 16px 0;"></div>
@@ -115,23 +116,47 @@
   </div>
 
   <script>
+    // Admin navbar handling (keeps Admin / Exit Admin visible site-wide when session exists)
+    document.addEventListener("DOMContentLoaded", () => {
+      const ADMIN_SESSION_KEY = "Unipadel_admin_session";
+      const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
+      const adminNavLink = document.getElementById("adminNavLink");
+      const exitAdminLink = document.getElementById("exitAdminLink");
+
+      if (adminNavLink) adminNavLink.hidden = !isAdminMode;
+      if (exitAdminLink) exitAdminLink.hidden = !isAdminMode;
+
+      if (exitAdminLink) {
+        exitAdminLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          sessionStorage.removeItem(ADMIN_SESSION_KEY);
+          window.location.href = "/ideas.html";
+        });
+      }
+    });
+
+    // Published CSV export
     const PRICING_CSV_URL =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vScd-zwQsGJvYPwU4f_Avfy5xUhaSrSAZFrO4iVWLbHipkhRym1iRBOcnLqRqCeCQrcP6BTABkPEqxf/pub?single=true&gid=0&output=csv";
 
-    const DEFAULT_LOC_KEY = "unipadel_default_location";
-    const REMEMBER_LOC_KEY = "unipadel_remember_location";
+    // Default location storage
+    const REMEMBER_KEY = "unipadel_remember_location_v2"; // "1" or "0"
+    const DEFAULT_KEY  = "unipadel_default_location_v2";  // JSON: {region, county, city, area}
 
     const els = {
       cards: document.getElementById("cards"),
       status: document.getElementById("dataStatus"),
       search: document.getElementById("searchInput"),
-      location: document.getElementById("locationFilter"),
+      region: document.getElementById("regionFilter"),
+      county: document.getElementById("countyFilter"),
+      city: document.getElementById("cityFilter"),
+      area: document.getElementById("areaFilter"),
       reset: document.getElementById("resetBtn"),
       count: document.getElementById("resultCount"),
 
-      rememberToggle: document.getElementById("rememberLocToggle"),
-      savedLabel: document.getElementById("savedLocLabel"),
-      clearDefaultBtn: document.getElementById("clearDefaultBtn"),
+      remember: document.getElementById("rememberToggle"),
+      savedLabel: document.getElementById("savedLabel"),
+      clearDefault: document.getElementById("clearDefaultBtn"),
     };
 
     function norm(s) { return String(s || "").trim(); }
@@ -154,6 +179,12 @@
 
     function keyify(header) {
       return norm(header).toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
+    }
+
+    function isTruthyActive(v) {
+      const t = norm(v).toLowerCase();
+      if (!t) return true; // if column missing/blank, treat as active
+      return ["true","1","yes","y"].includes(t);
     }
 
     async function parseCsvToRows(csvText) {
@@ -210,134 +241,177 @@
       };
     }
 
-    function isRowActive(r) {
-      const activeRaw = norm(r.Active).toLowerCase();
-      const hasActiveCol = activeRaw !== "";
-      return !hasActiveCol || ["true", "1", "yes", "y"].includes(activeRaw);
-    }
+    // ----------------------------
+    // NORMALISE messy rows (display + filtering)
+    // ----------------------------
+    function normaliseRow(r) {
+      let city = norm(r.City);
+      let area = norm(r.Area);
 
-    // ✅ Normalise obvious "City/Area swapped" and unify North East naming
-    function normaliseRowForDisplay(r) {
-      const city = norm(r.City);
-      const area = norm(r.Area);
-
-      // If City looks like an area within Newcastle, fix it for display/filtering.
-      // (You specifically called out Gosforth.)
-      const newcastleAreas = new Set(["Gosforth"]);
-      if (newcastleAreas.has(city) && /newcastle/i.test(area)) {
-        return { ...r, City: "Newcastle upon Tyne", Area: city };
+      // Fix swapped Newcastle entries like: City="Gosforth", Area="Newcastle..."
+      if (/newcastle/i.test(area) && (city.toLowerCase() === "gosforth")) {
+        city = "Newcastle upon Tyne";
+        area = "Gosforth";
       }
 
-      return r;
+      // Fix "Urban Green / Blaydon" stored in City with Area="Newcastle upon Tyne"
+      if (area === "Newcastle upon Tyne" && city.includes("/")) {
+        city = "Newcastle upon Tyne";
+        area = norm(r.City); // keep the combined area label
+      }
+
+      // If city is literally "Northumberland" but area/city indicates a town, keep as city-level grouping later.
+      // (We do region/county mapping separately.)
+
+      return { ...r, City: city, Area: area };
     }
 
     // ----------------------------
-    // Group rules (edit anytime)
+    // REGION / COUNTY / CITY mapping
+    // (based on UK administrative geography for *your current dataset*)
     // ----------------------------
-    function groupForCity(city) {
+    const CITY_TO_COUNTY_REGION = [
+      // Yorkshire & Humber
+      { match: ["Leeds","Wetherby"], county: "West Yorkshire", region: "Yorkshire and the Humber" },
+
+      // North West
+      { match: ["Manchester","Salford","Stockport","Cheadle"], county: "Greater Manchester", region: "North West" },
+      { match: ["Liverpool","Birkenhead","Bromborough"], county: "Merseyside", region: "North West" },
+      { match: ["Ellesmere Port"], county: "Cheshire", region: "North West" },
+
+      // North East
+      { match: ["Newcastle upon Tyne","Sunderland","Blaydon"], county: "Tyne and Wear", region: "North East" },
+      { match: ["Morpeth","Northumberland"], county: "Northumberland", region: "North East" },
+
+      // London region
+      { match: ["London","Romford","Ilford","Barnet"], county: "Greater London", region: "London" },
+
+      // East of England
+      { match: ["Watford"], county: "Hertfordshire", region: "East of England" },
+
+      // South East
+      { match: ["Weybridge"], county: "Surrey", region: "South East" },
+    ];
+
+    function resolveCountyRegion(city) {
       const c = norm(city);
-
-      // Greater London roll-up
-      const greaterLondon = new Set(["London","Romford","Ilford","Barnet","Watford","Weybridge"]);
-      if (greaterLondon.has(c)) return "Greater London";
-
-      // Greater Manchester
-      const greaterManchester = new Set(["Manchester","Stockport","Cheadle"]);
-      if (greaterManchester.has(c)) return "Greater Manchester";
-
-      // Leeds / West Yorkshire
-      const westYorks = new Set(["Leeds","Wetherby"]);
-      if (westYorks.has(c)) return "Leeds / West Yorkshire";
-
-      // Liverpool / Merseyside
-      const merseyside = new Set(["Liverpool","Birkenhead","Bromborough","Ellesmere Port"]);
-      if (merseyside.has(c)) return "Liverpool / Merseyside";
-
-      // ✅ Newcastle / North East: unify all relevant "city" values into one group
-      const northEast = new Set([
-        "Newcastle upon Tyne",
-        "Sunderland",
-        "Northumberland",
-        "Morpeth",
-        "Blaydon",
-        "Newcastle",
-      ]);
-      if (northEast.has(c)) return "Newcastle / North East";
-
-      return c || "Other";
+      for (const rule of CITY_TO_COUNTY_REGION) {
+        if (rule.match.includes(c)) return { county: rule.county, region: rule.region };
+      }
+      // Fallback: put unknowns into "Other" buckets (but we still show them)
+      return { county: "Other", region: "Other" };
     }
 
-    function locationValue(groupLabel, city, area) {
-      return `${groupLabel}||${norm(city)}||${norm(area)}`;
+    function enrichRow(r0) {
+      const r = normaliseRow(r0);
+      const { county, region } = resolveCountyRegion(r.City);
+      return { ...r, County: county, Region: region };
     }
 
-    function parseLocationValue(val) {
-      const parts = String(val || "").split("||");
-      if (parts.length !== 3) return { group: "", city: "", area: "" };
-      return { group: parts[0], city: parts[1], area: parts[2] };
+    function uniqSorted(values) {
+      return [...new Set(values.map(norm).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
     }
 
-    function setSavedLocUI() {
-      const rememberOn = localStorage.getItem(REMEMBER_LOC_KEY) === "1";
-      const savedVal = norm(localStorage.getItem(DEFAULT_LOC_KEY));
+    function setSavedUI() {
+      const rememberOn = localStorage.getItem(REMEMBER_KEY) === "1";
+      els.remember.checked = rememberOn;
 
-      els.rememberToggle.checked = rememberOn;
+      const savedRaw = localStorage.getItem(DEFAULT_KEY);
+      const saved = savedRaw ? (() => { try { return JSON.parse(savedRaw); } catch { return null; } })() : null;
 
-      if (rememberOn && savedVal) {
-        const p = parseLocationValue(savedVal);
-        const label = p.area ? `${p.group} · ${p.area}` : p.group;
-        els.savedLabel.textContent = `Default: ${label}`;
-        els.clearDefaultBtn.hidden = false;
+      if (rememberOn && saved && (saved.region || saved.county || saved.city || saved.area)) {
+        const bits = [saved.region, saved.county, saved.city, saved.area].filter(Boolean);
+        els.savedLabel.textContent = `Default: ${bits.join(" · ")}`;
+        els.clearDefault.hidden = false;
       } else if (rememberOn) {
         els.savedLabel.textContent = "Default: (not set yet)";
-        els.clearDefaultBtn.hidden = true;
+        els.clearDefault.hidden = true;
       } else {
         els.savedLabel.textContent = "Default: off";
-        els.clearDefaultBtn.hidden = true;
+        els.clearDefault.hidden = true;
       }
     }
 
-    function buildGroupedLocations(rows) {
-      const groups = new Map(); // group -> Map(areaLower -> {group, city, area})
-      for (const r0 of rows) {
-        if (!isRowActive(r0)) continue;
-        const r = normaliseRowForDisplay(r0);
-
-        const city = norm(r.City);
-        const area = norm(r.Area);
-        const group = groupForCity(city);
-
-        if (!groups.has(group)) groups.set(group, new Map());
-        const areaKey = area.toLowerCase();
-
-        if (!groups.get(group).has(areaKey)) {
-          groups.get(group).set(areaKey, { group, city, area });
-        }
-      }
-
-      const groupNames = [...groups.keys()].sort((a,b) => a.localeCompare(b));
-      return { groups, groupNames };
+    function saveDefaultFromCurrent() {
+      if (localStorage.getItem(REMEMBER_KEY) !== "1") return;
+      const payload = {
+        region: norm(els.region.value),
+        county: norm(els.county.value),
+        city: norm(els.city.value),
+        area: norm(els.area.value),
+      };
+      localStorage.setItem(DEFAULT_KEY, JSON.stringify(payload));
+      setSavedUI();
     }
 
-    function fillLocationDropdown(rows) {
-      const { groups, groupNames } = buildGroupedLocations(rows);
+    function clearDefault() {
+      localStorage.removeItem(DEFAULT_KEY);
+      setSavedUI();
+    }
 
-      let html = `<option value="">All locations</option>`;
+    function fillRegion(rows) {
+      const regions = uniqSorted(rows.map(r => r.Region));
+      els.region.innerHTML = `<option value="">All regions</option>` + regions.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+    }
 
-      for (const g of groupNames) {
-        const areasMap = groups.get(g);
-        const areas = [...areasMap.values()].sort((a,b) => a.area.localeCompare(b.area));
+    function fillCounty(rows) {
+      const region = norm(els.region.value);
+      const filtered = rows.filter(r => !region || r.Region === region);
+      const counties = uniqSorted(filtered.map(r => r.County));
+      els.county.innerHTML = `<option value="">All counties / city-regions</option>` + counties.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+    }
 
-        html += `<optgroup label="${escapeHtml(g)}">`;
-        for (const item of areas) {
-          const v = locationValue(item.group, item.city, item.area);
-          html += `<option value="${escapeHtml(v)}">${escapeHtml(item.area)}</option>`;
+    function fillCity(rows) {
+      const region = norm(els.region.value);
+      const county = norm(els.county.value);
+      const filtered = rows.filter(r =>
+        (!region || r.Region === region) &&
+        (!county || r.County === county)
+      );
+      const cities = uniqSorted(filtered.map(r => r.City));
+      els.city.innerHTML = `<option value="">All cities</option>` + cities.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+    }
+
+    function fillArea(rows) {
+      const region = norm(els.region.value);
+      const county = norm(els.county.value);
+      const city = norm(els.city.value);
+
+      const filtered = rows.filter(r =>
+        (!region || r.Region === region) &&
+        (!county || r.County === county) &&
+        (!city || r.City === city)
+      );
+
+      const areas = uniqSorted(filtered.map(r => r.Area));
+      els.area.innerHTML = `<option value="">All areas</option>` + areas.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+    }
+
+    function applyFilters(rows) {
+      const q = norm(els.search.value).toLowerCase();
+      const region = norm(els.region.value);
+      const county = norm(els.county.value);
+      const city = norm(els.city.value);
+      const area = norm(els.area.value);
+
+      const filtered = rows.filter(r => {
+        if (!isTruthyActive(r.Active)) return false;
+
+        if (region && r.Region !== region) return false;
+        if (county && r.County !== county) return false;
+        if (city && r.City !== city) return false;
+        if (area && r.Area !== area) return false;
+
+        if (q) {
+          const hay = `${r.Venue} ${r.Area} ${r.City} ${r.County} ${r.Region} ${r.BookingPlatform} ${r.PriceRange}`.toLowerCase();
+          if (!hay.includes(q)) return false;
         }
-        html += `</optgroup>`;
-      }
 
-      els.location.innerHTML = html;
-      return new Set([...els.location.options].map(o => o.value));
+        return true;
+      });
+
+      els.count.textContent = `${filtered.length} club${filtered.length === 1 ? "" : "s"} shown`;
+      renderCards(filtered);
     }
 
     function renderCards(rows) {
@@ -352,17 +426,9 @@
         return;
       }
 
-      for (const r0 of rows) {
-        const r = normaliseRowForDisplay(r0);
-
-        const venue = norm(r.Venue);
-        const city = norm(r.City);
-        const area = norm(r.Area);
-        const platform = norm(r.BookingPlatform);
+      for (const r of rows) {
         const bookingUrl = safeLink(r.BookingURL);
-        const sourceUrl = safeLink(r.SourceURL);
-        const priceRange = norm(r.PriceRange);
-        const priceUnit = norm(r.PriceUnit);
+        const sourceUrl  = safeLink(r.SourceURL);
 
         const card = document.createElement("div");
         card.style.padding = "14px";
@@ -374,22 +440,25 @@
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;">
             <div style="min-width: 240px; flex: 1;">
-              <div style="font-weight:700; font-size:16px; line-height:1.35;">${escapeHtml(venue || "Unnamed venue")}</div>
+              <div style="font-weight:700; font-size:16px; line-height:1.35;">${escapeHtml(r.Venue || "Unnamed venue")}</div>
               <div style="margin-top:6px; font-size:13px; opacity:.85;">
-                ${escapeHtml([area, city].filter(Boolean).join(" · "))}
+                ${escapeHtml([r.Area, r.City].filter(Boolean).join(" · "))}
               </div>
               <div style="margin-top:6px; font-size:12px; opacity:.75;">
-                Booking: ${escapeHtml(platform || "—")}
+                ${escapeHtml([r.County, r.Region].filter(Boolean).join(" · "))}
+              </div>
+              <div style="margin-top:6px; font-size:12px; opacity:.75;">
+                Booking: ${escapeHtml(r.BookingPlatform || "—")}
               </div>
             </div>
 
             <div style="min-width: 180px; text-align:right;">
               <div style="font-size:12px; letter-spacing:.12em; text-transform:uppercase; opacity:.65;">Published range</div>
               <div style="margin-top:6px; font-size:20px; font-weight:700; line-height:1.2;">
-                ${escapeHtml(priceRange || "—")}
+                ${escapeHtml(r.PriceRange || "—")}
               </div>
               <div style="margin-top:4px; font-size:12px; opacity:.8;">
-                ${escapeHtml(priceUnit || "")}
+                ${escapeHtml(r.PriceUnit || "")}
               </div>
             </div>
           </div>
@@ -421,35 +490,6 @@
       }
     }
 
-    function applyFilters(allRows) {
-      const q = norm(els.search.value).toLowerCase();
-      const loc = norm(els.location.value);
-
-      let locCity = "";
-      let locArea = "";
-      if (loc) {
-        const p = parseLocationValue(loc);
-        locCity = norm(p.city);
-        locArea = norm(p.area);
-      }
-
-      const filtered = allRows.filter((r0) => {
-        if (!isRowActive(r0)) return false;
-        const r = normaliseRowForDisplay(r0);
-
-        const hay = `${norm(r.Venue)} ${norm(r.City)} ${norm(r.Area)} ${norm(r.BookingPlatform)} ${norm(r.PriceRange)}`
-          .toLowerCase();
-
-        if (q && !hay.includes(q)) return false;
-        if (locCity && norm(r.City) !== locCity) return false;
-        if (locArea && norm(r.Area) !== locArea) return false;
-        return true;
-      });
-
-      els.count.textContent = `${filtered.length} club${filtered.length === 1 ? "" : "s"} shown`;
-      renderCards(filtered);
-    }
-
     async function loadData() {
       try {
         els.status.textContent = "Loading clubs…";
@@ -460,16 +500,18 @@
         const rawRows = await parseCsvToRows(csv);
         const mapped = rawRows.map(mapRow);
 
-        const cleaned = mapped.filter(r =>
-          norm(r.Venue) &&
-          norm(r.City) &&
-          norm(r.Area) &&
-          norm(r.BookingPlatform) &&
-          safeLink(r.BookingURL) &&
-          norm(r.PriceRange) &&
-          norm(r.PriceUnit) &&
-          safeLink(r.SourceURL)
-        );
+        const cleaned = mapped
+          .filter(r =>
+            norm(r.Venue) &&
+            norm(r.City) &&
+            norm(r.Area) &&
+            norm(r.BookingPlatform) &&
+            safeLink(r.BookingURL) &&
+            norm(r.PriceRange) &&
+            norm(r.PriceUnit) &&
+            safeLink(r.SourceURL)
+          )
+          .map(enrichRow);
 
         if (!cleaned.length) {
           els.status.innerHTML =
@@ -493,58 +535,103 @@
     (async function init() {
       const rows = await loadData();
 
-      if (!localStorage.getItem(REMEMBER_LOC_KEY)) localStorage.setItem(REMEMBER_LOC_KEY, "0");
-      setSavedLocUI();
+      if (!localStorage.getItem(REMEMBER_KEY)) localStorage.setItem(REMEMBER_KEY, "0");
+      setSavedUI();
 
-      const validValues = fillLocationDropdown(rows);
+      // Fill cascading dropdowns
+      fillRegion(rows);
+      fillCounty(rows);
+      fillCity(rows);
+      fillArea(rows);
 
-      const rememberOn = localStorage.getItem(REMEMBER_LOC_KEY) === "1";
-      const savedVal = norm(localStorage.getItem(DEFAULT_LOC_KEY));
-      if (rememberOn && savedVal && validValues.has(savedVal)) {
-        els.location.value = savedVal;
-      } else if (savedVal && !validValues.has(savedVal)) {
-        localStorage.removeItem(DEFAULT_LOC_KEY);
+      // Apply saved default if remember is ON
+      const rememberOn = localStorage.getItem(REMEMBER_KEY) === "1";
+      const savedRaw = localStorage.getItem(DEFAULT_KEY);
+      const saved = (rememberOn && savedRaw) ? (() => { try { return JSON.parse(savedRaw); } catch { return null; } })() : null;
+
+      if (saved) {
+        if (saved.region) els.region.value = saved.region;
+        fillCounty(rows);
+
+        if (saved.county) els.county.value = saved.county;
+        fillCity(rows);
+
+        if (saved.city) els.city.value = saved.city;
+        fillArea(rows);
+
+        if (saved.area) els.area.value = saved.area;
       }
 
       applyFilters(rows);
 
-      els.search.addEventListener("input", () => applyFilters(rows));
-
-      els.location.addEventListener("change", () => {
-        if (localStorage.getItem(REMEMBER_LOC_KEY) === "1") {
-          const chosen = norm(els.location.value);
-          if (chosen) localStorage.setItem(DEFAULT_LOC_KEY, chosen);
-          else localStorage.removeItem(DEFAULT_LOC_KEY);
-          setSavedLocUI();
-        }
+      // Events (cascade down)
+      els.region.addEventListener("change", () => {
+        els.county.value = "";
+        els.city.value = "";
+        els.area.value = "";
+        fillCounty(rows);
+        fillCity(rows);
+        fillArea(rows);
+        saveDefaultFromCurrent();
         applyFilters(rows);
       });
 
-      els.rememberToggle.addEventListener("change", () => {
-        localStorage.setItem(REMEMBER_LOC_KEY, els.rememberToggle.checked ? "1" : "0");
-        if (!els.rememberToggle.checked) {
-          localStorage.removeItem(DEFAULT_LOC_KEY);
-        } else {
-          const chosen = norm(els.location.value);
-          if (chosen) localStorage.setItem(DEFAULT_LOC_KEY, chosen);
-        }
-        setSavedLocUI();
+      els.county.addEventListener("change", () => {
+        els.city.value = "";
+        els.area.value = "";
+        fillCity(rows);
+        fillArea(rows);
+        saveDefaultFromCurrent();
+        applyFilters(rows);
       });
 
-      els.clearDefaultBtn.addEventListener("click", () => {
-        localStorage.removeItem(DEFAULT_LOC_KEY);
-        els.location.value = "";
-        setSavedLocUI();
+      els.city.addEventListener("change", () => {
+        els.area.value = "";
+        fillArea(rows);
+        saveDefaultFromCurrent();
+        applyFilters(rows);
+      });
+
+      els.area.addEventListener("change", () => {
+        saveDefaultFromCurrent();
+        applyFilters(rows);
+      });
+
+      els.search.addEventListener("input", () => applyFilters(rows));
+
+      els.remember.addEventListener("change", () => {
+        localStorage.setItem(REMEMBER_KEY, els.remember.checked ? "1" : "0");
+        if (!els.remember.checked) {
+          localStorage.removeItem(DEFAULT_KEY);
+        } else {
+          saveDefaultFromCurrent();
+        }
+        setSavedUI();
+      });
+
+      els.clearDefault.addEventListener("click", () => {
+        clearDefault();
+        els.region.value = "";
+        els.county.value = "";
+        els.city.value = "";
+        els.area.value = "";
+        fillCounty(rows);
+        fillCity(rows);
+        fillArea(rows);
         applyFilters(rows);
       });
 
       els.reset.addEventListener("click", () => {
         els.search.value = "";
-        els.location.value = "";
-        if (localStorage.getItem(REMEMBER_LOC_KEY) === "1") {
-          localStorage.removeItem(DEFAULT_LOC_KEY);
-        }
-        setSavedLocUI();
+        els.region.value = "";
+        els.county.value = "";
+        els.city.value = "";
+        els.area.value = "";
+        if (localStorage.getItem(REMEMBER_KEY) === "1") localStorage.removeItem(DEFAULT_KEY);
+        setSavedUI();
+        fillCounty(rows);
+        fillCity(rows);
+        fillArea(rows);
         applyFilters(rows);
       });
     })();
