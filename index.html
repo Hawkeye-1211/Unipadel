@@ -16,7 +16,7 @@
 
     <div class="nav-links">
       <a href="/">About</a>
-      <a href="/learn.html">Learn</a>
+      <a href="/learn.html">Vision</a>
       <a href="/clubs.html">Clubs</a>
       <a href="/ideas.html">Ideas</a>
 
@@ -87,9 +87,9 @@
             border: 1px solid rgba(47,128,237,.30);
           "
         >
-          <div style="font-weight:700; font-size:16px; margin-bottom:4px;">Why UniPadel exists</div>
+          <div style="font-weight:700; font-size:16px; margin-bottom:4px;">Vision</div>
           <div style="font-size:13px; opacity:.9; line-height:1.5;">
-            The recurring player problems — and what we’re building next.
+            What UniPadel is building (scoring, rankings, leagues) — and why.
           </div>
         </a>
       </div>
@@ -107,7 +107,7 @@
             Find a club
           </button>
           <button id="pickLearnBtn" type="button" style="padding:10px 12px; border-radius:10px;">
-            Understand the vision
+            See the vision
           </button>
           <button id="pickIdeaBtn" type="button" style="padding:10px 12px; border-radius:10px; opacity:.9;">
             Share a suggestion
@@ -129,7 +129,7 @@
       <ul style="margin:10px 0 0; padding-left:18px; line-height:1.75; font-size:14px; opacity:.92;">
         <li><strong>Clubs & Pricing</strong> — data-driven comparisons with booking + source links</li>
         <li><strong>Coverage</strong> — map view to see density and gaps</li>
-        <li><strong>Learning</strong> — clear explanation of what we’re solving (rankings/leagues next)</li>
+        <li><strong>Vision</strong> — what we’re solving (rankings/leagues next)</li>
       </ul>
 
       <div style="height:1px; background: rgba(201,204,210,.14); margin: 16px 0;"></div>
@@ -199,14 +199,13 @@
       });
 
       learnBtn.addEventListener("click", () => {
-        setMsg(`Recommended: <strong>Learn</strong> — understand what UniPadel is building (scoring/rankings/leagues next). <a href="/learn.html">Go to Learn</a>.`);
+        setMsg(`Recommended: <strong>Vision</strong> — what UniPadel is building (scoring/rankings/leagues next). <a href="/learn.html">Go to Vision</a>.`);
       });
 
       ideaBtn.addEventListener("click", () => {
         setMsg(`Optional: if something feels broken or missing, share it. <a href="/ideas.html">Go to Ideas</a>.`);
       });
 
-      // default helpful message
       setMsg(`Tip: start with <a href="/clubs.html">Clubs</a> if you want something useful now.`);
     });
   </script>
