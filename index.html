@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>About UniPadel</title>
+  <title>UniPadel</title>
 
   <link rel="stylesheet" href="/style.css?v=20260125-3" />
 </head>
@@ -26,28 +26,190 @@
     </div>
   </nav>
 
-  <div class="container">
-    <h1 class="brand">
-      <span class="brand-uni">About</span>
+  <div class="container" style="max-width: 900px;">
+    <h1 class="brand" style="margin-bottom: 10px;">
       <span class="brand-uni">Uni</span><span class="brand-padel">Padel</span>
     </h1>
 
-    <p>
-      UniPadel is a player-driven space for sharing ideas about how padel apps and platforms could work better for the people who use them.
+    <p style="max-width: 820px; margin: 0 auto; font-size: 15px; line-height: 1.75; opacity: .92;">
+      <strong style="font-weight:700;">A padel product built around player pain points.</strong>
+      Useful tools now — leagues, matches, and rankings next.
     </p>
 
-    <p>
-      Many padel players rely on popular booking platforms every week, but often feel there are missing features, clunky flows, or limited ways to give meaningful feedback. UniPadel exists to capture those ideas in one place.
-    </p>
+    <!-- Primary CTAs -->
+    <section
+      style="
+        margin-top: 18px;
+        padding: 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(201,204,210,.18);
+        background: rgba(15,22,34,.35);
+        text-align: left;
+        max-width: 820px;
+        margin-left: auto;
+        margin-right: auto;
+      "
+    >
+      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6; margin-bottom:8px;">
+        Start here
+      </div>
 
-    <p>
-      This is an early prototype focused on listening to players, highlighting common frustrations, and exploring how the padel experience could be improved over time.
-    </p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:stretch;">
+        <a
+          href="/clubs.html"
+          style="
+            flex:1;
+            min-width: 220px;
+            display:block;
+            padding: 14px;
+            border-radius: 12px;
+            text-decoration:none;
+            background: rgba(182,230,0,.14);
+            border: 1px solid rgba(182,230,0,.30);
+          "
+        >
+          <div style="font-weight:700; font-size:16px; margin-bottom:4px;">Clubs & Pricing</div>
+          <div style="font-size:13px; opacity:.9; line-height:1.5;">
+            Compare published price ranges, booking links, and coverage on a map.
+          </div>
+        </a>
 
-    <p style="font-size: 14px; opacity: 0.7;">
+        <a
+          href="/learn.html"
+          style="
+            flex:1;
+            min-width: 220px;
+            display:block;
+            padding: 14px;
+            border-radius: 12px;
+            text-decoration:none;
+            background: rgba(47,128,237,.12);
+            border: 1px solid rgba(47,128,237,.30);
+          "
+        >
+          <div style="font-weight:700; font-size:16px; margin-bottom:4px;">Why UniPadel exists</div>
+          <div style="font-size:13px; opacity:.9; line-height:1.5;">
+            The recurring player problems — and what we’re building next.
+          </div>
+        </a>
+      </div>
+
+      <div style="height:1px; background: rgba(201,204,210,.14); margin: 14px 0;"></div>
+
+      <!-- Interactive mini selector -->
+      <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center;">
+        <div style="font-size:13px; opacity:.85;">
+          <strong>Quick pick:</strong> what are you trying to do today?
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="pickClubsBtn" type="button" style="padding:10px 12px; border-radius:10px;">
+            Find a club
+          </button>
+          <button id="pickLearnBtn" type="button" style="padding:10px 12px; border-radius:10px;">
+            Understand the vision
+          </button>
+          <button id="pickIdeaBtn" type="button" style="padding:10px 12px; border-radius:10px; opacity:.9;">
+            Share a suggestion
+          </button>
+        </div>
+      </div>
+
+      <div id="pickResult" style="margin-top:12px; font-size:14px; line-height:1.6; opacity:.9;"></div>
+    </section>
+
+    <!-- What UniPadel is (today) -->
+    <section style="margin-top: 18px; text-align:left; max-width: 820px; margin-left:auto; margin-right:auto;">
+      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6; margin-bottom:6px;">
+        What this is
+      </div>
+
+      <h2 style="margin:0; font-size:20px;">A credible prototype — focused on useful modules</h2>
+
+      <ul style="margin:10px 0 0; padding-left:18px; line-height:1.75; font-size:14px; opacity:.92;">
+        <li><strong>Clubs & Pricing</strong> — data-driven comparisons with booking + source links</li>
+        <li><strong>Coverage</strong> — map view to see density and gaps</li>
+        <li><strong>Learning</strong> — clear explanation of what we’re solving (rankings/leagues next)</li>
+      </ul>
+
+      <div style="height:1px; background: rgba(201,204,210,.14); margin: 16px 0;"></div>
+    </section>
+
+    <!-- Secondary CTA: ideas -->
+    <section
+      style="
+        margin-top: 10px;
+        padding: 16px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(201,204,210,.18);
+        text-align:left;
+        max-width: 820px;
+        margin-left:auto;
+        margin-right:auto;
+      "
+    >
+      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6; margin-bottom:6px;">
+        Optional
+      </div>
+
+      <h3 style="margin:0; font-size:18px;">Share a suggestion (only if something feels broken)</h3>
+
+      <p style="margin:10px 0 0; font-size:14px; line-height:1.75; opacity:.9;">
+        UniPadel is not an “ideas site”. But if you notice missing features, unfair flows,
+        or confusing rules, you can share feedback and we’ll track patterns.
+      </p>
+
+      <div style="margin-top:12px;">
+        <a
+          href="/ideas.html"
+          style="
+            display:inline-block;
+            padding:10px 14px;
+            border-radius: 10px;
+            text-decoration:none;
+            background: rgba(47,128,237,.12);
+            border: 1px solid rgba(47,128,237,.30);
+          "
+        >
+          Share a suggestion
+        </a>
+      </div>
+    </section>
+
+    <p style="max-width:820px;margin:18px auto 0;font-size:14px;opacity:.7;line-height:1.6;">
       UniPadel is an independent project and is not affiliated with, endorsed by, or connected to any existing padel booking platforms.
     </p>
   </div>
+
+  <script>
+    // Tiny homepage interactivity (no backend, no tracking)
+    document.addEventListener("DOMContentLoaded", () => {
+      const pickResult = document.getElementById("pickResult");
+      const clubsBtn = document.getElementById("pickClubsBtn");
+      const learnBtn = document.getElementById("pickLearnBtn");
+      const ideaBtn  = document.getElementById("pickIdeaBtn");
+
+      function setMsg(html) {
+        pickResult.innerHTML = html;
+      }
+
+      clubsBtn.addEventListener("click", () => {
+        setMsg(`Recommended: <strong>Clubs & Pricing</strong> — compare venues, filter by location, and use the map for coverage. <a href="/clubs.html">Go to Clubs</a>.`);
+      });
+
+      learnBtn.addEventListener("click", () => {
+        setMsg(`Recommended: <strong>Learn</strong> — understand what UniPadel is building (scoring/rankings/leagues next). <a href="/learn.html">Go to Learn</a>.`);
+      });
+
+      ideaBtn.addEventListener("click", () => {
+        setMsg(`Optional: if something feels broken or missing, share it. <a href="/ideas.html">Go to Ideas</a>.`);
+      });
+
+      // default helpful message
+      setMsg(`Tip: start with <a href="/clubs.html">Clubs</a> if you want something useful now.`);
+    });
+  </script>
 
   <script src="/app.js?v=20260125-1" defer></script>
 </body>
