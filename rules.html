@@ -202,4 +202,200 @@
             <!-- Court lines -->
             <svg viewBox="0 0 1000 625" aria-hidden="true">
               <!-- outer boundary -->
-              <rect x="40" y="40"
+              <rect x="40" y="40" width="920" height="545" rx="18" fill="none" stroke="rgba(229,231,235,.35)" stroke-width="3"/>
+              <!-- center line (net) -->
+              <line x1="500" y1="70" x2="500" y2="555" stroke="rgba(229,231,235,.22)" stroke-width="4"/>
+              <!-- service lines -->
+              <line x1="80" y1="220" x2="920" y2="220" stroke="rgba(229,231,235,.18)" stroke-width="3"/>
+              <line x1="80" y1="360" x2="920" y2="360" stroke="rgba(229,231,235,.18)" stroke-width="3"/>
+              <!-- mid service box split -->
+              <line x1="290" y1="220" x2="290" y2="360" stroke="rgba(229,231,235,.16)" stroke-width="3"/>
+              <line x1="710" y1="220" x2="710" y2="360" stroke="rgba(229,231,235,.16)" stroke-width="3"/>
+            </svg>
+
+            <!-- Hotspots -->
+            <button class="hotspot hs-serve-left"  data-topic="serve"   aria-label="Serve rules: left half"></button>
+            <button class="hotspot hs-serve-right" data-topic="serve"   aria-label="Serve rules: right half"></button>
+
+            <button class="hotspot hs-kitchen-left"  data-topic="nvz"   aria-label="No-volley zone / net play basics: left"></button>
+            <button class="hotspot hs-kitchen-right" data-topic="nvz"   aria-label="No-volley zone / net play basics: right"></button>
+
+            <button class="hotspot hs-glass-left"  data-topic="walls"   aria-label="Walls and glass: left"></button>
+            <button class="hotspot hs-glass-right" data-topic="walls"   aria-label="Walls and glass: right"></button>
+
+            <button class="hotspot hs-net" data-topic="net" aria-label="Net and scoring basics"></button>
+
+            <div class="hint">
+              <strong>How padel feels:</strong> the walls are in, the serve is underarm, and points often reset with a smart use of glass.
+              Click a zone to see the rule + the “why it matters”.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: quick pills -->
+      <div class="rules-card">
+        <div class="rules-card-header">
+          <h1>Fast answers</h1>
+          <p>Common questions</p>
+        </div>
+
+        <div class="panel">
+          <h2>Tap a topic</h2>
+          <div class="pill-row">
+            <button class="pill" data-topic="scoring">Scoring</button>
+            <button class="pill" data-topic="serve">Serve</button>
+            <button class="pill" data-topic="doublebounce">Double bounce?</button>
+            <button class="pill" data-topic="walls">Walls / glass</button>
+            <button class="pill" data-topic="out">Ball out of court</button>
+            <button class="pill" data-topic="etiquette">Safety & etiquette</button>
+          </div>
+
+          <h2 style="margin-top:14px;">What this page is (and isn’t)</h2>
+          <p>
+            This is a quick rules reference for padel in a “learn-by-tapping” format.
+            It’s not technique coaching — just the rules you need to enjoy games and avoid arguments.
+          </p>
+
+          <h2>Want more?</h2>
+          <p>
+            If you want, next we can add a “mini quiz” mode (5 random scenarios) and a “ref mode”
+            that helps settle common disputes with one tap.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="rulesModal" role="dialog" aria-modal="true" aria-labelledby="rulesModalTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="rulesModalTitle">Title</h3>
+        <button class="modal-close" id="rulesModalX" aria-label="Close">Close</button>
+      </div>
+      <div class="modal-body" id="rulesModalBody"></div>
+      <div class="modal-actions">
+        <button class="modal-close" id="rulesModalClose">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page-only JS (no impact elsewhere) -->
+  <script>
+    // Minimal content set (practical + dispute-proof). We can expand later.
+    const TOPICS = {
+      scoring: {
+        title: "Scoring",
+        body: `
+          <p><strong>Padel scoring matches tennis:</strong> 15, 30, 40, game. Usually best of 3 sets.</p>
+          <p><strong>Deuce:</strong> at 40–40, you typically play “golden point” (next point wins) or advantage scoring depending on local rules.</p>
+          <p><strong>Why it matters:</strong> many clubs use golden point to keep matches moving — ask before you start.</p>
+        `
+      },
+      serve: {
+        title: "Serve (underarm, after a bounce)",
+        body: `
+          <p><strong>Underarm only.</strong> You must <strong>bounce</strong> the ball behind the service line, then hit it <strong>below waist height</strong>.</p>
+          <p><strong>Direction:</strong> serve diagonally into the opponent’s service box.</p>
+          <p><strong>Wall rule:</strong> the served ball must <strong>bounce in the box</strong> first. If it hits the glass/wall <em>before</em> bouncing, it’s a fault.</p>
+          <p><strong>Why it matters:</strong> the serve starts the point but isn’t meant to be a weapon — placement and follow-up matter more.</p>
+        `
+      },
+      doublebounce: {
+        title: "The double-bounce rule",
+        body: `
+          <p>In padel, you can play the ball off the walls <strong>after it bounces</strong>.</p>
+          <p><strong>But:</strong> if the ball bounces <strong>twice</strong> on the ground on your side before you hit it, you lose the point.</p>
+          <p><strong>Why it matters:</strong> you often let the ball travel to the glass after the first bounce to gain time and a better angle.</p>
+        `
+      },
+      walls: {
+        title: "Walls / glass: what’s in",
+        body: `
+          <p><strong>Walls are in.</strong> During a rally, the ball can hit your back/side glass and you can still return it (as long as it hasn’t bounced twice).</p>
+          <p><strong>On your side:</strong> ball may bounce on the ground, then glass/wall, then you hit it.</p>
+          <p><strong>On opponent’s side:</strong> your shot is good if it bounces on their court first — if it hits their wall/glass after that, play continues.</p>
+          <p><strong>Why it matters:</strong> using glass is a core padel skill, but the rule is simple: <em>ground bounce first</em> on the opponent’s side.</p>
+        `
+      },
+      net: {
+        title: "Net zone basics (and why net play matters)",
+        body: `
+          <p>Unlike pickleball, padel doesn’t have a strict “no-volley zone”. You can volley close to the net.</p>
+          <p><strong>Key rule:</strong> you can’t reach over the net and hit the ball on the opponent’s side unless your swing starts on your side and you don’t touch the net.</p>
+          <p><strong>Why it matters:</strong> winning padel usually means controlling the net, then using lobs and glass to reset when needed.</p>
+        `
+      },
+      out: {
+        title: "Ball out of court",
+        body: `
+          <p>If the ball goes out of the playing area <strong>without bouncing</strong> on the opponent’s side first, it’s out.</p>
+          <p>If it <strong>bounces in</strong> and then flies out, the point is still live — in some venues you can chase it and play it back (if safe and allowed).</p>
+          <p><strong>Why it matters:</strong> “bounced-in then out” is often a winning shot, but rules vary by court setup. Agree house rules quickly.</p>
+        `
+      },
+      etiquette: {
+        title: "Safety & etiquette (quick)",
+        body: `
+          <p><strong>Call “mine” early</strong> to avoid clashes. Most injuries are partner collisions.</p>
+          <p><strong>Don’t swing near the glass</strong> when your partner is behind you.</p>
+          <p><strong>Net touches:</strong> if you touch the net with your body/racket during the point, you lose the point.</p>
+          <p><strong>Why it matters:</strong> padel is social — clear calls and safe spacing keeps it fun.</p>
+        `
+      },
+      nvz: {
+        title: "Near the net (simple reality)",
+        body: `
+          <p>Padel does <strong>not</strong> have a pickleball-style “kitchen”. You can volley near the net.</p>
+          <p><strong>Main constraints:</strong> don’t touch the net, and don’t hit the ball on the opponent’s side.</p>
+          <p><strong>Why it matters:</strong> net pressure is strong — the counter is a good lob to the back glass.</p>
+        `
+      }
+    };
+
+    const modal = document.getElementById("rulesModal");
+    const titleEl = document.getElementById("rulesModalTitle");
+    const bodyEl = document.getElementById("rulesModalBody");
+    const closeBtn = document.getElementById("rulesModalClose");
+    const closeX = document.getElementById("rulesModalX");
+
+    function openTopic(topicKey) {
+      const t = TOPICS[topicKey];
+      if (!t) return;
+
+      // Set active highlight on hotspots that match
+      document.querySelectorAll(".hotspot").forEach(h => {
+        h.dataset.active = (h.dataset.topic === topicKey) ? "1" : "0";
+      });
+
+      titleEl.textContent = t.title;
+      bodyEl.innerHTML = t.body;
+
+      modal.style.display = "flex";
+      closeX.focus();
+    }
+
+    function closeModal() {
+      modal.style.display = "none";
+      document.querySelectorAll(".hotspot").forEach(h => h.dataset.active = "0");
+    }
+
+    document.addEventListener("click", (e) => {
+      const hs = e.target.closest("[data-topic]");
+      if (hs) openTopic(hs.dataset.topic);
+    });
+
+    closeBtn.addEventListener("click", closeModal);
+    closeX.addEventListener("click", closeModal);
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.style.display === "flex") closeModal();
+    });
+  </script>
+</body>
+</html>
