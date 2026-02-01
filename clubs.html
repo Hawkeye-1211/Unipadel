@@ -42,7 +42,6 @@
       Each card includes a booking link and a source link.
     </p>
 
-    <!-- Controls -->
     <section style="margin-top: 18px; text-align:left;">
       <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6; margin-bottom:8px;">
         Search & filter
@@ -56,13 +55,11 @@
           style="flex:1; min-width: 220px;"
         />
 
-        <!-- ✅ Grouped dropdown -->
         <select id="locationFilter" style="width:auto; min-width: 320px;">
           <option value="">All locations</option>
         </select>
       </div>
 
-      <!-- ✅ Explicit default controls -->
       <div style="margin-top: 10px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;">
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
           <label style="display:flex; align-items:center; gap:10px; font-size:13px; opacity:.9;">
@@ -89,7 +86,6 @@
       <div style="height:1px; background: rgba(201,204,210,.14); margin: 16px 0;"></div>
     </section>
 
-    <!-- Status -->
     <section style="text-align:left;">
       <div
         id="dataStatus"
@@ -107,7 +103,6 @@
       </div>
     </section>
 
-    <!-- Cards -->
     <section style="margin-top: 16px;">
       <div id="cards" style="display:grid; grid-template-columns: 1fr; gap: 12px;"></div>
     </section>
@@ -120,39 +115,11 @@
   </div>
 
   <script>
-    // ----------------------------
-    // Admin navbar handling
-    // ----------------------------
-    document.addEventListener("DOMContentLoaded", () => {
-      const ADMIN_SESSION_KEY = "Unipadel_admin_session";
-      const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
-
-      const adminNavLink = document.getElementById("adminNavLink");
-      const exitAdminLink = document.getElementById("exitAdminLink");
-
-      if (adminNavLink) adminNavLink.hidden = !isAdminMode;
-      if (exitAdminLink) exitAdminLink.hidden = !isAdminMode;
-
-      if (exitAdminLink) {
-        exitAdminLink.addEventListener("click", (e) => {
-          e.preventDefault();
-          sessionStorage.removeItem(ADMIN_SESSION_KEY);
-          window.location.href = "/ideas.html";
-        });
-      }
-    });
-
-    // ----------------------------
-    // LIVE CSV export (published)
-    // ----------------------------
     const PRICING_CSV_URL =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vScd-zwQsGJvYPwU4f_Avfy5xUhaSrSAZFrO4iVWLbHipkhRym1iRBOcnLqRqCeCQrcP6BTABkPEqxf/pub?single=true&gid=0&output=csv";
 
-    // ----------------------------
-    // Default location (explicit toggle)
-    // ----------------------------
-    const DEFAULT_LOC_KEY = "unipadel_default_location";   // stores the locationFilter value
-    const REMEMBER_LOC_KEY = "unipadel_remember_location"; // "1" or "0"
+    const DEFAULT_LOC_KEY = "unipadel_default_location";
+    const REMEMBER_LOC_KEY = "unipadel_remember_location";
 
     const els = {
       cards: document.getElementById("cards"),
@@ -169,6 +136,15 @@
 
     function norm(s) { return String(s || "").trim(); }
 
+    function escapeHtml(str) {
+      return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
     function safeLink(url) {
       const u = norm(url);
       if (!u) return "";
@@ -178,15 +154,6 @@
 
     function keyify(header) {
       return norm(header).toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
-    }
-
-    function escapeHtml(str) {
-      return String(str || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
     }
 
     async function parseCsvToRows(csvText) {
@@ -239,7 +206,7 @@
         PriceRange: get("pricerange"),
         PriceUnit: get("priceunit"),
         SourceURL: get("sourceurl"),
-        Active: get("active"), // optional
+        Active: get("active"),
       };
     }
 
@@ -249,38 +216,58 @@
       return !hasActiveCol || ["true", "1", "yes", "y"].includes(activeRaw);
     }
 
+    // ✅ Normalise obvious "City/Area swapped" and unify North East naming
+    function normaliseRowForDisplay(r) {
+      const city = norm(r.City);
+      const area = norm(r.Area);
+
+      // If City looks like an area within Newcastle, fix it for display/filtering.
+      // (You specifically called out Gosforth.)
+      const newcastleAreas = new Set(["Gosforth"]);
+      if (newcastleAreas.has(city) && /newcastle/i.test(area)) {
+        return { ...r, City: "Newcastle upon Tyne", Area: city };
+      }
+
+      return r;
+    }
+
     // ----------------------------
     // Group rules (edit anytime)
     // ----------------------------
     function groupForCity(city) {
       const c = norm(city);
 
-      // Greater London roll-up (your sheet uses London + nearby towns)
+      // Greater London roll-up
       const greaterLondon = new Set(["London","Romford","Ilford","Barnet","Watford","Weybridge"]);
       if (greaterLondon.has(c)) return "Greater London";
 
-      // Greater Manchester roll-up
+      // Greater Manchester
       const greaterManchester = new Set(["Manchester","Stockport","Cheadle"]);
       if (greaterManchester.has(c)) return "Greater Manchester";
 
-      // West Yorkshire roll-up (adjust as you add)
+      // Leeds / West Yorkshire
       const westYorks = new Set(["Leeds","Wetherby"]);
       if (westYorks.has(c)) return "Leeds / West Yorkshire";
 
-      // Merseyside / Liverpool area
+      // Liverpool / Merseyside
       const merseyside = new Set(["Liverpool","Birkenhead","Bromborough","Ellesmere Port"]);
       if (merseyside.has(c)) return "Liverpool / Merseyside";
 
-      // North East
-      const northEast = new Set(["Newcastle upon Tyne","Sunderland","Northumberland","Morpeth","Blaydon"]);
+      // ✅ Newcastle / North East: unify all relevant "city" values into one group
+      const northEast = new Set([
+        "Newcastle upon Tyne",
+        "Sunderland",
+        "Northumberland",
+        "Morpeth",
+        "Blaydon",
+        "Newcastle",
+      ]);
       if (northEast.has(c)) return "Newcastle / North East";
 
-      // Fallback: group by the city itself
       return c || "Other";
     }
 
     function locationValue(groupLabel, city, area) {
-      // Encode in one value: group|city|area (safe)
       return `${groupLabel}||${norm(city)}||${norm(area)}`;
     }
 
@@ -311,10 +298,10 @@
     }
 
     function buildGroupedLocations(rows) {
-      // Build structure: group -> areas (unique), plus we keep city inside value for correct filtering
-      const groups = new Map(); // group -> Map(areaLower -> {area, cityAny, group})
-      for (const r of rows) {
-        if (!isRowActive(r)) continue;
+      const groups = new Map(); // group -> Map(areaLower -> {group, city, area})
+      for (const r0 of rows) {
+        if (!isRowActive(r0)) continue;
+        const r = normaliseRowForDisplay(r0);
 
         const city = norm(r.City);
         const area = norm(r.Area);
@@ -323,13 +310,11 @@
         if (!groups.has(group)) groups.set(group, new Map());
         const areaKey = area.toLowerCase();
 
-        // If multiple cities share an "area" string, keep the first; city is still stored in value
         if (!groups.get(group).has(areaKey)) {
           groups.get(group).set(areaKey, { group, city, area });
         }
       }
 
-      // Sort groups and areas
       const groupNames = [...groups.keys()].sort((a,b) => a.localeCompare(b));
       return { groups, groupNames };
     }
@@ -367,7 +352,9 @@
         return;
       }
 
-      for (const r of rows) {
+      for (const r0 of rows) {
+        const r = normaliseRowForDisplay(r0);
+
         const venue = norm(r.Venue);
         const city = norm(r.City);
         const area = norm(r.Area);
@@ -446,8 +433,9 @@
         locArea = norm(p.area);
       }
 
-      const filtered = allRows.filter((r) => {
-        if (!isRowActive(r)) return false;
+      const filtered = allRows.filter((r0) => {
+        if (!isRowActive(r0)) return false;
+        const r = normaliseRowForDisplay(r0);
 
         const hay = `${norm(r.Venue)} ${norm(r.City)} ${norm(r.Area)} ${norm(r.BookingPlatform)} ${norm(r.PriceRange)}`
           .toLowerCase();
@@ -510,7 +498,6 @@
 
       const validValues = fillLocationDropdown(rows);
 
-      // Apply saved default location if remember is on
       const rememberOn = localStorage.getItem(REMEMBER_LOC_KEY) === "1";
       const savedVal = norm(localStorage.getItem(DEFAULT_LOC_KEY));
       if (rememberOn && savedVal && validValues.has(savedVal)) {
