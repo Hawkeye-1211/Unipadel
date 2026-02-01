@@ -25,6 +25,8 @@
       <a href="/">About</a>
       <a href="/learn.html">Learn</a>
       <a href="/ideas.html">Ideas</a>
+
+      <!-- Hidden by default; shown only when admin session exists -->
       <a href="/ideas.html?admin=unipadelgold" id="adminNavLink" hidden>Admin</a>
       <a href="/ideas.html" id="exitAdminLink" hidden>Exit Admin</a>
     </div>
@@ -35,133 +37,337 @@
       <span class="brand-uni">Uni</span><span class="brand-padel">Padel</span>
     </h1>
 
-    <p style="max-width:760px;margin:0 auto;font-size:15px;line-height:1.7;">
-      <strong style="font-weight:700;">By the player, for the player.</strong><br />
-      UniPadel exists to fix the parts of padel apps that consistently feel clunky,
-      unclear, or unfair — without overcomplicating things.
+    <p style="max-width: 820px; margin: 0 auto; font-size: 15px; line-height: 1.75; opacity: .92;">
+      <strong style="font-weight:700;">By the player, for the player.</strong>
+      UniPadel exists to fix the parts of padel apps that consistently feel clunky, unclear, or unfair —
+      without overcomplicating things.
     </p>
 
-    <!-- Intro callout -->
-    <section style="margin-top:22px;max-width:820px;margin-left:auto;margin-right:auto;">
-      <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:6px;">
-        Big picture
+    <!-- Big hook (adds contrast) -->
+    <section style="margin-top: 18px; text-align:left; max-width: 820px; margin-left:auto; margin-right:auto;">
+      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6; margin-bottom:6px;">
+        Quick idea
       </div>
-      <div style="font-size:20px;font-weight:700;line-height:1.4;">
-        Most padel apps are built around bookings.<br />
-        Players experience the friction.
+      <div style="font-size:22px; font-weight:700; line-height:1.35;">
+        Most padel apps are built around <span style="opacity:.85;">bookings</span>.<br />
+        Players experience the <span style="color:#9FD0F0;">friction</span>.
       </div>
     </section>
 
-    <!-- Why -->
-    <section id="why" style="margin-top:22px;max-width:820px;margin-left:auto;margin-right:auto;">
-      <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:6px;">
-        Why this matters
+    <!-- TOC / jump pills (RESTORED) -->
+    <section
+      style="
+        margin-top: 18px;
+        padding: 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(201,204,210,.18);
+        background: rgba(15,22,34,.35);
+        text-align: left;
+        max-width: 820px;
+        margin-left: auto;
+        margin-right: auto;
+      "
+      aria-label="On this page"
+    >
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <h2 style="margin:0; font-size:16px; letter-spacing:.2px;">On this page</h2>
+        <span style="font-size:12px; opacity:.75;">Skim in ~60 seconds</span>
       </div>
-      <p style="font-size:15px;line-height:1.7;margin:0;">
+
+      <div style="height:1px; background: rgba(201,204,210,.14); margin: 10px 0;"></div>
+
+      <div style="display:flex; flex-wrap:wrap; gap:10px;">
+        <a href="#why" style="padding:8px 10px; border-radius:999px; background: rgba(255,255,255,0.04); text-decoration:none; border:1px solid rgba(201,204,210,.12);">
+          Why it’s frustrating
+        </a>
+        <a href="#booking" style="padding:8px 10px; border-radius:999px; background: rgba(255,255,255,0.04); text-decoration:none; border:1px solid rgba(201,204,210,.12);">
+          Booking friction
+        </a>
+        <a href="#levels" style="padding:8px 10px; border-radius:999px; background: rgba(255,255,255,0.04); text-decoration:none; border:1px solid rgba(201,204,210,.12);">
+          Matchmaking & levels
+        </a>
+        <a href="#discovery" style="padding:8px 10px; border-radius:999px; background: rgba(255,255,255,0.04); text-decoration:none; border:1px solid rgba(201,204,210,.12);">
+          Club discovery
+        </a>
+        <a href="#trust" style="padding:8px 10px; border-radius:999px; background: rgba(255,255,255,0.04); text-decoration:none; border:1px solid rgba(201,204,210,.12);">
+          Trust & clarity
+        </a>
+        <a href="#ideas-fit" style="padding:8px 10px; border-radius:999px; background: rgba(255,255,255,0.04); text-decoration:none; border:1px solid rgba(201,204,210,.12);">
+          Where ideas fit
+        </a>
+      </div>
+    </section>
+
+    <!-- WHY -->
+    <section id="why" style="margin-top: 18px; text-align:left; max-width: 820px; margin-left:auto; margin-right:auto;">
+      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6; margin-bottom:6px;">
+        Why this page exists
+      </div>
+
+      <h2 style="margin:0; font-size:20px;">Why padel apps feel frustrating</h2>
+
+      <p style="margin-top:10px; font-size:15px; line-height:1.75; opacity:.9;">
         Over time, the same problems show up again and again — regardless of club or platform.
         These aren’t edge cases. They’re structural.
       </p>
 
-      <div style="margin-top:14px;padding:14px;border-radius:12px;background:rgba(47,128,237,.10);border:1px solid rgba(47,128,237,.25);">
-        <div style="font-weight:700;margin-bottom:6px;">The repeat offenders</div>
-        <ul style="margin:0;padding-left:18px;line-height:1.7;font-size:14px;">
-          <li><strong>Booking friction</strong> — too many taps, too much uncertainty</li>
-          <li><strong>Matchmaking & levels</strong> — unclear or unfair outcomes</li>
-          <li><strong>Discovery</strong> — clubs and pricing are hard to compare</li>
-          <li><strong>Trust & clarity</strong> — rules and changes aren’t obvious</li>
+      <div style="margin-top: 12px; padding: 14px; border-radius: 12px; background: rgba(47,128,237,.10); border: 1px solid rgba(47,128,237,.25);">
+        <div style="font-weight:700; margin-bottom:6px;">The 4 repeat offenders</div>
+        <ul style="margin:0; padding-left:18px; line-height:1.7; font-size:14px; opacity:.95;">
+          <li><strong>Booking friction</strong> — too many taps and too much uncertainty</li>
+          <li><strong>Matchmaking & levels</strong> — unclear, inconsistent, or unfair outcomes</li>
+          <li><strong>Discovery</strong> — clubs/courts/pricing are hard to compare</li>
+          <li><strong>Trust & clarity</strong> — rules and “what happens next?” aren’t obvious</li>
         </ul>
       </div>
+
+      <div style="height:1px; background: rgba(201,204,210,.14); margin: 16px 0;"></div>
     </section>
 
-    <!-- Card template -->
-    <section style="margin-top:22px;max-width:820px;margin-left:auto;margin-right:auto;padding:16px;border-radius:14px;border:1px solid rgba(201,204,210,.18);background:rgba(15,22,34,.35);">
-      <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;">
-        Problem 1
+    <!-- CARD TEMPLATE (x4) -->
+    <!-- 1 Booking -->
+    <section
+      id="booking"
+      style="
+        margin-top: 14px;
+        padding: 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(201,204,210,.18);
+        background: rgba(15,22,34,.35);
+        text-align: left;
+        max-width: 820px;
+        margin-left: auto;
+        margin-right: auto;
+      "
+    >
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6;">Problem 1</div>
+          <h3 style="margin:6px 0 0; font-size:20px;">Booking friction</h3>
+        </div>
+        <span style="font-size:12px; opacity:.75; padding:4px 8px; border:1px solid rgba(201,204,210,.18); border-radius:999px;">
+          Fast win area
+        </span>
       </div>
-      <h3 style="margin:6px 0 4px;font-size:20px;">Booking friction</h3>
-      <p style="font-size:14px;line-height:1.7;margin:0;">
+
+      <p style="margin-top:10px; font-size:14px; line-height:1.75; opacity:.9;">
         Booking a simple game often requires more thinking than the game itself.
       </p>
 
-      <div style="margin-top:12px;display:flex;gap:14px;flex-wrap:wrap;">
-        <div style="flex:1;min-width:240px;">
-          <div style="font-size:12px;font-weight:700;opacity:.85;">What players feel</div>
-          <ul style="margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.7;">
-            <li>Unclear availability</li>
-            <li>Hidden pricing rules</li>
-            <li>Too many screens</li>
+      <div style="margin-top: 12px; display:flex; gap:14px; flex-wrap:wrap;">
+        <div style="flex:1; min-width: 260px;">
+          <div style="font-size:12px; font-weight:700; opacity:.85;">What players feel</div>
+          <ul style="margin:8px 0 0; padding-left:18px; line-height:1.7; font-size:14px; opacity:.95;">
+            <li>Too many taps for a simple booking</li>
+            <li>Confusing availability / time slots</li>
+            <li>Pricing rules hidden until late</li>
           </ul>
         </div>
-        <div style="flex:1;min-width:240px;">
-          <div style="font-size:12px;font-weight:700;opacity:.85;">What should change</div>
-          <ul style="margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.7;">
-            <li>Predictable steps</li>
-            <li>True cost shown early</li>
-            <li>Fewer decisions per screen</li>
+        <div style="flex:1; min-width: 260px;">
+          <div style="font-size:12px; font-weight:700; opacity:.85;">What should change</div>
+          <ul style="margin:8px 0 0; padding-left:18px; line-height:1.7; font-size:14px; opacity:.95;">
+            <li>Predictable steps (you always know the next action)</li>
+            <li>Show the “true cost” early</li>
+            <li>Reduce screens and repetition</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <!-- Repeat cards condensed -->
-    <section style="margin-top:14px;max-width:820px;margin-left:auto;margin-right:auto;padding:16px;border-radius:14px;border:1px solid rgba(201,204,210,.18);background:rgba(15,22,34,.35);">
-      <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;">
-        Problem 2
-      </div>
-      <h3 style="margin:6px 0 4px;font-size:20px;">Matchmaking & levels</h3>
-      <p style="font-size:14px;line-height:1.7;margin:0;">
-        Players want to know <em>why</em> a match is suggested — not just accept it.
+    <!-- 2 Levels -->
+    <section
+      id="levels"
+      style="
+        margin-top: 14px;
+        padding: 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(201,204,210,.18);
+        background: rgba(15,22,34,.35);
+        text-align: left;
+        max-width: 820px;
+        margin-left: auto;
+        margin-right: auto;
+      "
+    >
+      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6;">Problem 2</div>
+      <h3 style="margin:6px 0 0; font-size:20px;">Matchmaking & levels</h3>
+
+      <p style="margin-top:10px; font-size:14px; line-height:1.75; opacity:.9;">
+        Players want transparency: why you’re matched, what to expect, and how to improve.
       </p>
+
+      <div style="margin-top: 12px; display:flex; gap:14px; flex-wrap:wrap;">
+        <div style="flex:1; min-width: 260px;">
+          <div style="font-size:12px; font-weight:700; opacity:.85;">What players feel</div>
+          <ul style="margin:8px 0 0; padding-left:18px; line-height:1.7; font-size:14px; opacity:.95;">
+            <li>Level gaps that ruin games</li>
+            <li>No explanation behind ratings</li>
+            <li>Hard to improve because feedback is vague</li>
+          </ul>
+        </div>
+        <div style="flex:1; min-width: 260px;">
+          <div style="font-size:12px; font-weight:700; opacity:.85;">What should change</div>
+          <ul style="margin:8px 0 0; padding-left:18px; line-height:1.7; font-size:14px; opacity:.95;">
+            <li>Make ratings explainable (not mysterious)</li>
+            <li>Match on goals (competitive vs social)</li>
+            <li>Clear signals for “balanced match”</li>
+          </ul>
+        </div>
+      </div>
     </section>
 
-    <section style="margin-top:14px;max-width:820px;margin-left:auto;margin-right:auto;padding:16px;border-radius:14px;border:1px solid rgba(201,204,210,.18);background:rgba(15,22,34,.35);">
-      <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;">
-        Problem 3
-      </div>
-      <h3 style="margin:6px 0 4px;font-size:20px;">Club discovery</h3>
-      <p style="font-size:14px;line-height:1.7;margin:0;">
-        Players shouldn’t have to guess what a club is like before they arrive.
+    <!-- 3 Discovery -->
+    <section
+      id="discovery"
+      style="
+        margin-top: 14px;
+        padding: 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(201,204,210,.18);
+        background: rgba(15,22,34,.35);
+        text-align: left;
+        max-width: 820px;
+        margin-left: auto;
+        margin-right: auto;
+      "
+    >
+      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6;">Problem 3</div>
+      <h3 style="margin:6px 0 0; font-size:20px;">Club discovery</h3>
+
+      <p style="margin-top:10px; font-size:14px; line-height:1.75; opacity:.9;">
+        Clubs, courts, pricing, peak times — players should be able to compare options quickly and confidently.
       </p>
+
+      <div style="margin-top: 12px; display:flex; gap:14px; flex-wrap:wrap;">
+        <div style="flex:1; min-width: 260px;">
+          <div style="font-size:12px; font-weight:700; opacity:.85;">What players feel</div>
+          <ul style="margin:8px 0 0; padding-left:18px; line-height:1.7; font-size:14px; opacity:.95;">
+            <li>You don’t know what a club is like until you go</li>
+            <li>Pricing differs wildly with little context</li>
+            <li>Hard to find the right “vibe” (social vs serious)</li>
+          </ul>
+        </div>
+        <div style="flex:1; min-width: 260px;">
+          <div style="font-size:12px; font-weight:700; opacity:.85;">What should change</div>
+          <ul style="margin:8px 0 0; padding-left:18px; line-height:1.7; font-size:14px; opacity:.95;">
+            <li>Make clubs comparable at a glance</li>
+            <li>Surface real constraints (parking, peak slots, etc.)</li>
+            <li>Help players find the right fit</li>
+          </ul>
+        </div>
+      </div>
     </section>
 
-    <section style="margin-top:14px;max-width:820px;margin-left:auto;margin-right:auto;padding:16px;border-radius:14px;border:1px solid rgba(201,204,210,.18);background:rgba(15,22,34,.35);">
-      <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;">
-        Problem 4
-      </div>
-      <h3 style="margin:6px 0 4px;font-size:20px;">Trust & clarity</h3>
-      <p style="font-size:14px;line-height:1.7;margin:0;">
-        If players don’t understand the rules, they don’t trust the platform.
+    <!-- 4 Trust -->
+    <section
+      id="trust"
+      style="
+        margin-top: 14px;
+        padding: 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(201,204,210,.18);
+        background: rgba(15,22,34,.35);
+        text-align: left;
+        max-width: 820px;
+        margin-left: auto;
+        margin-right: auto;
+      "
+    >
+      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6;">Problem 4</div>
+      <h3 style="margin:6px 0 0; font-size:20px;">Trust & clarity</h3>
+
+      <p style="margin-top:10px; font-size:14px; line-height:1.75; opacity:.9;">
+        If a platform makes you feel unsure, you leave. Clarity should be designed in.
       </p>
+
+      <div style="margin-top: 12px; display:flex; gap:14px; flex-wrap:wrap;">
+        <div style="flex:1; min-width: 260px;">
+          <div style="font-size:12px; font-weight:700; opacity:.85;">What players feel</div>
+          <ul style="margin:8px 0 0; padding-left:18px; line-height:1.7; font-size:14px; opacity:.95;">
+            <li>Cancellation rules hidden in fine print</li>
+            <li>Unclear refunds / credits</li>
+            <li>Confusing flows when plans change</li>
+          </ul>
+        </div>
+        <div style="flex:1; min-width: 260px;">
+          <div style="font-size:12px; font-weight:700; opacity:.85;">What should change</div>
+          <ul style="margin:8px 0 0; padding-left:18px; line-height:1.7; font-size:14px; opacity:.95;">
+            <li>Make rules visible before you commit</li>
+            <li>Design “change of plan” flows intentionally</li>
+            <li>Reduce uncertainty at every step</li>
+          </ul>
+        </div>
+      </div>
     </section>
 
     <!-- Where ideas fit -->
-    <section style="margin-top:22px;max-width:820px;margin-left:auto;margin-right:auto;padding:16px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(201,204,210,.18);">
-      <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;">
+    <section
+      id="ideas-fit"
+      style="
+        margin-top: 18px;
+        padding: 16px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(201,204,210,.18);
+        text-align:left;
+        max-width: 820px;
+        margin-left:auto;
+        margin-right:auto;
+      "
+    >
+      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6; margin-bottom:6px;">
         Contribution
       </div>
-      <h3 style="margin:6px 0 6px;">Where ideas fit</h3>
-      <p style="font-size:14px;line-height:1.7;margin:0 0 10px;">
-        UniPadel isn’t an idea box. It’s a product in the making.
-        Suggestions are optional — but always welcome.
+
+      <h3 style="margin:0; font-size:18px;">Where ideas fit</h3>
+
+      <p style="margin:10px 0 12px; font-size:14px; line-height:1.75; opacity:.9;">
+        UniPadel isn’t an “idea site”. It’s a padel product in the making — and suggestions are optional.
+        If something ever feels broken, confusing, or missing, you can share it.
       </p>
 
-      <a href="/ideas.html"
-         style="display:inline-block;padding:10px 14px;border-radius:10px;text-decoration:none;
-                background:rgba(47,128,237,.12);border:1px solid rgba(47,128,237,.30);">
-        Share a suggestion (optional)
-      </a>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <a
+          href="/ideas.html"
+          style="
+            display:inline-block;
+            padding:10px 14px;
+            border-radius: 10px;
+            text-decoration:none;
+            background: rgba(47,128,237,.12);
+            border: 1px solid rgba(47,128,237,.30);
+          "
+        >
+          Share a suggestion (optional)
+        </a>
+
+        <a href="#why" style="font-size:13px; opacity:.85; text-decoration:none;">
+          Back to top
+        </a>
+      </div>
     </section>
   </div>
 
   <script>
+    // Minimal admin navbar handling for learn.html (keeps app.js off this page)
     document.addEventListener("DOMContentLoaded", () => {
-      const k = "Unipadel_admin_session";
-      const isAdmin = sessionStorage.getItem(k) === "true";
-      const a = document.getElementById("adminNavLink");
-      const e = document.getElementById("exitAdminLink");
-      if (a) a.hidden = !isAdmin;
-      if (e) e.hidden = !isAdmin;
-      if (e) e.onclick = () => { sessionStorage.removeItem(k); location.href="/ideas.html"; };
+      const ADMIN_SESSION_KEY = "Unipadel_admin_session";
+
+      const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
+
+      const adminNavLink = document.getElementById("adminNavLink");
+      const exitAdminLink = document.getElementById("exitAdminLink");
+
+      if (adminNavLink) adminNavLink.hidden = !isAdminMode;
+      if (exitAdminLink) exitAdminLink.hidden = !isAdminMode;
+
+      if (exitAdminLink) {
+        exitAdminLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          sessionStorage.removeItem(ADMIN_SESSION_KEY);
+          window.location.href = "/ideas.html";
+        });
+      }
     });
   </script>
 </body>
