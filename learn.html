@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UniPadel</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body data-page="ideas">
+  <nav class="navbar">
+    <a href="/" class="logo">
+      <img src="/Images/UniPadel-logo.png" alt="UniPadel logo" class="nav-logo" />
+    </a>
+
+    <div class="nav-links">
+      <a href="/">About</a>
+      <a href="/learn.html">Learn</a>
+      <a href="/ideas.html">Ideas</a>
+
+      <!-- Hidden by default; app.js shows these only during an admin session -->
+      <a href="/ideas.html?admin=unipadelgold" id="adminNavLink" hidden>Admin</a>
+      <a href="/ideas.html" id="exitAdminLink" hidden>Exit Admin</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1 class="brand">
+      <span class="brand-uni">Uni</span><span class="brand-padel">Padel</span>
+    </h1>
+
+    <p>Submit ideas for the future UniPadel site.</p>
+
+    <section id="ideasSection">
+      <form id="ideaForm">
+        <input type="hidden" id="submissionTs" name="_submission_ts" value="" />
+
+        <!-- Spam protection: honeypot -->
+        <div style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
+          <label for="website">Website</label>
+          <input type="text" id="website" name="_gotcha" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <label for="userName">Your name</label><br />
+        <input type="text" id="userName" name="userName" required /><br /><br />
+
+        <label for="userEmail">Your email</label><br />
+        <input type="email" id="userEmail" name="userEmail" required /><br /><br />
+
+        <!-- ✅ Source (required by app.js) -->
+        <label for="ideaSource">Which platform is this about?</label><br />
+        <select id="ideaSource" name="ideaSource" required style="width:95%; padding:10px; border-radius:6px;">
+          <option value="" selected disabled>Choose one…</option>
+          <option value="Playtomic">Playtomic</option>
+          <option value="Other booking app">Other booking app</option>
+          <option value="unipadel.online">UniPadel</option>
+          <option value="Other">Other</option>
+        </select>
+        <br /><br />
+
+        <label for="ideaTitle">What's your idea</label><br />
+        <input type="text" id="ideaTitle" name="ideaTitle" required /><br /><br />
+
+        <label for="ideaDescription">Tell us more</label><br />
+        <textarea id="ideaDescription" name="ideaDescription" rows="5" required></textarea><br /><br />
+
+        <button type="submit">Serve idea</button>
+      </form>
+
+      <p id="messageArea"></p>
+    </section>
+
+    <!-- ✅ PUBLIC IDEAS (read-only) - app.js will fill this for non-admin users -->
+    <section id="publicIdeasSection" aria-label="Recent ideas" style="margin-top:28px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <div style="height:1px; background: rgba(201,204,210,.18); flex:1;"></div>
+        <h2 style="margin:0; font-size:16px; letter-spacing:.3px; opacity:.85;">Recent Ideas</h2>
+        <div style="height:1px; background: rgba(201,204,210,.18); flex:1;"></div>
+      </div>
+
+      <div id="publicIdeasList"></div>
+    </section>
+
+    <!-- Admin list -->
+    <div class="owner-only">
+      <h2>Submitted Ideas</h2>
+      <ul id="ideasList"></ul>
+    </div>
+  </div>
+
+  <script src="/app.js?v=20260128-TESTMODE-FAST" defer></script>
+</body>
+</html>
