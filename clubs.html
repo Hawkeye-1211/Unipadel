@@ -56,12 +56,9 @@
           style="flex:1; min-width: 220px;"
         />
 
-        <select id="cityFilter" style="width:auto; min-width: 200px;">
-          <option value="">All cities</option>
-        </select>
-
-        <select id="areaFilter" style="width:auto; min-width: 220px;">
-          <option value="">All areas</option>
+        <!-- ✅ Grouped dropdown -->
+        <select id="locationFilter" style="width:auto; min-width: 320px;">
+          <option value="">All locations</option>
         </select>
       </div>
 
@@ -69,11 +66,11 @@
       <div style="margin-top: 10px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;">
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
           <label style="display:flex; align-items:center; gap:10px; font-size:13px; opacity:.9;">
-            <input type="checkbox" id="rememberCityToggle" />
-            Remember my city on this device
+            <input type="checkbox" id="rememberLocToggle" />
+            Remember my default location
           </label>
 
-          <span id="savedCityLabel" style="font-size:13px; opacity:.8;"></span>
+          <span id="savedLocLabel" style="font-size:13px; opacity:.8;"></span>
 
           <button id="clearDefaultBtn" type="button" style="padding:8px 10px; font-size:13px;" hidden>
             Clear default
@@ -152,37 +149,25 @@
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vScd-zwQsGJvYPwU4f_Avfy5xUhaSrSAZFrO4iVWLbHipkhRym1iRBOcnLqRqCeCQrcP6BTABkPEqxf/pub?single=true&gid=0&output=csv";
 
     // ----------------------------
-    // Default city (explicit toggle)
+    // Default location (explicit toggle)
     // ----------------------------
-    const DEFAULT_CITY_KEY = "unipadel_default_city";
-    const REMEMBER_CITY_KEY = "unipadel_remember_city"; // "1" or "0"
+    const DEFAULT_LOC_KEY = "unipadel_default_location";   // stores the locationFilter value
+    const REMEMBER_LOC_KEY = "unipadel_remember_location"; // "1" or "0"
 
     const els = {
       cards: document.getElementById("cards"),
       status: document.getElementById("dataStatus"),
       search: document.getElementById("searchInput"),
-      city: document.getElementById("cityFilter"),
-      area: document.getElementById("areaFilter"),
+      location: document.getElementById("locationFilter"),
       reset: document.getElementById("resetBtn"),
       count: document.getElementById("resultCount"),
 
-      rememberToggle: document.getElementById("rememberCityToggle"),
-      savedLabel: document.getElementById("savedCityLabel"),
+      rememberToggle: document.getElementById("rememberLocToggle"),
+      savedLabel: document.getElementById("savedLocLabel"),
       clearDefaultBtn: document.getElementById("clearDefaultBtn"),
     };
 
     function norm(s) { return String(s || "").trim(); }
-
-    function uniqSortedCaseInsensitive(values) {
-      const map = new Map(); // lower -> original (first seen)
-      for (const v of values) {
-        const clean = norm(v);
-        if (!clean) continue;
-        const key = clean.toLowerCase();
-        if (!map.has(key)) map.set(key, clean);
-      }
-      return [...map.values()].sort((a, b) => a.localeCompare(b));
-    }
 
     function safeLink(url) {
       const u = norm(url);
@@ -193,6 +178,15 @@
 
     function keyify(header) {
       return norm(header).toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
     async function parseCsvToRows(csvText) {
@@ -249,6 +243,118 @@
       };
     }
 
+    function isRowActive(r) {
+      const activeRaw = norm(r.Active).toLowerCase();
+      const hasActiveCol = activeRaw !== "";
+      return !hasActiveCol || ["true", "1", "yes", "y"].includes(activeRaw);
+    }
+
+    // ----------------------------
+    // Group rules (edit anytime)
+    // ----------------------------
+    function groupForCity(city) {
+      const c = norm(city);
+
+      // Greater London roll-up (your sheet uses London + nearby towns)
+      const greaterLondon = new Set(["London","Romford","Ilford","Barnet","Watford","Weybridge"]);
+      if (greaterLondon.has(c)) return "Greater London";
+
+      // Greater Manchester roll-up
+      const greaterManchester = new Set(["Manchester","Stockport","Cheadle"]);
+      if (greaterManchester.has(c)) return "Greater Manchester";
+
+      // West Yorkshire roll-up (adjust as you add)
+      const westYorks = new Set(["Leeds","Wetherby"]);
+      if (westYorks.has(c)) return "Leeds / West Yorkshire";
+
+      // Merseyside / Liverpool area
+      const merseyside = new Set(["Liverpool","Birkenhead","Bromborough","Ellesmere Port"]);
+      if (merseyside.has(c)) return "Liverpool / Merseyside";
+
+      // North East
+      const northEast = new Set(["Newcastle upon Tyne","Sunderland","Northumberland","Morpeth","Blaydon"]);
+      if (northEast.has(c)) return "Newcastle / North East";
+
+      // Fallback: group by the city itself
+      return c || "Other";
+    }
+
+    function locationValue(groupLabel, city, area) {
+      // Encode in one value: group|city|area (safe)
+      return `${groupLabel}||${norm(city)}||${norm(area)}`;
+    }
+
+    function parseLocationValue(val) {
+      const parts = String(val || "").split("||");
+      if (parts.length !== 3) return { group: "", city: "", area: "" };
+      return { group: parts[0], city: parts[1], area: parts[2] };
+    }
+
+    function setSavedLocUI() {
+      const rememberOn = localStorage.getItem(REMEMBER_LOC_KEY) === "1";
+      const savedVal = norm(localStorage.getItem(DEFAULT_LOC_KEY));
+
+      els.rememberToggle.checked = rememberOn;
+
+      if (rememberOn && savedVal) {
+        const p = parseLocationValue(savedVal);
+        const label = p.area ? `${p.group} · ${p.area}` : p.group;
+        els.savedLabel.textContent = `Default: ${label}`;
+        els.clearDefaultBtn.hidden = false;
+      } else if (rememberOn) {
+        els.savedLabel.textContent = "Default: (not set yet)";
+        els.clearDefaultBtn.hidden = true;
+      } else {
+        els.savedLabel.textContent = "Default: off";
+        els.clearDefaultBtn.hidden = true;
+      }
+    }
+
+    function buildGroupedLocations(rows) {
+      // Build structure: group -> areas (unique), plus we keep city inside value for correct filtering
+      const groups = new Map(); // group -> Map(areaLower -> {area, cityAny, group})
+      for (const r of rows) {
+        if (!isRowActive(r)) continue;
+
+        const city = norm(r.City);
+        const area = norm(r.Area);
+        const group = groupForCity(city);
+
+        if (!groups.has(group)) groups.set(group, new Map());
+        const areaKey = area.toLowerCase();
+
+        // If multiple cities share an "area" string, keep the first; city is still stored in value
+        if (!groups.get(group).has(areaKey)) {
+          groups.get(group).set(areaKey, { group, city, area });
+        }
+      }
+
+      // Sort groups and areas
+      const groupNames = [...groups.keys()].sort((a,b) => a.localeCompare(b));
+      return { groups, groupNames };
+    }
+
+    function fillLocationDropdown(rows) {
+      const { groups, groupNames } = buildGroupedLocations(rows);
+
+      let html = `<option value="">All locations</option>`;
+
+      for (const g of groupNames) {
+        const areasMap = groups.get(g);
+        const areas = [...areasMap.values()].sort((a,b) => a.area.localeCompare(b.area));
+
+        html += `<optgroup label="${escapeHtml(g)}">`;
+        for (const item of areas) {
+          const v = locationValue(item.group, item.city, item.area);
+          html += `<option value="${escapeHtml(v)}">${escapeHtml(item.area)}</option>`;
+        }
+        html += `</optgroup>`;
+      }
+
+      els.location.innerHTML = html;
+      return new Set([...els.location.options].map(o => o.value));
+    }
+
     function renderCards(rows) {
       els.cards.innerHTML = "";
 
@@ -281,22 +387,22 @@
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;">
             <div style="min-width: 240px; flex: 1;">
-              <div style="font-weight:700; font-size:16px; line-height:1.35;">${venue || "Unnamed venue"}</div>
+              <div style="font-weight:700; font-size:16px; line-height:1.35;">${escapeHtml(venue || "Unnamed venue")}</div>
               <div style="margin-top:6px; font-size:13px; opacity:.85;">
-                ${[area, city].filter(Boolean).join(" · ")}
+                ${escapeHtml([area, city].filter(Boolean).join(" · "))}
               </div>
               <div style="margin-top:6px; font-size:12px; opacity:.75;">
-                Booking: ${platform || "—"}
+                Booking: ${escapeHtml(platform || "—")}
               </div>
             </div>
 
             <div style="min-width: 180px; text-align:right;">
               <div style="font-size:12px; letter-spacing:.12em; text-transform:uppercase; opacity:.65;">Published range</div>
               <div style="margin-top:6px; font-size:20px; font-weight:700; line-height:1.2;">
-                ${priceRange || "—"}
+                ${escapeHtml(priceRange || "—")}
               </div>
               <div style="margin-top:4px; font-size:12px; opacity:.8;">
-                ${priceUnit || ""}
+                ${escapeHtml(priceUnit || "")}
               </div>
             </div>
           </div>
@@ -304,7 +410,7 @@
           <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
             ${
               bookingUrl
-                ? `<a href="${bookingUrl}" target="_blank" rel="noopener noreferrer"
+                ? `<a href="${escapeHtml(bookingUrl)}" target="_blank" rel="noopener noreferrer"
                      style="display:inline-block; padding:10px 12px; border-radius:10px; text-decoration:none;
                             background: rgba(182,230,0,.14); border: 1px solid rgba(182,230,0,.30);">
                      Book
@@ -314,7 +420,7 @@
 
             ${
               sourceUrl
-                ? `<a href="${sourceUrl}" target="_blank" rel="noopener noreferrer"
+                ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer"
                      style="display:inline-block; padding:10px 12px; border-radius:10px; text-decoration:none;
                             background: rgba(47,128,237,.12); border: 1px solid rgba(47,128,237,.30);">
                      Source
@@ -328,52 +434,17 @@
       }
     }
 
-    function isRowActive(r) {
-      const activeRaw = norm(r.Active).toLowerCase();
-      const hasActiveCol = activeRaw !== "";
-      return !hasActiveCol || ["true", "1", "yes", "y"].includes(activeRaw);
-    }
-
-    function setSavedCityUI() {
-      const rememberOn = localStorage.getItem(REMEMBER_CITY_KEY) === "1";
-      const saved = norm(localStorage.getItem(DEFAULT_CITY_KEY));
-
-      els.rememberToggle.checked = rememberOn;
-
-      if (rememberOn && saved) {
-        els.savedLabel.textContent = `Default: ${saved}`;
-        els.clearDefaultBtn.hidden = false;
-      } else if (rememberOn) {
-        els.savedLabel.textContent = "Default: (not set yet)";
-        els.clearDefaultBtn.hidden = true;
-      } else {
-        els.savedLabel.textContent = "Default: off";
-        els.clearDefaultBtn.hidden = true;
-      }
-    }
-
-    function fillCityOptions(rows) {
-      const cities = uniqSortedCaseInsensitive(rows.filter(isRowActive).map(r => r.City));
-      els.city.innerHTML = `<option value="">All cities</option>` + cities.map(c => `<option value="${c}">${c}</option>`).join("");
-      return cities;
-    }
-
-    function fillAreaOptionsForCity(rows, selectedCity) {
-      const city = norm(selectedCity);
-      const areas = uniqSortedCaseInsensitive(
-        rows
-          .filter(isRowActive)
-          .filter(r => !city || norm(r.City) === city)
-          .map(r => r.Area)
-      );
-
-      els.area.innerHTML = `<option value="">All areas</option>` + areas.map(a => `<option value="${a}">${a}</option>`).join("");
-    }
-
     function applyFilters(allRows) {
       const q = norm(els.search.value).toLowerCase();
-      const city = norm(els.city.value);
-      const area = norm(els.area.value);
+      const loc = norm(els.location.value);
+
+      let locCity = "";
+      let locArea = "";
+      if (loc) {
+        const p = parseLocationValue(loc);
+        locCity = norm(p.city);
+        locArea = norm(p.area);
+      }
 
       const filtered = allRows.filter((r) => {
         if (!isRowActive(r)) return false;
@@ -382,8 +453,8 @@
           .toLowerCase();
 
         if (q && !hay.includes(q)) return false;
-        if (city && norm(r.City) !== city) return false;
-        if (area && norm(r.Area) !== area) return false;
+        if (locCity && norm(r.City) !== locCity) return false;
+        if (locArea && norm(r.Area) !== locArea) return false;
         return true;
       });
 
@@ -426,7 +497,7 @@
         console.error(err);
         els.status.innerHTML =
           `Could not load clubs right now.<br/>
-           <span style="opacity:.85;">Reason: ${String(err.message || err)}</span>`;
+           <span style="opacity:.85;">Reason: ${escapeHtml(String(err.message || err))}</span>`;
         return [];
       }
     }
@@ -434,75 +505,59 @@
     (async function init() {
       const rows = await loadData();
 
-      // Default toggle state (first visit: off)
-      if (!localStorage.getItem(REMEMBER_CITY_KEY)) localStorage.setItem(REMEMBER_CITY_KEY, "0");
-      setSavedCityUI();
+      if (!localStorage.getItem(REMEMBER_LOC_KEY)) localStorage.setItem(REMEMBER_LOC_KEY, "0");
+      setSavedLocUI();
 
-      // Fill city options
-      const cities = fillCityOptions(rows);
+      const validValues = fillLocationDropdown(rows);
 
-      // Apply saved default city if "remember" is ON
-      const rememberOn = localStorage.getItem(REMEMBER_CITY_KEY) === "1";
-      const savedCity = norm(localStorage.getItem(DEFAULT_CITY_KEY));
-      if (rememberOn && savedCity && cities.includes(savedCity)) {
-        els.city.value = savedCity;
+      // Apply saved default location if remember is on
+      const rememberOn = localStorage.getItem(REMEMBER_LOC_KEY) === "1";
+      const savedVal = norm(localStorage.getItem(DEFAULT_LOC_KEY));
+      if (rememberOn && savedVal && validValues.has(savedVal)) {
+        els.location.value = savedVal;
+      } else if (savedVal && !validValues.has(savedVal)) {
+        localStorage.removeItem(DEFAULT_LOC_KEY);
       }
 
-      // Areas depend on city selection
-      fillAreaOptionsForCity(rows, els.city.value);
-
-      // Initial render
       applyFilters(rows);
 
-      // Remember toggle
-      els.rememberToggle.addEventListener("change", () => {
-        localStorage.setItem(REMEMBER_CITY_KEY, els.rememberToggle.checked ? "1" : "0");
-        if (!els.rememberToggle.checked) {
-          localStorage.removeItem(DEFAULT_CITY_KEY);
-        } else {
-          const current = norm(els.city.value);
-          if (current) localStorage.setItem(DEFAULT_CITY_KEY, current);
-        }
-        setSavedCityUI();
-      });
-
-      // City change: update areas + maybe save default
-      els.city.addEventListener("change", () => {
-        fillAreaOptionsForCity(rows, els.city.value);
-
-        if (localStorage.getItem(REMEMBER_CITY_KEY) === "1") {
-          const chosen = norm(els.city.value);
-          if (chosen) localStorage.setItem(DEFAULT_CITY_KEY, chosen);
-          else localStorage.removeItem(DEFAULT_CITY_KEY);
-        }
-
-        setSavedCityUI();
-        applyFilters(rows);
-      });
-
-      // Area/Search changes
-      els.area.addEventListener("change", () => applyFilters(rows));
       els.search.addEventListener("input", () => applyFilters(rows));
 
-      // Clear default button
-      els.clearDefaultBtn.addEventListener("click", () => {
-        localStorage.removeItem(DEFAULT_CITY_KEY);
-        els.city.value = "";
-        fillAreaOptionsForCity(rows, "");
-        setSavedCityUI();
+      els.location.addEventListener("change", () => {
+        if (localStorage.getItem(REMEMBER_LOC_KEY) === "1") {
+          const chosen = norm(els.location.value);
+          if (chosen) localStorage.setItem(DEFAULT_LOC_KEY, chosen);
+          else localStorage.removeItem(DEFAULT_LOC_KEY);
+          setSavedLocUI();
+        }
         applyFilters(rows);
       });
 
-      // Reset filters (does NOT change remember toggle, but clears saved default if remember is on)
+      els.rememberToggle.addEventListener("change", () => {
+        localStorage.setItem(REMEMBER_LOC_KEY, els.rememberToggle.checked ? "1" : "0");
+        if (!els.rememberToggle.checked) {
+          localStorage.removeItem(DEFAULT_LOC_KEY);
+        } else {
+          const chosen = norm(els.location.value);
+          if (chosen) localStorage.setItem(DEFAULT_LOC_KEY, chosen);
+        }
+        setSavedLocUI();
+      });
+
+      els.clearDefaultBtn.addEventListener("click", () => {
+        localStorage.removeItem(DEFAULT_LOC_KEY);
+        els.location.value = "";
+        setSavedLocUI();
+        applyFilters(rows);
+      });
+
       els.reset.addEventListener("click", () => {
         els.search.value = "";
-        els.city.value = "";
-        els.area.value = "";
-        if (localStorage.getItem(REMEMBER_CITY_KEY) === "1") {
-          localStorage.removeItem(DEFAULT_CITY_KEY);
+        els.location.value = "";
+        if (localStorage.getItem(REMEMBER_LOC_KEY) === "1") {
+          localStorage.removeItem(DEFAULT_LOC_KEY);
         }
-        fillAreaOptionsForCity(rows, "");
-        setSavedCityUI();
+        setSavedLocUI();
         applyFilters(rows);
       });
     })();
