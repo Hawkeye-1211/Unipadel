@@ -27,7 +27,6 @@
       <a href="/clubs.html">Clubs</a>
       <a href="/ideas.html">Ideas</a>
 
-      <!-- Hidden by default; shown only during an admin session -->
       <a href="/ideas.html?admin=unipadelgold" id="adminNavLink" hidden>Admin</a>
       <a href="/ideas.html" id="exitAdminLink" hidden>Exit Admin</a>
     </div>
@@ -43,19 +42,13 @@
       Each card includes a booking link and a source link.
     </p>
 
-    <!-- Controls -->
     <section style="margin-top: 18px; text-align:left;">
       <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.6; margin-bottom:8px;">
         Search & filter
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-        <input
-          id="searchInput"
-          type="text"
-          placeholder="Search venue / area / city…"
-          style="flex:1; min-width: 220px;"
-        />
+        <input id="searchInput" type="text" placeholder="Search venue / area / city…" style="flex:1; min-width: 220px;" />
 
         <select id="cityFilter" style="width:auto; min-width: 180px;">
           <option value="">All cities</option>
@@ -68,15 +61,12 @@
 
       <div style="margin-top: 10px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;">
         <div id="resultCount" style="font-size: 13px; opacity: .8;"></div>
-        <button id="resetBtn" type="button" style="padding:10px 12px; font-size:14px;">
-          Reset
-        </button>
+        <button id="resetBtn" type="button" style="padding:10px 12px; font-size:14px;">Reset</button>
       </div>
 
       <div style="height:1px; background: rgba(201,204,210,.14); margin: 16px 0;"></div>
     </section>
 
-    <!-- Status -->
     <section style="text-align:left;">
       <div
         id="dataStatus"
@@ -94,7 +84,6 @@
       </div>
     </section>
 
-    <!-- Cards -->
     <section style="margin-top: 16px;">
       <div id="cards" style="display:grid; grid-template-columns: 1fr; gap: 12px;"></div>
     </section>
@@ -107,9 +96,7 @@
   </div>
 
   <script>
-    // ----------------------------
-    // Admin navbar handling (so Admin / Exit Admin appear here too)
-    // ----------------------------
+    // Admin navbar handling
     document.addEventListener("DOMContentLoaded", () => {
       const ADMIN_SESSION_KEY = "Unipadel_admin_session";
       const isAdminMode = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
@@ -129,11 +116,23 @@
       }
     });
 
-    // ----------------------------
-    // LIVE CSV export from your Google Sheet
-    // ----------------------------
+    // ✅ Your published CSV (more compatible format)
     const PRICING_CSV_URL =
-      "https://docs.google.com/spreadsheets/d/1mwGe-BQg_j5SZX_w4QOfzjyq1x8pEs6-A3jTqvK_pYo/edit?gid=0#gid=0";
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vScd-zwQsGJvYPwU4f_Avfy5xUhaSrSAZFrO4iVWLbHipkhRym1iRBOcnLqRqCeCQrcP6BTABkPEqxf/pub?single=true&gid=0&output=csv";
+
+    // Minimal fallback so page never looks broken
+    const FALLBACK_DATA = [
+      {
+        Venue: "Slazenger Padel Club Leeds",
+        City: "Leeds",
+        Area: "North Leeds",
+        BookingPlatform: "Playtomic",
+        BookingURL: "https://playtomic.com/",
+        PriceRange: "£—",
+        PriceUnit: "per hour",
+        SourceURL: "https://www.google.com"
+      }
+    ];
 
     const els = {
       cards: document.getElementById("cards"),
@@ -145,9 +144,7 @@
       count: document.getElementById("resultCount"),
     };
 
-    function norm(s) {
-      return String(s || "").trim();
-    }
+    function norm(s) { return String(s || "").trim(); }
 
     function uniqSorted(values) {
       return [...new Set(values.map(norm).filter(Boolean))].sort((a, b) => a.localeCompare(b));
@@ -160,13 +157,76 @@
       return "";
     }
 
+    function keyify(header) {
+      // Normalize headers like "Booking URL" -> "bookingurl"
+      return norm(header).toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
+    }
+
+    async function parseCsvToRows(csvText) {
+      // Handle BOM if present
+      const text = csvText.replace(/^\uFEFF/, "");
+
+      const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+      const nonEmpty = lines.filter(l => l.trim() !== "");
+      if (!nonEmpty.length) return [];
+
+      function splitCsvLine(line) {
+        const out = [];
+        let cur = "";
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') {
+            if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; }
+            else { inQuotes = !inQuotes; }
+          } else if (ch === "," && !inQuotes) {
+            out.push(cur);
+            cur = "";
+          } else {
+            cur += ch;
+          }
+        }
+        out.push(cur);
+        return out.map(s => s.trim());
+      }
+
+      const rawHeaders = splitCsvLine(nonEmpty[0]);
+      const headers = rawHeaders.map(h => keyify(h));
+
+      const rows = [];
+      for (let i = 1; i < nonEmpty.length; i++) {
+        const cols = splitCsvLine(nonEmpty[i]);
+        const obj = {};
+        headers.forEach((h, idx) => obj[h] = cols[idx] ?? "");
+        rows.push(obj);
+      }
+      return rows;
+    }
+
+    function mapRow(r) {
+      // Accept header variations
+      const get = (k) => norm(r[k] || "");
+
+      return {
+        Venue: get("venue"),
+        City: get("city"),
+        Area: get("area"),
+        BookingPlatform: get("bookingplatform"),
+        BookingURL: get("bookingurl"),
+        PriceRange: get("pricerange"),
+        PriceUnit: get("priceunit"),
+        SourceURL: get("sourceurl"),
+      };
+    }
+
     function renderCards(rows) {
       els.cards.innerHTML = "";
 
       if (!rows.length) {
         els.cards.innerHTML = `
           <div style="padding:16px;border-radius:14px;border:1px dashed rgba(201,204,210,.25);text-align:center;opacity:.9;">
-            No clubs match your filters.
+            No clubs to show yet.
           </div>
         `;
         return;
@@ -239,6 +299,14 @@
       }
     }
 
+    function fillFilters(rows) {
+      const cities = uniqSorted(rows.map(r => r.City));
+      const areas = uniqSorted(rows.map(r => r.Area));
+
+      els.city.innerHTML = `<option value="">All cities</option>` + cities.map(c => `<option value="${c}">${c}</option>`).join("");
+      els.area.innerHTML = `<option value="">All areas</option>` + areas.map(a => `<option value="${a}">${a}</option>`).join("");
+    }
+
     function applyFilters(allRows) {
       const q = norm(els.search.value).toLowerCase();
       const city = norm(els.city.value);
@@ -258,86 +326,43 @@
       renderCards(filtered);
     }
 
-    function fillFilters(rows) {
-      const cities = uniqSorted(rows.map(r => r.City));
-      const areas = uniqSorted(rows.map(r => r.Area));
-
-      els.city.innerHTML = `<option value="">All cities</option>` + cities.map(c => `<option value="${c}">${c}</option>`).join("");
-      els.area.innerHTML = `<option value="">All areas</option>` + areas.map(a => `<option value="${a}">${a}</option>`).join("");
-    }
-
-    async function parseCsvToRows(csvText) {
-      // Minimal CSV parser (handles quotes)
-      const rows = [];
-      const lines = csvText.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").filter(Boolean);
-      if (!lines.length) return rows;
-
-      function splitCsvLine(line) {
-        const out = [];
-        let cur = "";
-        let inQuotes = false;
-        for (let i = 0; i < line.length; i++) {
-          const ch = line[i];
-          if (ch === '"') {
-            if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; }
-            else { inQuotes = !inQuotes; }
-          } else if (ch === "," && !inQuotes) {
-            out.push(cur);
-            cur = "";
-          } else {
-            cur += ch;
-          }
-        }
-        out.push(cur);
-        return out.map(s => s.trim());
-      }
-
-      const headers = splitCsvLine(lines[0]).map(h => h.trim());
-      for (let i = 1; i < lines.length; i++) {
-        const cols = splitCsvLine(lines[i]);
-        const obj = {};
-        headers.forEach((h, idx) => obj[h] = cols[idx] ?? "");
-        rows.push(obj);
-      }
-      return rows;
-    }
-
     async function loadData() {
       try {
         els.status.textContent = "Loading clubs…";
-        const res = await fetch(PRICING_CSV_URL, { cache: "no-store" });
+        const res = await fetch(PRICING_CSV_URL + "&t=" + Date.now(), { cache: "no-store" });
         if (!res.ok) throw new Error("CSV HTTP " + res.status);
 
         const csv = await res.text();
-        const raw = await parseCsvToRows(csv);
+        const rawRows = await parseCsvToRows(csv);
+        const mapped = rawRows.map(mapRow);
 
-        const cleaned = raw
-          .map(r => ({
-            Venue: r.Venue || "",
-            City: r.City || "",
-            Area: r.Area || "",
-            BookingPlatform: r.BookingPlatform || "",
-            BookingURL: r.BookingURL || "",
-            PriceRange: r.PriceRange || "",
-            PriceUnit: r.PriceUnit || "",
-            SourceURL: r.SourceURL || ""
-          }))
-          .filter(r =>
-            norm(r.Venue) &&
-            norm(r.City) &&
-            norm(r.Area) &&
-            norm(r.BookingPlatform) &&
-            safeLink(r.BookingURL) &&
-            norm(r.PriceRange) &&
-            norm(r.PriceUnit) &&
-            safeLink(r.SourceURL)
-          );
+        // Strict required fields
+        const cleaned = mapped.filter(r =>
+          norm(r.Venue) &&
+          norm(r.City) &&
+          norm(r.Area) &&
+          norm(r.BookingPlatform) &&
+          safeLink(r.BookingURL) &&
+          norm(r.PriceRange) &&
+          norm(r.PriceUnit) &&
+          safeLink(r.SourceURL)
+        );
+
+        if (!cleaned.length) {
+          els.status.innerHTML =
+            `No rows matched the expected headers/fields.<br/>
+             Make sure your header row is exactly:<br/>
+             <code>Venue, City, Area, BookingPlatform, BookingURL, PriceRange, PriceUnit, SourceURL</code>`;
+          return [];
+        }
 
         els.status.textContent = "Showing published price ranges — tap “Source” to verify.";
         return cleaned;
       } catch (err) {
         console.error(err);
-        els.status.textContent = "Could not load clubs right now.";
+        els.status.innerHTML =
+          `Could not load clubs right now.<br/>
+           <span style="opacity:.85;">Reason: ${String(err.message || err)}</span>`;
         return [];
       }
     }
