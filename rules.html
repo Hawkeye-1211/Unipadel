@@ -66,18 +66,27 @@
     }
 
     .court .hint {
-      position: absolute;
-      left: 12px;
-      bottom: 12px;
-      right: 12px;
-      font-size: .92rem;
-      opacity: .9;
-      background: rgba(0,0,0,.35);
-      border: 1px solid rgba(201,204,210,.16);
-      border-radius: 10px;
-      padding: 10px 12px;
-      backdrop-filter: blur(6px);
-    }
+  /* ✅ Move the hint to the TOP so it doesn't cover the playable court area */
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  right: 12px;
+
+  /* ✅ Improve readability on a white image background */
+  font-size: .92rem;
+  opacity: 1;
+  color: #0B0F14;
+
+  /* Solid light panel so text is always readable */
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.14);
+  border-radius: 10px;
+  padding: 10px 12px;
+
+  /* Keep it feeling premium but subtle */
+  box-shadow: 0 10px 24px rgba(0,0,0,.25);
+}
+
 
     /* Hotspots */
     .hotspot {
