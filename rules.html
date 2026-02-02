@@ -177,20 +177,24 @@
 <body>
   <!-- Navbar (matches your existing classes/styles).
        IMPORTANT: If your real logo path isn't logo.png, change ONLY the src value. -->
-  <div class="navbar">
-    <a class="logo" href="index.html" aria-label="UniPadel home">
-      <img class="nav-logo" src="logo.png" alt="UniPadel" />
-    </a>
+ <div class="navbar">
+  <a class="logo" href="index.html" aria-label="UniPadel home">
+    <img class="nav-logo" src="Images/UniPadel-logo.png" alt="UniPadel logo" />
+  </a>
 
-    <div class="nav-links" aria-label="Primary navigation">
-      <a href="index.html">About</a>
-      <a href="clubs.html">Clubs</a>
-      <a href="learn.html">Vision</a>
-      <a href="ideas.html">Ideas</a>
-      <a href="/rules.html">Rules</a>
-      <a href="rules.html" aria-current="page">Rules</a>
-    </div>
+  <div class="nav-links" aria-label="Primary navigation">
+    <a href="index.html">About</a>
+    <a href="learn.html">Vision</a>
+    <a href="clubs.html">Clubs</a>
+    <a href="rules.html" aria-current="page">Rules</a>
+    <a href="ideas.html">Ideas</a>
+
+    <!-- Hidden by default; app.js shows these only during an admin session -->
+    <a href="ideas.html?admin=unipadelgold" id="adminNavLink" hidden>Admin</a>
+    <a href="ideas.html" id="exitAdminLink" hidden>Exit Admin</a>
   </div>
+</div>
+
 
   <div class="rules-wrap">
     <div class="rules-grid">
