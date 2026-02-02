@@ -6,7 +6,6 @@
   <title>UniPadel — Rules</title>
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Page-only styles (do not affect other pages) -->
   <style>
     .rules-wrap { max-width: 980px; margin: 60px auto; padding: 0 16px; }
     .rules-grid {
@@ -30,44 +29,30 @@
       justify-content: space-between;
       gap: 12px;
     }
-    .rules-card-header h1 {
-      margin: 0;
-      font-size: 1.15rem;
-      letter-spacing: .2px;
-    }
-    .rules-card-header p {
-      margin: 0;
-      opacity: .85;
-      font-size: .95rem;
-    }
+    .rules-card-header h1 { margin: 0; font-size: 1.15rem; letter-spacing: .2px; }
+    .rules-card-header p { margin: 0; opacity: .85; font-size: .95rem; }
 
-    /* Interactive court */
     .court-wrap { padding: 14px; }
-
     .court {
       width: 100%;
-      /* Keep image ratio stable so hotspots align consistently */
-      aspect-ratio: 636 / 409;
+      aspect-ratio: 636 / 409; /* keep stable for hotspot alignment */
       border-radius: 14px;
       border: 1px solid rgba(201,204,210,.18);
       position: relative;
       overflow: hidden;
-      background: #ffffff; /* matches the image background */
+      background: #ffffff;
     }
-
-    /* The REAL court image */
     .court-img {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
-      object-fit: contain; /* do NOT crop */
+      object-fit: contain;
       user-select: none;
       -webkit-user-drag: none;
       z-index: 1;
     }
 
-    /* Hint moved OUTSIDE the court so it never blocks the image */
     .hint-below {
       margin-top: 10px;
       font-size: .92rem;
@@ -88,7 +73,7 @@
       cursor: pointer;
       transition: transform .08s ease, background .15s ease, border-color .15s ease;
       outline: none;
-      z-index: 3; /* ABOVE image */
+      z-index: 3;
     }
     .hotspot:hover { background: rgba(47,128,237,.18); border-color: rgba(159,208,240,.55); }
     .hotspot:active { transform: scale(.99); }
@@ -97,36 +82,62 @@
       outline-offset: 3px;
     }
     .hotspot[data-active="1"] {
-      background: rgba(182,230,0,.12);
-      border-color: rgba(182,230,0,.55);
+      background: rgba(182,230,0,.14);
+      border-color: rgba(182,230,0,.65);
     }
 
     /*
-      ✅ UPDATED HOTSPOT PLACEMENT (matches the actual diagram areas)
-      These are a solid baseline. If you want them tighter, tell me which zone and I’ll adjust only the % values.
+      ✅ CORRECTED FOR THIS IMAGE ORIENTATION:
+      - Net is VERTICAL at centre (x ≈ 50%)
+      - Service lines are HORIZONTAL (y bands)
+      - Back glass = LEFT & RIGHT ends
+      - Side glass = TOP & BOTTOM sides
     */
 
-    /* Service boxes */
-    .hs-service-left  { left: 20%; top: 30%; width: 22%; height: 20%; }
-    .hs-service-right { left: 58%; top: 30%; width: 22%; height: 20%; }
+    /* BACK GLASS (LEFT/RIGHT ends) */
+    .hs-back-left  { left: 10%; top: 18%; width: 8%;  height: 64%; }
+    .hs-back-right { left: 82%; top: 18%; width: 8%;  height: 64%; }
 
-    /* Net / forecourt strip */
+    /* SIDE GLASS (TOP/BOTTOM sides) */
+    .hs-side-top    { left: 18%; top: 10%; width: 64%; height: 8%; }
+    .hs-side-bottom { left: 18%; top: 82%; width: 64%; height: 8%; }
+
+    /* NET BAND (vertical centre strip) */
     .hs-net {
-      left: 48.4%;
-      top: 22%;
-      width: 3.2%;
-      height: 62%;
+      left: 48.6%;
+      top: 18%;
+      width: 2.8%;
+      height: 64%;
       border-radius: 999px;
-      background: rgba(255,255,255,.05);
+      background: rgba(255,255,255,.06);
     }
 
-    /* Back glass / defensive zones */
-    .hs-back-left  { left: 20%; top: 62%; width: 22%; height: 26%; }
-    .hs-back-right { left: 58%; top: 62%; width: 22%; height: 26%; }
+    /* SERVICE BOXES (4) — split by net (vertical) and centre line (horizontal) */
+    /* These are placed to match the visible inner rectangles in your diagram */
+    .hs-sbox-lt { left: 26%; top: 30%; width: 22%; height: 18%; } /* left half, top box */
+    .hs-sbox-lb { left: 26%; top: 52%; width: 22%; height: 18%; } /* left half, bottom box */
+    .hs-sbox-rt { left: 52%; top: 30%; width: 22%; height: 18%; } /* right half, top box */
+    .hs-sbox-rb { left: 52%; top: 52%; width: 22%; height: 18%; } /* right half, bottom box */
 
-    /* Side glass (thin strips) */
-    .hs-side-left  { left: 12%; top: 26%; width: 6%; height: 62%; }
-    .hs-side-right { left: 82%; top: 26%; width: 6%; height: 62%; }
+    /* Debug overlay (only when ?debug=1) */
+    .debug-label {
+      position: absolute;
+      z-index: 4;
+      font-size: 12px;
+      padding: 4px 6px;
+      border-radius: 8px;
+      background: rgba(0,0,0,.72);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.25);
+      pointer-events: none;
+      display: none;
+      white-space: nowrap;
+    }
+    body.debug .hotspot {
+      border: 2px dashed rgba(255,0,0,.65);
+      background: rgba(255,0,0,.10);
+    }
+    body.debug .debug-label { display: block; }
 
     /* Right-hand panel */
     .panel { padding: 14px 16px; }
@@ -193,7 +204,6 @@
 </head>
 
 <body>
-  <!-- Navbar (matches your working site, keep as-is) -->
   <div class="navbar">
     <a href="index.html" class="logo">
       <img src="Images/UniPadel-logo.png" alt="UniPadel logo" class="nav-logo" />
@@ -206,7 +216,6 @@
       <a href="rules.html" aria-current="page">Rules</a>
       <a href="ideas.html">Ideas</a>
 
-      <!-- Hidden by default; app.js shows these only during an admin session -->
       <a href="ideas.html?admin=unipadelgold" id="adminNavLink" hidden>Admin</a>
       <a href="ideas.html" id="exitAdminLink" hidden>Exit Admin</a>
     </div>
@@ -214,7 +223,6 @@
 
   <div class="rules-wrap">
     <div class="rules-grid">
-      <!-- Left: interactive court -->
       <div class="rules-card">
         <div class="rules-card-header">
           <h1>Padel rules — quick, visual, and practical</h1>
@@ -223,33 +231,41 @@
 
         <div class="court-wrap">
           <div class="court" role="group" aria-label="Interactive padel court">
-            <img
-              class="court-img"
-              src="Images/padel-court-layout.jpg"
-              alt="Padel court layout diagram"
-              loading="lazy"
-            />
+            <img class="court-img" src="Images/padel-court-layout.jpg" alt="Padel court layout diagram" loading="lazy" />
 
-            <!-- Hotspots -->
-            <button class="hotspot hs-service-left" data-topic="serve" aria-label="Serve rules (left service box)"></button>
-            <button class="hotspot hs-service-right" data-topic="serve" aria-label="Serve rules (right service box)"></button>
+            <!-- Back glass (ends) -->
+            <button class="hotspot hs-back-left" data-topic="backglass" aria-label="Back glass rules (left end)"></button>
+            <button class="hotspot hs-back-right" data-topic="backglass" aria-label="Back glass rules (right end)"></button>
 
-            <button class="hotspot hs-net" data-topic="net" aria-label="Net play rules"></button>
+            <!-- Side glass (top/bottom) -->
+            <button class="hotspot hs-side-top" data-topic="sideglass" aria-label="Side glass rules (top side)"></button>
+            <button class="hotspot hs-side-bottom" data-topic="sideglass" aria-label="Side glass rules (bottom side)"></button>
 
-            <button class="hotspot hs-back-left" data-topic="backglass" aria-label="Back glass rules (left)"></button>
-            <button class="hotspot hs-back-right" data-topic="backglass" aria-label="Back glass rules (right)"></button>
+            <!-- Net band -->
+            <button class="hotspot hs-net" data-topic="net" aria-label="Net rules and volleys"></button>
 
-            <button class="hotspot hs-side-left" data-topic="sideglass" aria-label="Side glass rules (left)"></button>
-            <button class="hotspot hs-side-right" data-topic="sideglass" aria-label="Side glass rules (right)"></button>
+            <!-- Service boxes -->
+            <button class="hotspot hs-sbox-lt" data-topic="serve" aria-label="Service box (left top)"></button>
+            <button class="hotspot hs-sbox-lb" data-topic="serve" aria-label="Service box (left bottom)"></button>
+            <button class="hotspot hs-sbox-rt" data-topic="serve" aria-label="Service box (right top)"></button>
+            <button class="hotspot hs-sbox-rb" data-topic="serve" aria-label="Service box (right bottom)"></button>
+
+            <!-- Debug labels (only visible when ?debug=1) -->
+            <div class="debug-label" data-for="hs-back-left"  style="left:10%; top:18%;">BACK GLASS (LEFT)</div>
+            <div class="debug-label" data-for="hs-back-right" style="left:82%; top:18%;">BACK GLASS (RIGHT)</div>
+            <div class="debug-label" data-for="hs-side-top" style="left:18%; top:10%;">SIDE GLASS (TOP)</div>
+            <div class="debug-label" data-for="hs-side-bottom" style="left:18%; top:82%;">SIDE GLASS (BOTTOM)</div>
+            <div class="debug-label" data-for="hs-net" style="left:49%; top:18%;">NET</div>
+            <div class="debug-label" data-for="hs-sbox-lt" style="left:26%; top:30%;">SERVICE BOX</div>
           </div>
 
           <div class="hint-below">
-            <strong>Tip:</strong> Tap the service box, net, or glass areas for the rule + the most common mistake + a practical fix.
+            <strong>Tip:</strong> Tap the back glass (ends), side glass (top/bottom), net, or service boxes for rules people actually argue about.
+            (Debug: add <strong>?debug=1</strong> to the URL to see zone outlines.)
           </div>
         </div>
       </div>
 
-      <!-- Right: quick pills -->
       <div class="rules-card">
         <div class="rules-card-header">
           <h1>Fast answers</h1>
@@ -260,26 +276,25 @@
           <h2>Tap a topic</h2>
           <div class="pill-row">
             <button class="pill" data-topic="serve">Serve faults</button>
-            <button class="pill" data-topic="net">Net / volley</button>
+            <button class="pill" data-topic="net">Net / reaching</button>
             <button class="pill" data-topic="backglass">Back glass</button>
             <button class="pill" data-topic="sideglass">Side glass</button>
             <button class="pill" data-topic="out">Out / bounce-in</button>
-            <button class="pill" data-topic="scoring">Scoring</button>
             <button class="pill" data-topic="doublebounce">Double bounce</button>
+            <button class="pill" data-topic="scoring">Scoring</button>
             <button class="pill" data-topic="etiquette">Safety</button>
           </div>
 
           <h2 style="margin-top:14px;">What this page is</h2>
           <p>
             A quick rules reference designed to stop arguments mid-match.
-            It’s not technique coaching — it’s the “what counts?” stuff.
+            It’s not coaching — it’s the “what counts?” stuff.
           </p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal -->
   <div class="modal-backdrop" id="rulesModal" role="dialog" aria-modal="true" aria-labelledby="rulesModalTitle">
     <div class="modal">
       <div class="modal-head">
@@ -294,81 +309,76 @@
   </div>
 
   <script>
+    // Enable debug overlay via ?debug=1
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("debug") === "1") document.body.classList.add("debug");
+    })();
+
     const TOPICS = {
       serve: {
-        title: "Serve faults (most common arguments)",
+        title: "Serve rules (faults people actually argue about)",
         body: `
-          <p><strong>Legal serve:</strong> underarm only, after a bounce, struck <strong>below waist height</strong>, landing in the diagonal service box.</p>
-          <p><strong>Fault:</strong> serve hits glass/wall <em>before</em> bouncing in the service box.</p>
-          <p><strong>Let:</strong> serve clips the net and still lands in the correct box → replay the serve.</p>
-          <p><strong>Practical tip:</strong> a deep, low serve is better than power. Your next shot usually matters more.</p>
+          <p><strong>Legal serve:</strong> underarm, after a bounce, struck <strong>below waist height</strong>, landing in the diagonal service box.</p>
+          <p><strong>Fault:</strong> serve hits glass/fence <em>before</em> it bounces in the box.</p>
+          <p><strong>Let:</strong> if the serve clips the net and still lands in the correct box, replay the serve.</p>
+          <p><strong>Tip:</strong> a deep, low serve is better than power — your second shot usually matters more.</p>
         `
       },
-
       net: {
-        title: "Net / volley rules (simple and practical)",
+        title: "Net rules (volley, net touch, reaching)",
         body: `
-          <p><strong>You can volley close to the net.</strong> Padel has no “kitchen”.</p>
-          <p><strong>Net touch:</strong> if you touch the net with body or racket during the point, you lose the point.</p>
-          <p><strong>Reaching over:</strong> you can’t strike the ball on the opponent’s side unless the ball spins back over to your side.</p>
-          <p><strong>Practical tip:</strong> if you’re unsure, don’t “poke” over the net — reset the rally instead.</p>
+          <p><strong>No kitchen:</strong> you can volley close to the net in padel.</p>
+          <p><strong>Net touch:</strong> touch the net with body or racket during a point = you lose the point.</p>
+          <p><strong>Reaching over:</strong> you generally can’t strike the ball on the opponent’s side. Exception: the ball spins back over to your side.</p>
+          <p><strong>Tip:</strong> if you’re unsure, don’t jab over the net — reset the rally and keep position.</p>
         `
       },
-
       backglass: {
-        title: "Back glass (core padel rule)",
+        title: "Back glass (ENDS of the court: left/right here)",
         body: `
-          <p><strong>Walls are in:</strong> after the ball bounces on your side, it can hit the back glass and you can still return it.</p>
-          <p><strong>Dead ball:</strong> you lose the point if the ball bounces <strong>twice</strong> on the ground before you hit it.</p>
-          <p><strong>Common mistake:</strong> panicking and hitting too early — glass gives you time and better angles.</p>
-          <p><strong>Practical tip:</strong> when pressured, let it bounce + glass, then play controlled and cross-court.</p>
+          <p><strong>Walls are in:</strong> after the ball bounces on your side, it may hit the back glass and you can still return it.</p>
+          <p><strong>Dead ball:</strong> two ground bounces before you hit it = you lose the point (glass contact doesn’t reset this).</p>
+          <p><strong>Common mistake:</strong> hitting too early. Letting it hit the back glass often gives you time and a cleaner angle.</p>
+          <p><strong>Tip:</strong> when pressured, bounce + glass, then play controlled and cross-court.</p>
         `
       },
-
       sideglass: {
-        title: "Side glass (legal but different)",
+        title: "Side glass (TOP/BOTTOM sides here)",
         body: `
-          <p><strong>Side glass is in:</strong> playable after the ball bounces (same rule as back glass).</p>
-          <p><strong>Why it’s tricky:</strong> rebounds are sharper and can pull you wide.</p>
-          <p><strong>Common mistake:</strong> arriving late — the side wall rebound often dies quickly.</p>
-          <p><strong>Practical tip:</strong> if you can, take it <em>after the first bounce</em> before it reaches the side glass.</p>
+          <p><strong>Legal:</strong> side glass is playable after the ball bounces (same rule as back glass).</p>
+          <p><strong>Why it’s tricky:</strong> rebounds can be sharper and the ball can die quickly.</p>
+          <p><strong>Tip:</strong> if you can, take it after the first bounce before it reaches the side wall.</p>
         `
       },
-
       out: {
-        title: "Out / bounce-in (the big one)",
+        title: "Out / bounce-in (the big dispute)",
         body: `
           <p><strong>If it flies straight out without bouncing in:</strong> out.</p>
           <p><strong>If it bounces in first, then goes out:</strong> the point is still live.</p>
-          <p><strong>House rules:</strong> some venues allow recovery shots outside the court (if safe), others don’t. Agree before playing.</p>
-          <p><strong>Practical tip:</strong> never risk injury for a point — safety wins.</p>
+          <p><strong>House rules:</strong> some venues allow recovery shots outside the court (if safe), others don’t. Agree before you start.</p>
         `
       },
-
-      scoring: {
-        title: "Scoring (and the golden point)",
-        body: `
-          <p><strong>Scoring matches tennis:</strong> 15, 30, 40, game. Usually best of 3 sets.</p>
-          <p><strong>At deuce (40–40):</strong> many clubs use <strong>golden point</strong> (next point wins).</p>
-          <p><strong>Practical tip:</strong> ask “golden point or advantage?” before the first serve.</p>
-        `
-      },
-
       doublebounce: {
         title: "Double bounce (the only hard stop)",
         body: `
           <p><strong>You lose the point</strong> if the ball bounces <strong>twice</strong> on the ground on your side before you hit it.</p>
           <p><strong>Walls don’t reset it:</strong> bounce + wall is fine, but two ground bounces is always dead.</p>
-          <p><strong>Practical tip:</strong> if you’re late, let it reach the back glass after the first bounce — it often buys time.</p>
         `
       },
-
-      etiquette: {
-        title: "Safety (rules that prevent injuries)",
+      scoring: {
+        title: "Scoring (and golden point)",
         body: `
-          <p><strong>Call “mine” early</strong> — most injuries are partner collisions.</p>
+          <p><strong>Scoring matches tennis:</strong> 15, 30, 40, game. Usually best of 3 sets.</p>
+          <p><strong>At deuce (40–40):</strong> many clubs use <strong>golden point</strong> (next point wins).</p>
+        `
+      },
+      etiquette: {
+        title: "Safety (avoid injuries)",
+        body: `
+          <p><strong>Call “mine” early</strong> — most padel injuries are partner collisions.</p>
           <p><strong>Respect swing space:</strong> don’t run behind your partner when they’re loading a swing.</p>
-          <p><strong>Glass awareness:</strong> don’t sprint into the back glass — stop short and play the rebound.</p>
+          <p><strong>Glass awareness:</strong> don’t sprint into glass — stop short and play the rebound.</p>
         `
       }
     };
@@ -396,9 +406,7 @@
 
     function closeModal() {
       modal.style.display = "none";
-      document.querySelectorAll(".hotspot").forEach(h => {
-        h.dataset.active = "0";
-      });
+      document.querySelectorAll(".hotspot").forEach(h => { h.dataset.active = "0"; });
     }
 
     document.addEventListener("click", (e) => {
