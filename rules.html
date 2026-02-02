@@ -43,15 +43,16 @@
 
     /* Interactive court */
     .court-wrap { padding: 14px; }
+
     .court {
       width: 100%;
-      /* Match the image ratio so hotspots align consistently */
+      /* Keep image ratio stable so hotspots align consistently */
       aspect-ratio: 636 / 409;
       border-radius: 14px;
       border: 1px solid rgba(201,204,210,.18);
       position: relative;
       overflow: hidden;
-      background: linear-gradient(180deg, rgba(20,26,34,.96), rgba(11,15,20,.96));
+      background: #ffffff; /* matches the image background */
     }
 
     /* The REAL court image */
@@ -61,28 +62,21 @@
       width: 100%;
       height: 100%;
       object-fit: contain; /* do NOT crop */
-      background: #ffffff; /* matches the image background */
-      z-index: 1;
       user-select: none;
       -webkit-user-drag: none;
+      z-index: 1;
     }
 
-    /* Hint box (moved to top and readable on white background) */
-    .court .hint {
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      right: 12px;
-      z-index: 3;
-
+    /* Hint moved OUTSIDE the court so it never blocks the image */
+    .hint-below {
+      margin-top: 10px;
       font-size: .92rem;
-      opacity: 1;
       color: #0B0F14;
       background: rgba(255,255,255,.92);
       border: 1px solid rgba(0,0,0,.14);
       border-radius: 10px;
       padding: 10px 12px;
-      box-shadow: 0 10px 24px rgba(0,0,0,.25);
+      box-shadow: 0 10px 24px rgba(0,0,0,.18);
     }
 
     /* Hotspots */
@@ -94,7 +88,7 @@
       cursor: pointer;
       transition: transform .08s ease, background .15s ease, border-color .15s ease;
       outline: none;
-      z-index: 2; /* above image */
+      z-index: 3; /* ABOVE image */
     }
     .hotspot:hover { background: rgba(47,128,237,.18); border-color: rgba(159,208,240,.55); }
     .hotspot:active { transform: scale(.99); }
@@ -109,11 +103,7 @@
 
     /*
       ✅ UPDATED HOTSPOT PLACEMENT (matches the actual diagram areas)
-      Notes:
-      - Service boxes are the upper rectangles left/right of the net.
-      - Net zone is the central strip.
-      - Back-glass zones are the lower left/right areas.
-      - Side-glass zones are the thin vertical bands on far left/right.
+      These are a solid baseline. If you want them tighter, tell me which zone and I’ll adjust only the % values.
     */
 
     /* Service boxes */
@@ -228,12 +218,11 @@
       <div class="rules-card">
         <div class="rules-card-header">
           <h1>Padel rules — quick, visual, and practical</h1>
-          <p>Tap a zone on the court</p>
+          <p>Tap the court areas</p>
         </div>
 
         <div class="court-wrap">
           <div class="court" role="group" aria-label="Interactive padel court">
-            <!-- REAL court image -->
             <img
               class="court-img"
               src="Images/padel-court-layout.jpg"
@@ -241,7 +230,7 @@
               loading="lazy"
             />
 
-            <!-- ✅ UPDATED HOTSPOTS -->
+            <!-- Hotspots -->
             <button class="hotspot hs-service-left" data-topic="serve" aria-label="Serve rules (left service box)"></button>
             <button class="hotspot hs-service-right" data-topic="serve" aria-label="Serve rules (right service box)"></button>
 
@@ -252,10 +241,10 @@
 
             <button class="hotspot hs-side-left" data-topic="sideglass" aria-label="Side glass rules (left)"></button>
             <button class="hotspot hs-side-right" data-topic="sideglass" aria-label="Side glass rules (right)"></button>
+          </div>
 
-            <div class="hint">
-              <strong>Tap a zone:</strong> service box, net, back glass or side glass. You’ll get the rule + the common mistake + a useful tip.
-            </div>
+          <div class="hint-below">
+            <strong>Tip:</strong> Tap the service box, net, or glass areas for the rule + the most common mistake + a practical fix.
           </div>
         </div>
       </div>
@@ -282,8 +271,8 @@
 
           <h2 style="margin-top:14px;">What this page is</h2>
           <p>
-            A quick rules reference that’s designed to stop arguments mid-match.
-            It’s not technique coaching — just the stuff people get wrong most often.
+            A quick rules reference designed to stop arguments mid-match.
+            It’s not technique coaching — it’s the “what counts?” stuff.
           </p>
         </div>
       </div>
@@ -304,16 +293,15 @@
     </div>
   </div>
 
-  <!-- Page-only JS (no impact elsewhere) -->
   <script>
     const TOPICS = {
       serve: {
         title: "Serve faults (most common arguments)",
         body: `
-          <p><strong>Legal serve:</strong> underarm only, after a bounce, and struck <strong>below waist height</strong>. It must land in the diagonal service box.</p>
-          <p><strong>Fault:</strong> if the serve hits glass/wall <em>before</em> it bounces in the service box.</p>
-          <p><strong>Let rule:</strong> if the serve clips the net and still lands in the correct box, it’s a let (re-serve).</p>
-          <p><strong>Useful tip:</strong> aim deep and low. In padel, the serve starts the rally — it rarely wins it.</p>
+          <p><strong>Legal serve:</strong> underarm only, after a bounce, struck <strong>below waist height</strong>, landing in the diagonal service box.</p>
+          <p><strong>Fault:</strong> serve hits glass/wall <em>before</em> bouncing in the service box.</p>
+          <p><strong>Let:</strong> serve clips the net and still lands in the correct box → replay the serve.</p>
+          <p><strong>Practical tip:</strong> a deep, low serve is better than power. Your next shot usually matters more.</p>
         `
       },
 
@@ -322,8 +310,8 @@
         body: `
           <p><strong>You can volley close to the net.</strong> Padel has no “kitchen”.</p>
           <p><strong>Net touch:</strong> if you touch the net with body or racket during the point, you lose the point.</p>
-          <p><strong>Reaching over the net:</strong> you generally can’t hit the ball on the opponent’s side. The exception is if the ball spins back over the net to your side.</p>
-          <p><strong>Useful tip:</strong> if you’re unsure, don’t “stab” over the net — reset with a safer shot.</p>
+          <p><strong>Reaching over:</strong> you can’t strike the ball on the opponent’s side unless the ball spins back over to your side.</p>
+          <p><strong>Practical tip:</strong> if you’re unsure, don’t “poke” over the net — reset the rally instead.</p>
         `
       },
 
@@ -331,29 +319,29 @@
         title: "Back glass (core padel rule)",
         body: `
           <p><strong>Walls are in:</strong> after the ball bounces on your side, it can hit the back glass and you can still return it.</p>
-          <p><strong>Lose the point:</strong> if the ball bounces <strong>twice</strong> on the ground before you hit it.</p>
-          <p><strong>Common mistake:</strong> panicking and hitting too early — let it reach the glass and you get time + better angles.</p>
-          <p><strong>Useful tip:</strong> the glass is your friend when under pressure. Let it bounce + glass, then play controlled.</p>
+          <p><strong>Dead ball:</strong> you lose the point if the ball bounces <strong>twice</strong> on the ground before you hit it.</p>
+          <p><strong>Common mistake:</strong> panicking and hitting too early — glass gives you time and better angles.</p>
+          <p><strong>Practical tip:</strong> when pressured, let it bounce + glass, then play controlled and cross-court.</p>
         `
       },
 
       sideglass: {
         title: "Side glass (legal but different)",
         body: `
-          <p><strong>Side glass is in:</strong> like the back glass, it’s playable after the ball bounces.</p>
-          <p><strong>Why it’s tricky:</strong> side glass rebounds sharper and can pull you out wide.</p>
-          <p><strong>Common mistake:</strong> trying to play a side-glass rebound too late — it often dies fast.</p>
-          <p><strong>Useful tip:</strong> if you’re unsure, take it after the first bounce before it reaches the side glass.</p>
+          <p><strong>Side glass is in:</strong> playable after the ball bounces (same rule as back glass).</p>
+          <p><strong>Why it’s tricky:</strong> rebounds are sharper and can pull you wide.</p>
+          <p><strong>Common mistake:</strong> arriving late — the side wall rebound often dies quickly.</p>
+          <p><strong>Practical tip:</strong> if you can, take it <em>after the first bounce</em> before it reaches the side glass.</p>
         `
       },
 
       out: {
         title: "Out / bounce-in (the big one)",
         body: `
-          <p><strong>If it doesn’t bounce in:</strong> a ball that flies straight out is <strong>out</strong>.</p>
-          <p><strong>If it bounces in first:</strong> it’s <strong>still live</strong> even if it then goes out of the court area.</p>
-          <p><strong>House rules:</strong> some venues allow you to chase and hit it back (if safe), others don’t. Agree quickly before you start.</p>
-          <p><strong>Useful tip:</strong> safety wins. Don’t jump gates or run into glass for a point.</p>
+          <p><strong>If it flies straight out without bouncing in:</strong> out.</p>
+          <p><strong>If it bounces in first, then goes out:</strong> the point is still live.</p>
+          <p><strong>House rules:</strong> some venues allow recovery shots outside the court (if safe), others don’t. Agree before playing.</p>
+          <p><strong>Practical tip:</strong> never risk injury for a point — safety wins.</p>
         `
       },
 
@@ -361,8 +349,8 @@
         title: "Scoring (and the golden point)",
         body: `
           <p><strong>Scoring matches tennis:</strong> 15, 30, 40, game. Usually best of 3 sets.</p>
-          <p><strong>At deuce (40–40):</strong> many clubs use <strong>golden point</strong> (next point wins) to keep games flowing.</p>
-          <p><strong>Useful tip:</strong> ask “golden point or advantage?” before the first serve — it avoids arguments later.</p>
+          <p><strong>At deuce (40–40):</strong> many clubs use <strong>golden point</strong> (next point wins).</p>
+          <p><strong>Practical tip:</strong> ask “golden point or advantage?” before the first serve.</p>
         `
       },
 
@@ -370,18 +358,17 @@
         title: "Double bounce (the only hard stop)",
         body: `
           <p><strong>You lose the point</strong> if the ball bounces <strong>twice</strong> on the ground on your side before you hit it.</p>
-          <p><strong>Walls don’t reset this:</strong> bounce + wall is fine, but two ground bounces is always dead.</p>
-          <p><strong>Useful tip:</strong> if you’re late, let it reach the glass after the first bounce — it often gives you time to recover.</p>
+          <p><strong>Walls don’t reset it:</strong> bounce + wall is fine, but two ground bounces is always dead.</p>
+          <p><strong>Practical tip:</strong> if you’re late, let it reach the back glass after the first bounce — it often buys time.</p>
         `
       },
 
       etiquette: {
-        title: "Safety (the rules that prevent injuries)",
+        title: "Safety (rules that prevent injuries)",
         body: `
-          <p><strong>Call “mine” early</strong> — most padel injuries are partner collisions.</p>
-          <p><strong>Respect the swing zone:</strong> don’t run behind your partner when they’re loading a forehand/backhand.</p>
-          <p><strong>Glass awareness:</strong> don’t sprint into the back glass — stop short and play after the rebound.</p>
-          <p><strong>Useful tip:</strong> winning a point isn’t worth a broken racket (or nose).</p>
+          <p><strong>Call “mine” early</strong> — most injuries are partner collisions.</p>
+          <p><strong>Respect swing space:</strong> don’t run behind your partner when they’re loading a swing.</p>
+          <p><strong>Glass awareness:</strong> don’t sprint into the back glass — stop short and play the rebound.</p>
         `
       }
     };
@@ -409,8 +396,9 @@
 
     function closeModal() {
       modal.style.display = "none";
-      document.querySelectorAll(".hotspot").forEach(h => h.dataset.active = "0";
-      );
+      document.querySelectorAll(".hotspot").forEach(h => {
+        h.dataset.active = "0";
+      });
     }
 
     document.addEventListener("click", (e) => {
