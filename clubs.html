@@ -246,11 +246,31 @@
         .replaceAll("'", "&#039;");
     }
 
-    function safeLink(url) {
+    // ✅ Updated: stricter link allowlist to avoid Google "Uh oh!" pages
+    function safeLink(url, opts = {}) {
       const u = norm(url);
       if (!u) return "";
-      if (u.startsWith("http://") || u.startsWith("https://")) return u;
-      return "";
+
+      // Require absolute http(s)
+      if (!(u.startsWith("http://") || u.startsWith("https://"))) return "";
+
+      let host = "";
+      try { host = new URL(u).hostname.toLowerCase(); } catch { return ""; }
+
+      // Block Google Docs/Drive links (common source of the "Uh oh!" page when not public)
+      const blockedHosts = new Set([
+        "docs.google.com",
+        "drive.google.com",
+        "script.google.com",
+        "accounts.google.com",
+      ]);
+      if (blockedHosts.has(host)) return "";
+
+      // Optionally block URL shorteners (uncomment if you want)
+      // const blockedShorteners = new Set(["bit.ly","tinyurl.com","t.co"]);
+      // if (blockedShorteners.has(host)) return "";
+
+      return u;
     }
 
     function keyify(header) {
@@ -498,7 +518,9 @@
 
       for (const r of rows) {
         const bookingUrl = safeLink(r.BookingURL);
-        const sourceUrl  = safeLink(r.SourceURL);
+
+        // ✅ If SourceURL is missing/bad, fall back to bookingUrl (so Source never opens "Uh oh!")
+        const sourceUrl  = safeLink(r.SourceURL) || bookingUrl;
 
         const card = document.createElement("div");
         card.style.padding = "14px";
@@ -570,6 +592,7 @@
         const rawRows = await parseCsvToRows(csv);
         const mapped = rawRows.map(mapRow);
 
+        // ✅ Relaxed validation: SourceURL can be missing/bad now (we fall back to booking)
         const cleaned = mapped
           .filter(r =>
             norm(r.Venue) &&
@@ -578,8 +601,7 @@
             norm(r.BookingPlatform) &&
             safeLink(r.BookingURL) &&
             norm(r.PriceRange) &&
-            norm(r.PriceUnit) &&
-            safeLink(r.SourceURL)
+            norm(r.PriceUnit)
           )
           .map(enrichRow);
 
@@ -656,7 +678,7 @@
         const title = r.Venue || "Club";
         const subtitle = [r.Area, r.City].filter(Boolean).join(" · ");
         const bookingUrl = safeLink(r.BookingURL);
-        const sourceUrl = safeLink(r.SourceURL);
+        const sourceUrl = safeLink(r.SourceURL) || bookingUrl;
 
         const popup = `
           <div style="font-family: Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial; font-size: 13px; line-height: 1.5;">
